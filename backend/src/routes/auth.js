@@ -9,24 +9,25 @@ const prisma = new PrismaClient();
 
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { username, email, password, name } = req.body;
 
-    if (!email || !password || !name) {
+    if (!username || !password || !name) {
       return res.status(400).json({ error: 'Tous les champs sont requis' });
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { username }
     });
 
     if (existingUser) {
-      return res.status(400).json({ error: 'Cet email est déjà utilisé' });
+      return res.status(400).json({ error: 'Cet identifiant est déjà utilisé' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
       data: {
+        username,
         email,
         password: hashedPassword,
         name,
@@ -34,6 +35,7 @@ router.post('/register', async (req, res) => {
       },
       select: {
         id: true,
+        username: true,
         email: true,
         name: true,
         role: true
@@ -51,24 +53,24 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email et mot de passe requis' });
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Identifiant et mot de passe requis' });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { username }
     });
 
     if (!user) {
-      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+      return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
-      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+      return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
     }
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });

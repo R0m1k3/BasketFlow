@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
 function Register() {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -18,7 +19,7 @@ function Register() {
     setLoading(true);
 
     try {
-      await register(email, password, name);
+      await register(username, email, password, name);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Erreur lors de l\'inscription');
@@ -44,12 +45,21 @@ function Register() {
             />
           </div>
           <div className="form-group">
-            <label>Email</label>
+            <label>Identifiant</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              placeholder="monidentifiant"
+            />
+          </div>
+          <div className="form-group">
+            <label>Email (optionnel)</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
               placeholder="votre@email.fr"
             />
           </div>

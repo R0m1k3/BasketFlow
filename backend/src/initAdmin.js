@@ -17,11 +17,11 @@ async function initAdmin() {
       return;
     }
 
-    const randomPassword = crypto.randomBytes(8).toString('hex');
-    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+    const hashedPassword = await bcrypt.hash('admin', 10);
 
     const admin = await prisma.user.create({
       data: {
+        username: 'admin',
         email: 'admin@basket.fr',
         password: hashedPassword,
         name: 'Administrateur',
@@ -31,11 +31,8 @@ async function initAdmin() {
 
     console.log('✅ Administrateur créé avec succès !');
     console.log('');
-    console.log('   📧 Email: admin@basket.fr');
-    console.log(`   🔑 Mot de passe: ${randomPassword}`);
-    console.log('');
-    console.log('   ⚠️  IMPORTANT: Notez ce mot de passe et changez-le après votre première connexion !');
-    console.log('   ⚠️  Ce mot de passe ne sera plus affiché.');
+    console.log('   👤 Identifiant: admin');
+    console.log('   🔑 Mot de passe: admin');
     console.log('');
 
     const apiConfig = await prisma.config.upsert({
