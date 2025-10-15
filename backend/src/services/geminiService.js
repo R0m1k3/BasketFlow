@@ -70,6 +70,9 @@ Pour chaque match, fournis:
 - Équipe domicile (nom EXACT et court, sans sponsor)
 - Équipe extérieure (nom EXACT et court, sans sponsor)
 - Ligue/compétition
+- Statut: "scheduled" (à venir), "live" (en cours), "finished" (terminé)
+- Score domicile (si match terminé ou en cours)
+- Score extérieur (si match terminé ou en cours)
 - URL du logo de l'équipe domicile (UNIQUEMENT format PNG ou JPG direct, pas de SVG ni de /thumb/)
 - URL du logo de l'équipe extérieure (UNIQUEMENT format PNG ou JPG direct, pas de SVG ni de /thumb/)
 - Chaînes TV françaises qui diffusent le match avec leurs logos (UNIQUEMENT PNG ou JPG direct)
@@ -83,6 +86,9 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
     "awayTeam": "Real Madrid",
     "awayTeamLogo": "https://example.com/real-madrid-logo.png",
     "league": "Euroleague",
+    "status": "finished",
+    "homeScore": 85,
+    "awayScore": 78,
     "broadcasters": [
       {"name": "SKWEEK", "logo": "https://example.com/skweek-logo.png"},
       {"name": "La Chaîne L'Équipe", "logo": "https://example.com/lequipe-logo.png"}
@@ -107,6 +113,9 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
               awayTeam: { type: 'string' },
               awayTeamLogo: { type: 'string' },
               league: { type: 'string' },
+              status: { type: 'string' },
+              homeScore: { type: 'number' },
+              awayScore: { type: 'number' },
               broadcasters: {
                 type: 'array',
                 items: {
@@ -212,7 +221,7 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
           continue;
         }
 
-        // Create match
+        // Create match with status and scores
         const match = await prisma.match.create({
           data: {
             externalId,
@@ -220,7 +229,9 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
             homeTeamId: homeTeam.id,
             awayTeamId: awayTeam.id,
             leagueId: league.id,
-            status: 'scheduled'
+            status: matchData.status || 'scheduled',
+            homeScore: matchData.homeScore || null,
+            awayScore: matchData.awayScore || null
           }
         });
 
