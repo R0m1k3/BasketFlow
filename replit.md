@@ -6,14 +6,15 @@ A web application that displays basketball games broadcast in France, featuring 
 
 ## Recent Changes (October 15, 2025)
 
-### OpenRouter IA Integration ✅
-- Remplacé API-Basketball par OpenRouter avec LLM gratuits (Gemini 2.5 Flash)
-- Scraping intelligent multi-sources (Prime Video, beIN Sports, L'Équipe, DAZN, Skweek)
-- Panel admin avec sélection dynamique des modèles LLM disponibles
-- Endpoint `/api/openrouter/models` pour récupérer la liste des modèles
-- Service `openrouterScraper.js` pour extraction automatique des matchs
-- Configuration OPENROUTER_API_KEY et OPENROUTER_MODEL dans la base de données
+### API-Basketball Integration avec Mapping Intelligent ✅
+- Utilise API-Basketball (RapidAPI) pour données en temps réel
+- Mapping automatique des diffuseurs français selon les ligues
+- beIN Sports (400+ matchs NBA), Prime Video (29 matchs dominicaux NBA)
+- SKWEEK (tous Euroleague), La Chaîne L'Équipe (matchs sélectionnés gratuits)
+- TV Monaco (tous matchs AS Monaco Euroleague)
+- Panel admin pour configuration API_BASKETBALL_KEY
 - Site renommé de "Basket France" à "Basket Flow"
+- Mise à jour automatique quotidienne à 6h00
 
 ### Authentication & Security System ✅
 - Implemented JWT-based authentication with user/admin roles
@@ -84,15 +85,19 @@ Preferred communication style: Simple, everyday language.
 ### External Dependencies
 
 **Basketball Data API**: 
-- Primary: API-Basketball.com via RapidAPI (requires API_BASKETBALL_KEY environment variable)
+- API-Basketball.com via RapidAPI (requires API_BASKETBALL_KEY environment variable)
 - Fetches matches for NBA (league 12), WNBA (league 16), Euroleague (league 120), Betclic Elite (league 117)
 - Updates are idempotent using unique externalId constraint to prevent duplicates
+- Free tier: 100 requests/day, paid plans from €10/month
 - Fallback: Sample data seeding when API key is not configured
 
-**Broadcaster Mapping**:
-- Hardcoded mapping between leagues and French TV channels
-- Includes metadata about free vs paid channels
-- Season-specific broadcasting rights tracking (e.g., Prime Video for NBA 2025-26, beIN Sports for 2024-25)
+**Broadcaster Mapping** (Intelligence améliorée 2025):
+- **NBA**: beIN Sports (400+ matchs/saison), Prime Video (29 matchs dominicaux), NBA League Pass
+- **WNBA**: NBA League Pass, beIN Sports  
+- **Euroleague**: SKWEEK (tous), La Chaîne L'Équipe (matchs sélectionnés Paris/ASVEL), TV Monaco (AS Monaco), EuroLeague TV
+- **Betclic Elite**: beIN Sports, La Chaîne L'Équipe, DAZN
+- **EuroCup**: SKWEEK, EuroLeague TV
+- **BCL**: Courtside 1891
 
 **Third-party Libraries**:
 - FullCalendar for calendar visualization
@@ -109,7 +114,7 @@ Preferred communication style: Simple, everyday language.
 **Environment Configuration** (All configured in backend/.env):
 - JWT_SECRET: **REQUIRED** - Cryptographic secret for JWT signing (must be generated randomly)
 - SESSION_SECRET: **REQUIRED** - Session secret for Express sessions
-- API_BASKETBALL_KEY: RapidAPI key for API-Basketball.com (optional - falls back to sample data)
+- API_BASKETBALL_KEY: **REQUIRED for production** - RapidAPI key for API-Basketball.com (falls back to sample data if missing)
 - PORT: Configurable server port (defaults to 3000)
 - DATABASE_URL: PostgreSQL connection string (Replit Neon database or Docker PostgreSQL)
 

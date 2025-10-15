@@ -6,10 +6,11 @@ Application web affichant les matchs de basketball diffusés en France avec cale
 
 - **Ligues supportées** : NBA, WNBA, Euroleague, EuroCup, BCL, Betclic Elite
 - **Chaînes de diffusion** : beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK, NBA League Pass, Euroleague TV, etc.
-- **Scraping IA automatique** : Utilise OpenRouter avec LLM gratuits (Gemini 2.5 Flash) pour extraire les matchs depuis les sites web
+- **API en temps réel** : Utilise API-Basketball (RapidAPI) pour données officielles des matchs
+- **Mapping intelligent des diffuseurs** : Associe automatiquement les matchs aux chaînes françaises (400+ matchs NBA sur beIN Sports, etc.)
 - **Mise à jour journalière automatique** : Synchronisation quotidienne à 6h du matin
 - **Filtres** : Par ligue et par chaîne de diffusion
-- **Panel admin** : Configuration OpenRouter avec sélection dynamique des modèles LLM
+- **Panel admin** : Configuration API-Basketball et gestion des utilisateurs
 
 ## 🚀 Installation avec Docker
 
@@ -128,8 +129,7 @@ docker-compose logs -f
 
 - `JWT_SECRET` : **Obligatoire** - Secret pour signer les tokens JWT
 - `SESSION_SECRET` : **Obligatoire** - Secret pour les sessions Express
-- `OPENROUTER_API_KEY` : **Recommandé** - Clé API OpenRouter pour le scraping IA (utilise données d'exemple si absent)
-- `OPENROUTER_MODEL` : Optionnel - Modèle LLM à utiliser (par défaut: `google/gemini-2.5-flash:free`)
+- `API_BASKETBALL_KEY` : **Recommandé** - Clé API RapidAPI pour API-Basketball (utilise données d'exemple si absent)
 - `DATABASE_URL` : URL de connexion PostgreSQL
 
 ### Bonnes pratiques
@@ -140,21 +140,21 @@ docker-compose logs -f
 4. ✅ Utiliser HTTPS en production
 5. ✅ Configurer un pare-feu
 
-## 🤖 Scraping IA avec OpenRouter
+## 🏀 API-Basketball pour données en temps réel
 
-L'application utilise **OpenRouter** avec des modèles LLM gratuits pour scraper intelligemment les sources de diffusion :
+L'application utilise **API-Basketball** (via RapidAPI) pour obtenir les matchs officiels :
 
-- **Sources scrapées** : Prime Video, beIN Sports, L'Équipe, DAZN, Skweek, etc.
-- **Modèle recommandé** : Gemini 2.5 Flash (gratuit, 50 requêtes/jour)
-- **Extraction intelligente** : L'IA extrait automatiquement les matchs, équipes, dates et diffuseurs
-- **Configuration** : Via le panneau d'administration avec sélection dynamique des modèles
+- **Données officielles** : NBA, WNBA, Euroleague, Betclic Elite en temps réel
+- **Mapping intelligent** : Les matchs sont automatiquement associés aux diffuseurs français
+- **100+ requêtes/jour** : Plan gratuit suffisant pour tester
+- **Configuration simple** : Via le panneau d'administration
 
-Sans clé API OpenRouter, l'application fonctionne avec des données d'exemple.
+Sans clé API, l'application fonctionne avec des données d'exemple.
 
-### Configuration OpenRouter
+### Configuration API-Basketball
 
-1. Créez un compte sur [OpenRouter](https://openrouter.ai)
-2. Générez une clé API dans les paramètres
+1. Créez un compte sur [RapidAPI](https://rapidapi.com)
+2. Abonnez-vous à [API-Basketball](https://rapidapi.com/api-sports/api/api-basketball)
 3. Connectez-vous en tant qu'admin (identifiant: `admin`, mot de passe: `admin`)
 4. Allez dans le panneau d'administration
 5. Configurez votre clé API et sélectionnez un modèle gratuit (Gemini 2.5 Flash recommandé)
