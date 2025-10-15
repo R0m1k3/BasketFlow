@@ -41,7 +41,7 @@ docker-compose up -d
 ```
 
 4. **Accéder à l'application** :
-- Frontend : http://localhost:5000
+- Frontend : http://localhost:4000
 - Backend API : http://localhost:3000
 - PostgreSQL : Port 4532 (au lieu de 5432 pour éviter les conflits)
 

@@ -93,7 +93,7 @@ Preferred communication style: Simple, everyday language.
 **Infrastructure**:
 - Docker containerization with docker-compose
 - Nginx reverse proxy (connects via nginx_default network)
-- Frontend on port 5000, Backend on port 3000
+- Frontend on port 4000 (Docker) / port 5000 (Replit dev), Backend on port 3000
 - PostgreSQL on port 4532 (external) / 5432 (internal) - évite conflit avec Replit database
 
 **Environment Configuration** (All configured in backend/.env):

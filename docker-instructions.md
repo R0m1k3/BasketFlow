@@ -33,7 +33,7 @@ Notez le mot de passe affiché !
 
 ## 5. Accéder à l'application
 
-- Frontend: http://localhost:5000
+- Frontend: http://localhost:4000
 - Backend: http://localhost:3000
 - PostgreSQL: Port 4532
 
@@ -41,7 +41,7 @@ Login: admin@basket.fr / mot-de-passe-généré
 
 ## Ports utilisés
 
-- **5000** : Frontend React
+- **4000** : Frontend React
 - **3000** : Backend API
 - **4532** : PostgreSQL (au lieu de 5432 pour éviter les conflits)
 
