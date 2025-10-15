@@ -6,6 +6,11 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const getProxiedImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
+
   const fetchMatches = useCallback(async () => {
     try {
       setLoading(true);
@@ -82,14 +87,14 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
               <div className="match-teams">
                 <div className="team">
                   {match.homeTeam.logo && (
-                    <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="team-logo" />
+                    <img src={getProxiedImageUrl(match.homeTeam.logo)} alt={match.homeTeam.name} className="team-logo" />
                   )}
                   <span>{match.homeTeam.name}</span>
                 </div>
                 <div className="vs">vs</div>
                 <div className="team">
                   {match.awayTeam.logo && (
-                    <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="team-logo" />
+                    <img src={getProxiedImageUrl(match.awayTeam.logo)} alt={match.awayTeam.name} className="team-logo" />
                   )}
                   <span>{match.awayTeam.name}</span>
                 </div>
@@ -111,7 +116,7 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
                   >
                     {broadcast.broadcaster.logo ? (
                       <>
-                        <img src={broadcast.broadcaster.logo} alt={broadcast.broadcaster.name} className="broadcaster-logo" />
+                        <img src={getProxiedImageUrl(broadcast.broadcaster.logo)} alt={broadcast.broadcaster.name} className="broadcaster-logo" />
                         <span className="broadcaster-name">{broadcast.broadcaster.name}</span>
                       </>
                     ) : (
