@@ -6,18 +6,19 @@ A web application that displays basketball games broadcast in France, featuring 
 
 ## Recent Changes (October 15, 2025)
 
-### 🔄 Système Multi-Sources avec Déduplication Intelligente ✅
-- **3 sources de données** agrégées sans doublons via externalId préfixés
-  - **RapidAPI (API-Basketball)** : NBA, WNBA, Euroleague, Betclic Elite (optionnel, 100 req/jour gratuit)
+### 🤖 Système Multi-Sources avec Gemini AI et Logos ✅
+- **4 sources de données** agrégées sans doublons via externalId préfixés
+  - **RapidAPI (API-Basketball)** : NBA, WNBA, Euroleague, Betclic Elite (optionnel, 100 req/jour)
   - **BallDontLie** : NBA et WNBA uniquement (gratuit, 60 req/min)
-  - **Euroleague API officielle** : Euroleague et EuroCup (gratuit, pas de clé)
-- **Déduplication robuste** : externalId avec préfixes `rapidapi-`, `balldontlie-NBA-`, `balldontlie-WNBA-`, `euroleague-`, `eurocup-`
-- **Fallback intelligent** : sample data uniquement si toutes les sources échouent
-- **Panel admin étendu** : configuration de 2 clés API (RapidAPI + BallDontLie)
+  - **Euroleague API officielle** : Euroleague et EuroCup (gratuit, aucune clé)
+  - **Gemini AI avec Google Search** : Tous les matchs en temps réel avec logos d'équipes et diffuseurs (gratuit)
+- **Déduplication robuste** : externalId avec préfixes `rapidapi-`, `balldontlie-NBA-`, `balldontlie-WNBA-`, `euroleague-`, `eurocup-`, `gemini-`
+- **Panel admin étendu** : switches ON/OFF pour activer/désactiver chaque source individuellement
+- **Logos automatiques** : Gemini récupère les logos des équipes et des diffuseurs via Google Search
+- **Affichage visuel enrichi** :
+  - WeeklyMatches : logos d'équipes (40px) et diffuseurs (24px) avec fallback texte
+  - MonthlyCalendar : logos d'équipes (16px) et diffuseurs (18px) dans les événements
 - Mapping automatique des diffuseurs français selon les ligues
-- beIN Sports (400+ matchs NBA), Prime Video (29 matchs dominicaux NBA)
-- SKWEEK (tous Euroleague), La Chaîne L'Équipe (matchs sélectionnés gratuits)
-- TV Monaco (tous matchs AS Monaco Euroleague)
 - Mise à jour automatique quotidienne à 6h00
 
 ### Authentication & Security System ✅
@@ -88,7 +89,7 @@ Preferred communication style: Simple, everyday language.
 
 ### External Dependencies
 
-**Basketball Data Sources (3 APIs agrégées)**: 
+**Basketball Data Sources (4 APIs agrégées)**: 
 
 1. **API-Basketball.com via RapidAPI** (optionnel)
    - Couverture: NBA (league 12), WNBA (league 16), Euroleague (league 120), Betclic Elite (league 117)
@@ -109,8 +110,17 @@ Preferred communication style: Simple, everyday language.
    - Aucune clé API requise (fonctionne automatiquement)
    - Season codes: E2025 (Euroleague), U2025 (EuroCup)
 
+4. **Gemini AI avec Google Search** (gratuit)
+   - Couverture: Tous les matchs (NBA, WNBA, Euroleague, EuroCup, BCL, Betclic Elite)
+   - ExternalId prefix: `gemini-`
+   - Récupère automatiquement les logos d'équipes et diffuseurs via Google Search
+   - Configuration: GEMINI_API_KEY (Replit integration JavaScript)
+   - Recherche en temps réel des matchs diffusés en France
+   - Broadcasters avec logos et noms exacts
+
 **Déduplication**: Tous les services utilisent des externalId uniques préfixés pour éviter les doublons entre sources
-**Fallback**: Sample data seeding uniquement si les 3 sources échouent (totalMatches === 0)
+**Logos**: Gemini enrichit automatiquement les équipes et diffuseurs avec des URLs de logos
+**Fallback**: Les matchs sans logos utilisent l'affichage texte traditionnel
 
 **Broadcaster Mapping** (Intelligence améliorée 2025):
 - **NBA**: beIN Sports (400+ matchs/saison), Prime Video (29 matchs dominicaux), NBA League Pass
