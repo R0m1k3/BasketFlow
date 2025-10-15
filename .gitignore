@@ -12,3 +12,7 @@ backend/node_modules/
 frontend/node_modules/
 backend/.env
 frontend/.env
+
+# Docker generated files
+docker-compose.override.yml
+.env.local

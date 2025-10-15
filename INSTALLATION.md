@@ -6,6 +6,69 @@
 - Network Docker `nginx_default` créé (ou modifiez docker-compose.yml)
 - Clé API Basketball de RapidAPI (optionnel, pour les données en direct)
 
+## 🐳 Installation Docker (Recommandée)
+
+### 1. Créer le network Docker
+
+```bash
+docker network create nginx_default
+```
+
+### 2. Configurer les secrets
+
+```bash
+# Copier le template
+cp .env.docker .env
+
+# Générer JWT_SECRET
+echo "JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")" >> .env
+
+# Générer SESSION_SECRET
+echo "SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")" >> .env
+```
+
+### 3. (Optionnel) Ajouter votre clé API Basketball
+
+Éditez `.env` et ajoutez votre clé RapidAPI :
+```
+API_BASKETBALL_KEY=votre_cle_ici
+```
+
+Sans clé API, l'application utilisera des données d'exemple.
+
+### 4. Lancer l'application
+
+```bash
+docker-compose up -d
+```
+
+### 5. Récupérer le mot de passe admin
+
+Le mot de passe admin est généré automatiquement au premier démarrage :
+
+```bash
+docker-compose logs backend | grep "Mot de passe"
+```
+
+Vous verrez quelque chose comme :
+```
+   🔑 Mot de passe: a1b2c3d4e5f6g7h8
+```
+
+### 6. Accéder à l'application
+
+- **Frontend** : http://localhost:5000
+- **Backend API** : http://localhost:3000
+- **PostgreSQL** : Port 4532 (externe)
+
+**Identifiants de connexion** :
+- Email: `admin@basket.fr`
+- Mot de passe: (celui affiché dans les logs)
+
+---
+
+## 💻 Installation Replit (Développement)
+
 ## Installation Rapide
 
 ### 1. Créer le network Docker
