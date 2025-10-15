@@ -1,0 +1,120 @@
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+🚀  Your database is now in sync with your Prisma schema. Done in 950ms
+
+Running generate... (Use --skip-generate to skip the generators)
+
+Running generate... - Prisma Client
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 238ms
+
+✅ Administrateur créé avec succès !
+
+   📧 Email: admin@basket.fr
+
+   🔑 Mot de passe: 64b1a1e2c89e2141
+
+   ⚠️  IMPORTANT: Notez ce mot de passe et changez-le après votre première connexion !
+
+   ⚠️  Ce mot de passe ne sera plus affiché.
+
+✅ Configuration API initialisée
+
+⚠️  ATTENTION: JWT_SECRET n'est pas configuré !
+
+   Générez un secret aléatoire :
+
+   JWT_SECRET=9ea24f83ccb95bcaf65270a9ac590e7cb7348c34fb452c592f3c40d5dbce036a
+
+   Ajoutez cette ligne à votre fichier .env
+
+> basket-backend@1.0.0 start
+
+> node src/server.js
+
+❌ ERREUR CRITIQUE: JWT_SECRET n'est pas défini dans les variables d'environnement
+
+   Ajoutez JWT_SECRET=<votre-secret-aleatoire> dans votre fichier .env
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+
+Running generate... - Prisma Client
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 217ms
+
+┌─────────────────────────────────────────────────────────┐
+
+│  Update available 5.22.0 -> 6.17.1                      │
+
+│                                                         │
+
+│  This is a major update - please follow the guide at    │
+
+│  https://pris.ly/d/major-version-upgrade                │
+
+│                                                         │
+
+│  Run the following to update                            │
+
+│    npm i --save-dev prisma@latest                       │
+
+│    npm i @prisma/client@latest                          │
+
+└─────────────────────────────────────────────────────────┘
+
+✅ Un administrateur existe déjà
+
+⚠️  ATTENTION: JWT_SECRET n'est pas configuré !
+
+   Générez un secret aléatoire :
+
+   JWT_SECRET=346ad803572a580494f07df27ac0db4c8725fc0dc883f0a3e3b4872856998521
+
+   Ajoutez cette ligne à votre fichier .env
+
+> basket-backend@1.0.0 start
+
+> node src/server.js
+
+❌ ERREUR CRITIQUE: JWT_SECRET n'est pas défini dans les variables d'environnement
+
+   Ajoutez JWT_SECRET=<votre-secret-aleatoire> dans votre fichier .env
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+
+Running generate... - Prisma Client
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 384ms
+
+✅ Un administrateur existe déjà
+
+⚠️  ATTENTION: JWT_SECRET n'est pas configuré !
+
+   Générez un secret aléatoire :
+
+   JWT_SECRET=0a05b716f8fc10e1e9094c780b198680274fb3f4e6ef13eb25f1cf13aaa2f198
+
+   Ajoutez cette ligne à votre fichier .env
+
+> basket-backend@1.0.0 start
+
+> node src/server.js
+
+❌ ERREUR CRITIQUE: JWT_SECRET n'est pas défini dans les variables d'environnement
+
+   Ajoutez JWT_SECRET=<votre-secret-aleatoire> dans votre fichier .env
+

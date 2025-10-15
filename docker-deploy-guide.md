@@ -24,24 +24,17 @@
 docker network create nginx_default
 ```
 
-### 2. Configurer les secrets
+### 2. ✅ Les secrets sont déjà configurés
 
-```bash
-# Copier le template
-cp .env.docker .env
-
-# Générer JWT_SECRET
-echo "JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")" >> .env
-
-# Générer SESSION_SECRET
-echo "SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")" >> .env
-```
+Le fichier `.env` avec JWT_SECRET et SESSION_SECRET a été **généré automatiquement** pour vous !
 
 ### 3. (Optionnel) Ajouter votre clé API Basketball
 
+Si vous voulez des données réelles au lieu des exemples :
+
 ```bash
-# Éditer .env et ajouter :
-API_BASKETBALL_KEY=votre_cle_rapidapi
+# Éditer .env et remplacer la ligne vide par :
+API_BASKETBALL_KEY=votre_cle_rapidapi_ici
 ```
 
 ### 4. Construire et lancer
@@ -60,11 +53,13 @@ docker-compose up -d
 docker-compose logs backend | grep "Mot de passe"
 ```
 
+**Note** : Le mot de passe admin a déjà été généré précédemment : `64b1a1e2c89e2141`
+
 ### 6. Accéder à l'application
 
 - **Frontend** : http://localhost:4000
-- **Backend API** : http://localhost:3001
-- **Login** : admin@basket.fr / (mot de passe généré)
+- **Backend API** : http://localhost:3001/api
+- **Login** : admin@basket.fr / `64b1a1e2c89e2141`
 
 ---
 
@@ -107,19 +102,28 @@ docker-compose up -d
 
 ## 🐛 Dépannage
 
+### JWT_SECRET manquant
+✅ **Résolu** - Le fichier `.env` est créé automatiquement avec des secrets aléatoires
+
 ### Le backend ne trouve pas le schéma Prisma
-✅ Corrigé - Le Dockerfile copie maintenant prisma/ avant de générer le client
+✅ **Résolu** - Le Dockerfile copie `prisma/` avant de générer le client
 
 ### Erreur "port already allocated"
-✅ Corrigé - Tous les ports Docker sont différents des ports Replit
+✅ **Résolu** - Tous les ports Docker sont différents des ports Replit
 
 ### Le frontend ne se connecte pas au backend
-- Vérifiez que les services sont sur le même network (`nginx_default`)
-- Le frontend appelle `/api` qui est proxifié vers le backend
+- Vérifiez que les services sont bien démarrés : `docker-compose ps`
+- Le frontend proxifie `/api` vers le backend via `setupProxy.js`
+- Les deux services doivent être sur le network `nginx_default`
 
 ### Voir l'état des conteneurs
 ```bash
 docker-compose ps
+```
+
+### Vérifier les connexions réseau
+```bash
+docker network inspect nginx_default
 ```
 
 ---
@@ -145,7 +149,55 @@ docker-compose ps
 
 ## 🔒 Sécurité
 
-1. Ne jamais commiter `.env`
-2. Régénérer les secrets en production
-3. Changer le mot de passe admin après la première connexion
-4. Configurer HTTPS en production avec un reverse proxy
+### ✅ Sécurité Intégrée
+
+1. **JWT_SECRET & SESSION_SECRET** : Générés automatiquement (64 caractères hex)
+2. **Mot de passe admin** : Généré aléatoirement au premier démarrage
+3. **Fichier .env** : Automatiquement ajouté à `.gitignore`
+
+### ⚠️ Actions Recommandées
+
+1. **Changer le mot de passe admin** après la première connexion
+2. **Régénérer les secrets en production** si nécessaire
+3. **Configurer HTTPS** en production avec un reverse proxy (nginx, Caddy, Traefik)
+4. **Ne jamais commiter** le fichier `.env`
+
+### 🔄 Régénérer les secrets (si nécessaire)
+
+```bash
+# Générer un nouveau JWT_SECRET
+node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(32).toString('hex'))"
+
+# Générer un nouveau SESSION_SECRET
+node -e "console.log('SESSION_SECRET=' + require('crypto').randomBytes(32).toString('hex'))"
+```
+
+---
+
+## 📊 Monitoring
+
+### Vérifier la santé de la base de données
+```bash
+docker exec basket_postgres pg_isready -U basketuser -d basketdb
+```
+
+### Se connecter à PostgreSQL
+```bash
+docker exec -it basket_postgres psql -U basketuser -d basketdb
+```
+
+---
+
+## ✅ Checklist de Déploiement
+
+- [ ] Network Docker créé (`docker network create nginx_default`)
+- [ ] Fichier `.env` vérifié (secrets générés automatiquement ✅)
+- [ ] (Optionnel) Clé API Basketball configurée
+- [ ] Images Docker construites (`docker-compose build`)
+- [ ] Services démarrés (`docker-compose up -d`)
+- [ ] Logs vérifiés (`docker-compose logs`)
+- [ ] Connexion frontend testée (http://localhost:4000)
+- [ ] API backend testée (http://localhost:3001/api/health)
+- [ ] Mot de passe admin changé après première connexion
+
+**Votre application est prête ! 🎉**
