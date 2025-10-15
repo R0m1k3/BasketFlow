@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import './AdminPanel.css';
@@ -6,11 +6,29 @@ import './AdminPanel.css';
 function AdminPanel() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('config');
-  const [config, setConfig] = useState([]);
   const [users, setUsers] = useState([]);
   const [apiKey, setApiKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  const fetchConfig = useCallback(async () => {
+    try {
+      const response = await axios.get('/api/admin/config');
+      const apiConfig = response.data.find(c => c.key === 'API_BASKETBALL_KEY');
+      setApiKey(apiConfig?.value || '');
+    } catch (error) {
+      console.error('Error fetching config:', error);
+    }
+  }, []);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const response = await axios.get('/api/admin/users');
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'config') {
@@ -18,27 +36,7 @@ function AdminPanel() {
     } else if (activeTab === 'users') {
       fetchUsers();
     }
-  }, [activeTab]);
-
-  const fetchConfig = async () => {
-    try {
-      const response = await axios.get('/api/admin/config');
-      setConfig(response.data);
-      const apiConfig = response.data.find(c => c.key === 'API_BASKETBALL_KEY');
-      setApiKey(apiConfig?.value || '');
-    } catch (error) {
-      console.error('Error fetching config:', error);
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get('/api/admin/users');
-      setUsers(response.data);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  };
+  }, [activeTab, fetchConfig, fetchUsers]);
 
   const handleSaveApiKey = async () => {
     setLoading(true);

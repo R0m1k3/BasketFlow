@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -9,11 +9,7 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
   const [events, setEvents] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  useEffect(() => {
-    fetchMonthMatches();
-  }, [currentDate, selectedLeague, selectedBroadcaster]);
-
-  const fetchMonthMatches = async () => {
+  const fetchMonthMatches = useCallback(async () => {
     try {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
@@ -47,7 +43,11 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
     } catch (error) {
       console.error('Error fetching month matches:', error);
     }
-  };
+  }, [currentDate, selectedLeague, selectedBroadcaster]);
+
+  useEffect(() => {
+    fetchMonthMatches();
+  }, [fetchMonthMatches]);
 
   const getLeagueColor = (leagueName) => {
     const colors = {

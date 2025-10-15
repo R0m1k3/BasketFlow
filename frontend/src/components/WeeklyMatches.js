@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './WeeklyMatches.css';
 
@@ -6,11 +6,7 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchMatches();
-  }, [selectedLeague, selectedBroadcaster]);
-
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/matches/week');
@@ -32,7 +28,11 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedLeague, selectedBroadcaster]);
+
+  useEffect(() => {
+    fetchMatches();
+  }, [fetchMatches]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);

@@ -6,15 +6,29 @@ A web application that displays basketball games broadcast in France, featuring 
 
 ## Recent Changes (October 15, 2025)
 
-- ✅ Implemented complete Docker configuration (docker-compose.yml, Dockerfiles for backend/frontend)
-- ✅ Added API-Basketball integration via RapidAPI for live match data
-- ✅ Implemented idempotent updates using unique externalId constraint
-- ✅ Fixed daily update service to fetch real data from basketball API
-- ✅ Configured node-cron for automatic daily updates at 6:00 AM
-- ✅ Added PostgreSQL database with Prisma ORM
-- ✅ Created frontend React components (WeeklyMatches, MonthlyCalendar, FilterBar)
-- ✅ Implemented filtering by league and broadcaster
-- ✅ Added sample data seeding with idempotent upserts
+### Authentication & Security System ✅
+- Implemented JWT-based authentication with user/admin roles
+- Created secure admin initialization with random password generation (crypto.randomBytes)
+- Enforced JWT_SECRET requirement - server refuses to start without it
+- Added security hardening with .env.example and comprehensive documentation
+- Created Login/Register components with AuthContext for state management
+- Built AdminPanel for API key configuration and user management
+- Added ProtectedRoute component for admin-only access control
+
+### Application Features ✅
+- Complete Docker configuration (docker-compose.yml, Dockerfiles for backend/frontend)
+- API-Basketball integration via RapidAPI for live match data
+- Idempotent updates using unique externalId constraint
+- Daily update service with node-cron (6:00 AM automatic sync)
+- PostgreSQL database with Prisma ORM
+- Frontend React components (WeeklyMatches, MonthlyCalendar, FilterBar)
+- Filtering by league and broadcaster
+- Sample data seeding with idempotent upserts
+
+### Documentation ✅
+- Created INSTALLATION.md with security-focused setup instructions
+- Updated README.md with security warnings and quick start guide
+- Added .env.example template without real secrets
 
 ## User Preferences
 
@@ -81,10 +95,19 @@ Preferred communication style: Simple, everyday language.
 - Nginx reverse proxy (connects via nginx_default network)
 - Frontend on port 5000, Backend on port 3000
 
-**Environment Configuration**:
-- API_BASKETBALL_KEY: RapidAPI key for API-Basketball.com (required for live data fetching)
+**Environment Configuration** (All configured in backend/.env):
+- JWT_SECRET: **REQUIRED** - Cryptographic secret for JWT signing (must be generated randomly)
+- SESSION_SECRET: **REQUIRED** - Session secret for Express sessions
+- API_BASKETBALL_KEY: RapidAPI key for API-Basketball.com (optional - falls back to sample data)
 - PORT: Configurable server port (defaults to 3000)
 - DATABASE_URL: PostgreSQL connection string (Replit Neon database or Docker PostgreSQL)
+
+**Security Notes**:
+- .env files must NEVER be committed to version control
+- .env.example provided as template without real secrets
+- JWT_SECRET enforced at server startup - application refuses to run without it
+- Admin password randomly generated on first initialization
+- All passwords hashed with bcrypt (10 salt rounds)
 
 **Development Mode**:
 - Backend runs on port 3000 with nodemon for hot reload
