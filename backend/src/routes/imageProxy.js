@@ -7,6 +7,23 @@ const { URL } = require('url');
 const imageCache = new Map();
 const CACHE_MAX_SIZE = 100;
 const CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
+const ALLOWED_DOMAINS = [
+  'upload.wikimedia.org',
+  'www.wikimedia.org',
+  'commons.wikimedia.org',
+  'cdn.nba.com',
+  'www.nba.com',
+  'cdn.wnba.com',
+  'www.wnba.com',
+  'euroleague.net',
+  'www.euroleague.net',
+  'www.fiba.basketball',
+  'cdn.fiba.com',
+  'i.imgur.com',
+  'cloudinary.com'
+];
 
 function downloadImage(imageUrl) {
   return new Promise((resolve, reject) => {
@@ -22,7 +39,9 @@ function downloadImage(imageUrl) {
         timeout: 10000
       }, (response) => {
         if (response.statusCode !== 200) {
-          reject(new Error(`Failed to download image: ${response.statusCode}`));
+          const error = new Error(`HTTP ${response.statusCode}`);
+          error.statusCode = response.statusCode;
+          reject(error);
           return;
         }
 
@@ -32,8 +51,25 @@ function downloadImage(imageUrl) {
           return;
         }
 
+        const contentLength = parseInt(response.headers['content-length'] || '0', 10);
+        if (contentLength > MAX_IMAGE_SIZE) {
+          reject(new Error(`Image too large: ${contentLength} bytes`));
+          return;
+        }
+
         const chunks = [];
-        response.on('data', (chunk) => chunks.push(chunk));
+        let receivedBytes = 0;
+
+        response.on('data', (chunk) => {
+          receivedBytes += chunk.length;
+          if (receivedBytes > MAX_IMAGE_SIZE) {
+            request.destroy();
+            reject(new Error('Image size exceeded limit'));
+            return;
+          }
+          chunks.push(chunk);
+        });
+
         response.on('end', () => {
           const buffer = Buffer.concat(chunks);
           resolve({
@@ -56,17 +92,35 @@ function downloadImage(imageUrl) {
 }
 
 function cleanCache() {
-  if (imageCache.size > CACHE_MAX_SIZE) {
-    const entriesToDelete = imageCache.size - CACHE_MAX_SIZE;
-    const keysToDelete = Array.from(imageCache.keys()).slice(0, entriesToDelete);
-    keysToDelete.forEach(key => imageCache.delete(key));
-  }
-
   const now = Date.now();
+  
   for (const [key, value] of imageCache.entries()) {
     if (now - value.timestamp > CACHE_MAX_AGE) {
       imageCache.delete(key);
     }
+  }
+  
+  if (imageCache.size > CACHE_MAX_SIZE) {
+    const sortedEntries = Array.from(imageCache.entries())
+      .sort((a, b) => a[1].lastUsed - b[1].lastUsed);
+    
+    const entriesToDelete = imageCache.size - CACHE_MAX_SIZE;
+    for (let i = 0; i < entriesToDelete; i++) {
+      imageCache.delete(sortedEntries[i][0]);
+    }
+  }
+}
+
+function isAllowedDomain(url) {
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.toLowerCase();
+    
+    return ALLOWED_DOMAINS.some(domain => 
+      hostname === domain || hostname.endsWith(`.${domain}`)
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -82,8 +136,14 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ error: 'Invalid URL protocol' });
     }
 
+    if (!isAllowedDomain(url)) {
+      console.warn(`Blocked proxy request to unauthorized domain: ${url}`);
+      return res.status(403).json({ error: 'Domain not allowed' });
+    }
+
     const cached = imageCache.get(url);
     if (cached) {
+      cached.lastUsed = Date.now();
       res.set('Content-Type', cached.contentType);
       res.set('Cache-Control', 'public, max-age=86400');
       res.set('Access-Control-Allow-Origin', '*');
@@ -95,7 +155,8 @@ router.get('/', async (req, res) => {
     imageCache.set(url, {
       buffer,
       contentType,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      lastUsed: Date.now()
     });
 
     cleanCache();
@@ -106,8 +167,19 @@ router.get('/', async (req, res) => {
     res.send(buffer);
 
   } catch (error) {
-    console.error('Image proxy error:', error.message);
-    res.status(500).json({ error: 'Failed to fetch image' });
+    const statusCode = error.statusCode || 500;
+    const isClientError = statusCode >= 400 && statusCode < 500;
+    
+    if (isClientError) {
+      console.warn(`Image proxy client error (${statusCode}):`, url, error.message);
+    } else {
+      console.error(`Image proxy server error (${statusCode}):`, url, error.message);
+    }
+    
+    res.status(statusCode).json({ 
+      error: 'Failed to fetch image',
+      details: error.message 
+    });
   }
 });
 
