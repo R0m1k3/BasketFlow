@@ -6,19 +6,19 @@ A web application that displays basketball games broadcast in France, featuring 
 
 ## Recent Changes (October 15, 2025)
 
-### 🏀 Basketball Data API + Gemini Enrichment Architecture ✅
-**Two-Step Data Pipeline**:
-- **Step 1: Basketball Data API** (BroadageSports on RapidAPI) fetches matches and live scores
-  - 100+ tournaments including NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
-  - Live scores updated every 15 seconds
-  - ExternalId prefix: `basketballdata-`
-- **Step 2: Gemini AI** enriches matches with French broadcaster information only
-  - Targeted queries for finding French TV channels/streaming platforms
-  - No match creation, only broadcaster enrichment
-  - ExternalId prefix: maintained from source data
-- **Admin Panel**: Toggle Basketball Data API and Gemini enrichment ON/OFF independently
+### 🤖 Gemini AI Primary Match Source Architecture ✅
+**Complete Match Generation with Google Search**:
+- **Gemini AI** as primary source for scheduled basketball matches
+  - Searches official calendars (NBA.com, Euroleague.net, LNB.fr) via Google Search
+  - Generates matches with French broadcaster information in one step
+  - ExternalId prefix: `gemini-{league}-{date}-{teams}`
+  - JSON schema enforcement via `responseMimeType: 'application/json'` + `responseSchema`
+  - Covers: NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
+- **Broadcaster detection**: beIN Sports, SKWEEK, La Chaîne L'Équipe, Prime Video, DAZN
 - **Automated updates**: Daily at 6:00 AM
-- Services: `basketballDataService.js` (matches/scores) + `geminiEnrichmentService.js` (broadcasters)
+- **Admin Panel**: Configure GEMINI_API_KEY and toggle updates ON/OFF
+- Service: `geminiMatchService.js` (complete match generation + broadcasters)
+- **Prisma integration**: Uses `matchBroadcast` join table with `isFree` field for broadcaster links
 
 ### 🖼️ Robust Logo Display System ✅
 **Image Proxy with Security & Fallbacks**:
@@ -106,24 +106,19 @@ Preferred communication style: Simple, everyday language.
 
 ### External Dependencies
 
-**Basketball Data Sources (2-Step Pipeline)**: 
+**Basketball Data Source**: 
 
-1. **Basketball Data API (BroadageSports on RapidAPI)** - Primary Source
-   - Couverture: 100+ tournaments including NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
-   - ExternalId prefix: `basketballdata-`
-   - Live scores updated every 15 seconds
-   - Configuration: BASKETBALL_DATA_KEY in admin panel
-   - Free tier available with quotas
-
-2. **Gemini AI Enrichment** - Broadcaster Information
-   - Purpose: Enriches existing matches with French broadcaster data only
-   - Does NOT create matches, only adds French TV/streaming info
+**Gemini AI (Primary Source)** - Complete Match Generation
+   - Purpose: Generates scheduled basketball matches with French broadcaster information
+   - Method: Google Search to find official calendars (NBA.com, Euroleague.net, LNB.fr, etc.)
+   - Coverage: NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
+   - ExternalId prefix: `gemini-{league}-{date}-{teams}`
    - Configuration: GEMINI_API_KEY (Replit integration JavaScript) in admin panel
-   - Searches for: beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN, etc.
-   - Uses targeted Google Search queries for accuracy
+   - Broadcasters detected: beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN
+   - JSON schema enforcement for reliable data structure
+   - Returns 8-15 matches per query with broadcaster associations
 
-**Pipeline Flow**: Basketball Data fetches matches/scores → Gemini enriches with French broadcasters
-**Configuration**: Both sources can be toggled ON/OFF independently in admin panel
+**Configuration**: Gemini can be toggled ON/OFF in admin panel, with daily automated updates at 6:00 AM
 
 **Broadcaster Mapping** (Intelligence améliorée 2025):
 - **NBA**: beIN Sports (400+ matchs/saison), Prime Video (29 matchs dominicaux), NBA League Pass

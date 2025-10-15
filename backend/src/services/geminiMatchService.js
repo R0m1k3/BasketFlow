@@ -101,7 +101,6 @@ broadcaster = diffuseur français (beIN Sports, Prime Video, SKWEEK, La Chaîne 
     let savedCount = 0;
     for (const matchData of matchesData) {
       try {
-        console.log(`  → Saving: ${matchData.homeTeam} vs ${matchData.awayTeam} | Broadcaster: ${matchData.broadcaster || 'none'}`);
         await saveMatch(matchData);
         savedCount++;
       } catch (error) {

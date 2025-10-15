@@ -3,9 +3,7 @@ import axios from 'axios';
 import './AdminPanel.css';
 
 function ApiBasketballConfig() {
-  const [basketapi1Key, setBasketapi1Key] = useState('');
   const [geminiKey, setGeminiKey] = useState('');
-  const [basketapi1Enabled, setBasketapi1Enabled] = useState(true);
   const [geminiEnabled, setGeminiEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -18,36 +16,13 @@ function ApiBasketballConfig() {
   const fetchConfig = async () => {
     try {
       const response = await axios.get('/api/admin/config');
-      const basketapi1Config = response.data.find(c => c.key === 'BASKETAPI1_KEY');
       const geminiConfig = response.data.find(c => c.key === 'GEMINI_API_KEY');
-      
-      const basketapi1EnabledConfig = response.data.find(c => c.key === 'SOURCE_BASKETAPI1_ENABLED');
       const geminiEnabledConfig = response.data.find(c => c.key === 'SOURCE_GEMINI_ENABLED');
       
-      setBasketapi1Key(basketapi1Config?.value || '');
       setGeminiKey(geminiConfig?.value || '');
-      
-      setBasketapi1Enabled(basketapi1EnabledConfig?.value !== 'false');
       setGeminiEnabled(geminiEnabledConfig?.value !== 'false');
     } catch (error) {
       console.error('Error fetching config:', error);
-    }
-  };
-
-  const handleSaveBasketapi1 = async () => {
-    setLoading(true);
-    setMessage('');
-    try {
-      await axios.put('/api/admin/config/BASKETAPI1_KEY', {
-        value: basketapi1Key,
-        description: 'Clé API pour BasketAPI1 (70+ ligues basketball)'
-      });
-      setMessage('✅ Clé BasketAPI1 sauvegardée');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      setMessage('❌ Erreur lors de la sauvegarde');
-    } finally {
-      setLoading(false);
     }
   };
 
