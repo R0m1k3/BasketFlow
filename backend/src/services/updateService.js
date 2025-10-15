@@ -5,23 +5,27 @@ const prisma = new PrismaClient();
 
 const BROADCASTER_MAPPING = {
   NBA: [
-    { name: 'Prime Video', isFree: false, season: '2025-26' },
-    { name: 'beIN Sports', isFree: false, season: '2024-25' }
+    { name: 'beIN Sports', isFree: false, description: '400+ matchs par saison' },
+    { name: 'Prime Video', isFree: false, description: '29 matchs du dimanche soir' },
+    { name: 'NBA League Pass', isFree: false, description: 'Tous les matchs' }
   ],
   WNBA: [
-    { name: 'beIN Sports', isFree: false },
-    { name: 'NBA League Pass', isFree: false }
+    { name: 'NBA League Pass', isFree: false },
+    { name: 'beIN Sports', isFree: false }
   ],
   Euroleague: [
-    { name: "La Chaîne L'Équipe", isFree: true },
-    { name: 'SKWEEK', isFree: false },
+    { name: 'SKWEEK', isFree: false, description: 'Tous les matchs' },
+    { name: "La Chaîne L'Équipe", isFree: true, description: 'Matchs sélectionnés (Paris Basketball, ASVEL)' },
+    { name: 'TV Monaco', isFree: true, description: 'Tous les matchs de l\'AS Monaco' },
     { name: 'EuroLeague TV', isFree: false }
   ],
   'Betclic Elite': [
-    { name: 'DAZN', isFree: false },
-    { name: "La Chaîne L'Équipe", isFree: true }
+    { name: 'beIN Sports', isFree: false },
+    { name: "La Chaîne L'Équipe", isFree: true },
+    { name: 'DAZN', isFree: false }
   ],
   EuroCup: [
+    { name: 'SKWEEK', isFree: false },
     { name: 'EuroLeague TV', isFree: false }
   ],
   BCL: [
@@ -31,29 +35,20 @@ const BROADCASTER_MAPPING = {
 
 async function updateMatches() {
   try {
-    console.log('🏀 Starting match update with OpenRouter AI...');
+    console.log('🏀 Starting match update with API-Basketball...');
     
     const apiKeyConfig = await prisma.config.findUnique({
-      where: { key: 'OPENROUTER_API_KEY' }
+      where: { key: 'API_BASKETBALL_KEY' }
     });
 
     if (!apiKeyConfig || !apiKeyConfig.value) {
-      console.log('⚠️  OpenRouter API key not configured, using sample data');
+      console.log('⚠️  API-Basketball key not configured, using sample data');
       await seedSampleData();
       return;
     }
 
     await cleanOldMatches();
-    
-    const result = await openrouterScraper.scrapeAllSources();
-    
-    if (result.successfulSources === 0) {
-      console.log('⚠️  No sources successfully scraped, falling back to sample data');
-      await seedSampleData();
-      return;
-    }
-    
-    await openrouterScraper.saveMatchesToDatabase(result.matches);
+    await fetchAndUpdateMatchesFromAPI(apiKeyConfig.value);
     
     console.log('✅ Match update completed successfully');
   } catch (error) {

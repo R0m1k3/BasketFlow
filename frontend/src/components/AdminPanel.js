@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import OpenRouterConfig from './OpenRouterConfig';
+import ApiBasketballConfig from './ApiBasketballConfig';
 import './AdminPanel.css';
 
 function AdminPanel() {
@@ -62,7 +62,7 @@ function AdminPanel() {
           className={activeTab === 'config' ? 'active' : ''} 
           onClick={() => setActiveTab('config')}
         >
-          Configuration OpenRouter
+          Configuration API
         </button>
         <button 
           className={activeTab === 'users' ? 'active' : ''} 
@@ -72,7 +72,7 @@ function AdminPanel() {
         </button>
       </div>
 
-      {activeTab === 'config' && <OpenRouterConfig />}
+      {activeTab === 'config' && <ApiBasketballConfig />}
 
       {activeTab === 'users' && (
         <div className="admin-content">

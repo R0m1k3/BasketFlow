@@ -36,26 +36,16 @@ async function initAdmin() {
     console.log('');
 
     await prisma.config.upsert({
-      where: { key: 'OPENROUTER_API_KEY' },
+      where: { key: 'API_BASKETBALL_KEY' },
       update: {},
       create: {
-        key: 'OPENROUTER_API_KEY',
-        value: process.env.OPENROUTER_API_KEY || '',
-        description: 'Clé API pour OpenRouter'
+        key: 'API_BASKETBALL_KEY',
+        value: process.env.API_BASKETBALL_KEY || '',
+        description: 'Clé API pour API-Basketball (RapidAPI)'
       }
     });
 
-    await prisma.config.upsert({
-      where: { key: 'OPENROUTER_MODEL' },
-      update: {},
-      create: {
-        key: 'OPENROUTER_MODEL',
-        value: process.env.OPENROUTER_MODEL || 'google/gemini-2.5-flash:free',
-        description: 'Modèle LLM pour OpenRouter (par défaut: Gemini 2.5 Flash gratuit)'
-      }
-    });
-
-    console.log('✅ Configuration OpenRouter initialisée');
+    console.log('✅ Configuration API-Basketball initialisée');
     console.log('');
     
     checkJWTSecret();

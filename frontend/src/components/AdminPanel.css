@@ -281,6 +281,29 @@
   border: 1px solid #ffc107;
 }
 
+.info-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #e3f2fd;
+  border-radius: 6px;
+  color: #0d47a1;
+  border: 1px solid #2196f3;
+}
+
+.info-box h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #0d47a1;
+}
+
+.info-box ul {
+  margin: 0.5rem 0 0 1.5rem;
+}
+
+.info-box li {
+  margin: 0.25rem 0;
+}
+
 .config-section {
   margin-bottom: 2rem;
 }
