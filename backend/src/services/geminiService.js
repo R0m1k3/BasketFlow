@@ -67,9 +67,11 @@ async function fetchAndSave(apiKey) {
 
 Pour chaque match, fournis:
 - Date et heure exactes (format ISO 8601 avec timezone Europe/Paris)
-- Équipe domicile (nom complet)
-- Équipe extérieure (nom complet)
+- Équipe domicile (nom EXACT et court, sans sponsor)
+- Équipe extérieure (nom EXACT et court, sans sponsor)
 - Ligue/compétition
+- URL du logo de l'équipe domicile (format PNG ou SVG de préférence)
+- URL du logo de l'équipe extérieure (format PNG ou SVG de préférence)
 - Chaînes TV françaises qui diffusent le match (beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, TV Monaco, DAZN, NBA League Pass, EuroLeague TV, Courtside 1891)
 
 Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. Format:
@@ -77,7 +79,9 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
   {
     "date": "2025-10-16T20:00:00+02:00",
     "homeTeam": "Paris Basketball",
+    "homeTeamLogo": "https://example.com/paris-logo.png",
     "awayTeam": "Real Madrid",
+    "awayTeamLogo": "https://example.com/real-madrid-logo.png",
     "league": "Euroleague",
     "broadcasters": ["SKWEEK", "La Chaîne L'Équipe"]
   }
@@ -96,7 +100,9 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
             properties: {
               date: { type: 'string' },
               homeTeam: { type: 'string' },
+              homeTeamLogo: { type: 'string' },
               awayTeam: { type: 'string' },
+              awayTeamLogo: { type: 'string' },
               league: { type: 'string' },
               broadcasters: {
                 type: 'array',
@@ -152,7 +158,16 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
         });
         if (!homeTeam) {
           homeTeam = await prisma.team.create({
-            data: { name: matchData.homeTeam }
+            data: { 
+              name: matchData.homeTeam,
+              logo: matchData.homeTeamLogo || null
+            }
+          });
+        } else if (matchData.homeTeamLogo && !homeTeam.logo) {
+          // Update logo if we have one and team doesn't
+          homeTeam = await prisma.team.update({
+            where: { id: homeTeam.id },
+            data: { logo: matchData.homeTeamLogo }
           });
         }
 
@@ -161,7 +176,16 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
         });
         if (!awayTeam) {
           awayTeam = await prisma.team.create({
-            data: { name: matchData.awayTeam }
+            data: { 
+              name: matchData.awayTeam,
+              logo: matchData.awayTeamLogo || null
+            }
+          });
+        } else if (matchData.awayTeamLogo && !awayTeam.logo) {
+          // Update logo if we have one and team doesn't
+          awayTeam = await prisma.team.update({
+            where: { id: awayTeam.id },
+            data: { logo: matchData.awayTeamLogo }
           });
         }
 
@@ -190,8 +214,12 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
           }
         });
 
-        // Add broadcasters
-        const broadcasterNames = matchData.broadcasters || BROADCASTER_MAPPING[leagueName]?.map(b => b.name) || [];
+        // Add broadcasters - always use default mapping based on league
+        const defaultBroadcasters = BROADCASTER_MAPPING[leagueName]?.map(b => b.name) || [];
+        const geminiBroadcasters = matchData.broadcasters || [];
+        
+        // Combine both, using default if Gemini didn't provide any
+        const broadcasterNames = geminiBroadcasters.length > 0 ? geminiBroadcasters : defaultBroadcasters;
         
         for (const broadcasterName of broadcasterNames) {
           const broadcasterInfo = findBroadcasterInfo(leagueName, broadcasterName);
