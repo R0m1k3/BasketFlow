@@ -204,7 +204,7 @@ function ApiBasketballConfig() {
             className="btn-test"
             style={{ width: '100%', marginTop: '1rem' }}
           >
-            {loading ? '⏳ Mise à jour en cours...' : '🚀 Mettre à jour les matchs (toutes sources)'}
+            {loading ? '⏳ Mise à jour en cours...' : '🚀 Mettre à jour les matchs'}
           </button>
         </div>
 

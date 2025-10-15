@@ -66,15 +66,14 @@ async function fetchAndSave(apiKey) {
 
 /**
  * Fetch matches for a specific tournament
+ * Using /match/list-by-tournament endpoint with tournament ID
  */
 async function fetchTournamentMatches(apiKey, tournamentId, dateFrom, dateTo) {
-  const url = 'https://basketball-data.p.rapidapi.com/match/list-by-date';
+  const url = 'https://basketball-data.p.rapidapi.com/match/list-by-tournament';
   
   const response = await axios.get(url, {
     params: {
-      tournament: tournamentId,
-      dateFrom,
-      dateTo
+      tournamentId: tournamentId
     },
     headers: {
       'X-RapidAPI-Key': apiKey,
@@ -83,7 +82,15 @@ async function fetchTournamentMatches(apiKey, tournamentId, dateFrom, dateTo) {
     timeout: 10000
   });
 
-  return response.data?.matches || [];
+  // Filter matches by date range if API returns all matches
+  const allMatches = response.data?.matches || [];
+  const fromDate = new Date(dateFrom);
+  const toDate = new Date(dateTo);
+  
+  return allMatches.filter(match => {
+    const matchDate = new Date(match.startTimestamp * 1000);
+    return matchDate >= fromDate && matchDate <= toDate;
+  });
 }
 
 /**

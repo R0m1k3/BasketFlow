@@ -1,44 +1,11 @@
 const { PrismaClient } = require('@prisma/client');
-const axios = require('axios');
-const ballDontLieService = require('./ballDontLieService');
-const euroleagueService = require('./euroleagueService');
 const basketballDataService = require('./basketballDataService');
 const geminiEnrichmentService = require('./geminiEnrichmentService');
 const prisma = new PrismaClient();
 
-const BROADCASTER_MAPPING = {
-  NBA: [
-    { name: 'beIN Sports', isFree: false, description: '400+ matchs par saison' },
-    { name: 'Prime Video', isFree: false, description: '29 matchs du dimanche soir' },
-    { name: 'NBA League Pass', isFree: false, description: 'Tous les matchs' }
-  ],
-  WNBA: [
-    { name: 'NBA League Pass', isFree: false },
-    { name: 'beIN Sports', isFree: false }
-  ],
-  Euroleague: [
-    { name: 'SKWEEK', isFree: false, description: 'Tous les matchs' },
-    { name: "La Chaîne L'Équipe", isFree: true, description: 'Matchs sélectionnés (Paris Basketball, ASVEL)' },
-    { name: 'TV Monaco', isFree: true, description: 'Tous les matchs de l\'AS Monaco' },
-    { name: 'EuroLeague TV', isFree: false }
-  ],
-  'Betclic Elite': [
-    { name: 'beIN Sports', isFree: false },
-    { name: "La Chaîne L'Équipe", isFree: true },
-    { name: 'DAZN', isFree: false }
-  ],
-  EuroCup: [
-    { name: 'SKWEEK', isFree: false },
-    { name: 'EuroLeague TV', isFree: false }
-  ],
-  BCL: [
-    { name: 'Courtside 1891', isFree: false }
-  ]
-};
-
 async function updateMatches() {
   try {
-    console.log('🏀 Starting match update with multiple sources...');
+    console.log('🏀 Starting match update with Basketball Data + Gemini enrichment...');
     
     // Get API keys
     const basketballDataKeyConfig = await prisma.config.findUnique({
@@ -86,7 +53,7 @@ async function updateMatches() {
     if (totalMatches === 0) {
       console.log('⚠️  No matches found from any source');
     } else {
-      console.log(`✅ Match update completed: ${totalMatches} matches from multiple sources`);
+      console.log(`✅ Match update completed: ${totalMatches} matches from Basketball Data`);
     }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
@@ -107,150 +74,6 @@ async function isSourceEnabled(sourceName) {
   return config.value === 'true';
 }
 
-async function fetchAndUpdateMatchesFromAPI(apiKey) {
-  console.log('📡 Fetching matches from API...');
-
-  const LEAGUE_IDS = {
-    'NBA': 12,
-    'WNBA': 16,
-    'Euroleague': 120,
-    'Betclic Elite': 117
-  };
-
-  const today = new Date();
-  const nextWeek = new Date(today);
-  nextWeek.setDate(today.getDate() + 14);
-  
-  let totalSaved = 0;
-
-  for (const [leagueName, leagueId] of Object.entries(LEAGUE_IDS)) {
-    try {
-      const league = await prisma.league.upsert({
-        where: { name: leagueName },
-        update: {},
-        create: {
-          name: leagueName,
-          shortName: leagueName === 'Betclic Elite' ? 'LNB' : leagueName.substring(0, 3).toUpperCase(),
-          country: leagueName.includes('NBA') ? 'USA' : 'Europe',
-          color: getLeagueColor(leagueName)
-        }
-      });
-
-      const response = await axios.get('https://api-basketball.p.rapidapi.com/games', {
-        params: {
-          league: leagueId,
-          season: '2024-2025',
-          from: today.toISOString().split('T')[0],
-          to: nextWeek.toISOString().split('T')[0]
-        },
-        headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': 'api-basketball.p.rapidapi.com'
-        },
-        timeout: 10000
-      });
-
-      if (response.data && response.data.response) {
-        const games = response.data.response;
-        console.log(`  Found ${games.length} games for ${leagueName}`);
-
-        for (const game of games) {
-          try {
-            const homeTeam = await prisma.team.upsert({
-            where: { id: `rapidapi-${game.teams.home.id}` },
-            update: { name: game.teams.home.name },
-            create: {
-              id: `rapidapi-${game.teams.home.id}`,
-              name: game.teams.home.name,
-              shortName: game.teams.home.code || game.teams.home.name.substring(0, 3).toUpperCase(),
-              leagueId: league.id
-            }
-          });
-
-            const awayTeam = await prisma.team.upsert({
-              where: { id: `rapidapi-${game.teams.away.id}` },
-              update: { name: game.teams.away.name },
-              create: {
-                id: `rapidapi-${game.teams.away.id}`,
-                name: game.teams.away.name,
-                shortName: game.teams.away.code || game.teams.away.name.substring(0, 3).toUpperCase(),
-                leagueId: league.id
-              }
-            });
-
-            const match = await prisma.match.upsert({
-              where: { externalId: `rapidapi-${game.id}` },
-              update: {
-                dateTime: new Date(game.date),
-                status: game.status.short,
-                homeScore: game.scores.home.total,
-                awayScore: game.scores.away.total
-              },
-              create: {
-                externalId: `rapidapi-${game.id}`,
-                leagueId: league.id,
-                homeTeamId: homeTeam.id,
-                awayTeamId: awayTeam.id,
-                dateTime: new Date(game.date),
-                venue: game.venue || null,
-                status: game.status.short
-              }
-            });
-
-            const broadcasters = BROADCASTER_MAPPING[leagueName] || [];
-            for (const b of broadcasters) {
-              const broadcaster = await prisma.broadcaster.upsert({
-                where: { name: b.name },
-                update: {},
-                create: {
-                  name: b.name,
-                  type: 'TV',
-                  isFree: b.isFree
-                }
-              });
-
-              await prisma.matchBroadcast.upsert({
-                where: {
-                  matchId_broadcasterId: {
-                    matchId: match.id,
-                    broadcasterId: broadcaster.id
-                  }
-                },
-                update: {},
-                create: {
-                  matchId: match.id,
-                  broadcasterId: broadcaster.id
-                }
-              });
-            }
-            
-            totalSaved++;
-          } catch (error) {
-            console.error(`  ❌ Error saving RapidAPI match:`, error.message);
-          }
-        }
-      }
-    } catch (error) {
-      console.error(`  Error fetching ${leagueName}:`, error.message);
-    }
-  }
-
-  console.log(`  ✅ RapidAPI: Saved ${totalSaved} matches`);
-  return totalSaved;
-}
-
-function getLeagueColor(leagueName) {
-  const colors = {
-    'NBA': '#1D428A',
-    'WNBA': '#C8102E',
-    'Euroleague': '#FF7900',
-    'EuroCup': '#009CDE',
-    'BCL': '#000000',
-    'Betclic Elite': '#002654'
-  };
-  return colors[leagueName] || '#333';
-}
-
 async function cleanOldMatches() {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -269,6 +92,36 @@ async function cleanOldMatches() {
 async function seedSampleData() {
   console.log('Seeding sample data...');
   
+  const BROADCASTER_MAPPING = {
+    NBA: [
+      { name: 'beIN Sports', isFree: false, description: '400+ matchs par saison' },
+      { name: 'Prime Video', isFree: false, description: '29 matchs du dimanche soir' },
+      { name: 'NBA League Pass', isFree: false, description: 'Tous les matchs' }
+    ],
+    WNBA: [
+      { name: 'NBA League Pass', isFree: false },
+      { name: 'beIN Sports', isFree: false }
+    ],
+    Euroleague: [
+      { name: 'SKWEEK', isFree: false, description: 'Tous les matchs' },
+      { name: "La Chaîne L'Équipe", isFree: true, description: 'Matchs sélectionnés (Paris Basketball, ASVEL)' },
+      { name: 'TV Monaco', isFree: true, description: 'Tous les matchs de l\'AS Monaco' },
+      { name: 'EuroLeague TV', isFree: false }
+    ],
+    'Betclic Elite': [
+      { name: 'beIN Sports', isFree: false },
+      { name: "La Chaîne L'Équipe", isFree: true },
+      { name: 'DAZN', isFree: false }
+    ],
+    EuroCup: [
+      { name: 'SKWEEK', isFree: false },
+      { name: 'EuroLeague TV', isFree: false }
+    ],
+    BCL: [
+      { name: 'Courtside 1891', isFree: false }
+    ]
+  };
+
   const leagues = [
     { name: 'NBA', shortName: 'NBA', country: 'USA', color: '#1D428A' },
     { name: 'WNBA', shortName: 'WNBA', country: 'USA', color: '#C8102E' },

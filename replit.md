@@ -6,6 +6,20 @@ A web application that displays basketball games broadcast in France, featuring 
 
 ## Recent Changes (October 15, 2025)
 
+### 🏀 Basketball Data API + Gemini Enrichment Architecture ✅
+**Two-Step Data Pipeline**:
+- **Step 1: Basketball Data API** (BroadageSports on RapidAPI) fetches matches and live scores
+  - 100+ tournaments including NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
+  - Live scores updated every 15 seconds
+  - ExternalId prefix: `basketballdata-`
+- **Step 2: Gemini AI** enriches matches with French broadcaster information only
+  - Targeted queries for finding French TV channels/streaming platforms
+  - No match creation, only broadcaster enrichment
+  - ExternalId prefix: maintained from source data
+- **Admin Panel**: Toggle Basketball Data API and Gemini enrichment ON/OFF independently
+- **Automated updates**: Daily at 6:00 AM
+- Services: `basketballDataService.js` (matches/scores) + `geminiEnrichmentService.js` (broadcasters)
+
 ### 🖼️ Robust Logo Display System ✅
 **Image Proxy with Security & Fallbacks**:
 - **Backend proxy** (`/api/image-proxy`) resolves CORS/CSP issues with external logos in Replit iframe
@@ -23,21 +37,6 @@ A web application that displays basketball games broadcast in France, featuring 
   - `backend/src/scripts/fixLogos.js`: Script to update DB with verified URLs
   - Verified URLs from Wikimedia Commons (PNG format for reliability)
 - **Frontend integration**: All logos in WeeklyMatches & MonthlyCalendar use proxy + fallbacks
-
-### 🤖 Système Multi-Sources avec Gemini AI et Logos ✅
-- **4 sources de données** agrégées sans doublons via externalId préfixés
-  - **RapidAPI (API-Basketball)** : NBA, WNBA, Euroleague, Betclic Elite (optionnel, 100 req/jour)
-  - **BallDontLie** : NBA et WNBA uniquement (gratuit, 60 req/min)
-  - **Euroleague API officielle** : Euroleague et EuroCup (gratuit, aucune clé)
-  - **Gemini AI avec Google Search** : Tous les matchs en temps réel avec logos d'équipes et diffuseurs (gratuit)
-- **Déduplication robuste** : externalId avec préfixes `rapidapi-`, `balldontlie-NBA-`, `balldontlie-WNBA-`, `euroleague-`, `eurocup-`, `gemini-`
-- **Panel admin étendu** : switches ON/OFF pour activer/désactiver chaque source individuellement
-- **Logos automatiques** : Gemini récupère les logos des équipes et des diffuseurs via Google Search
-- **Affichage visuel enrichi** :
-  - WeeklyMatches : logos d'équipes (40px) et diffuseurs (24px) avec fallback texte
-  - MonthlyCalendar : logos d'équipes (16px) et diffuseurs (18px) dans les événements
-- Mapping automatique des diffuseurs français selon les ligues
-- Mise à jour automatique quotidienne à 6h00
 
 ### Authentication & Security System ✅
 - Implemented JWT-based authentication with user/admin roles
@@ -107,38 +106,24 @@ Preferred communication style: Simple, everyday language.
 
 ### External Dependencies
 
-**Basketball Data Sources (4 APIs agrégées)**: 
+**Basketball Data Sources (2-Step Pipeline)**: 
 
-1. **API-Basketball.com via RapidAPI** (optionnel)
-   - Couverture: NBA (league 12), WNBA (league 16), Euroleague (league 120), Betclic Elite (league 117)
-   - ExternalId prefix: `rapidapi-`
-   - Free tier: 100 requests/day
-   - Configuration: API_BASKETBALL_KEY dans panel admin
+1. **Basketball Data API (BroadageSports on RapidAPI)** - Primary Source
+   - Couverture: 100+ tournaments including NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
+   - ExternalId prefix: `basketballdata-`
+   - Live scores updated every 15 seconds
+   - Configuration: BASKETBALL_DATA_KEY in admin panel
+   - Free tier available with quotas
 
-2. **BallDontLie** (gratuit)
-   - Couverture: NBA et WNBA uniquement
-   - ExternalId prefix: `balldontlie-NBA-`, `balldontlie-WNBA-`
-   - Free tier: 60 requests/minute, illimité
-   - Configuration: BALLDONTLIE_API_KEY dans panel admin
-   - Saisons: NBA 2024-2025, WNBA 2025
+2. **Gemini AI Enrichment** - Broadcaster Information
+   - Purpose: Enriches existing matches with French broadcaster data only
+   - Does NOT create matches, only adds French TV/streaming info
+   - Configuration: GEMINI_API_KEY (Replit integration JavaScript) in admin panel
+   - Searches for: beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN, etc.
+   - Uses targeted Google Search queries for accuracy
 
-3. **Euroleague API officielle** (gratuit)
-   - Couverture: Euroleague et EuroCup
-   - ExternalId prefix: `euroleague-`, `eurocup-`
-   - Aucune clé API requise (fonctionne automatiquement)
-   - Season codes: E2025 (Euroleague), U2025 (EuroCup)
-
-4. **Gemini AI avec Google Search** (gratuit)
-   - Couverture: Tous les matchs (NBA, WNBA, Euroleague, EuroCup, BCL, Betclic Elite)
-   - ExternalId prefix: `gemini-`
-   - Récupère automatiquement les logos d'équipes et diffuseurs via Google Search
-   - Configuration: GEMINI_API_KEY (Replit integration JavaScript)
-   - Recherche en temps réel des matchs diffusés en France
-   - Broadcasters avec logos et noms exacts
-
-**Déduplication**: Tous les services utilisent des externalId uniques préfixés pour éviter les doublons entre sources
-**Logos**: Gemini enrichit automatiquement les équipes et diffuseurs avec des URLs de logos
-**Fallback**: Les matchs sans logos utilisent l'affichage texte traditionnel
+**Pipeline Flow**: Basketball Data fetches matches/scores → Gemini enriches with French broadcasters
+**Configuration**: Both sources can be toggled ON/OFF independently in admin panel
 
 **Broadcaster Mapping** (Intelligence améliorée 2025):
 - **NBA**: beIN Sports (400+ matchs/saison), Prime Video (29 matchs dominicaux), NBA League Pass

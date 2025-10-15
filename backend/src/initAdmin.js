@@ -36,26 +36,26 @@ async function initAdmin() {
     console.log('');
 
     await prisma.config.upsert({
-      where: { key: 'API_BASKETBALL_KEY' },
+      where: { key: 'BASKETBALL_DATA_KEY' },
       update: {},
       create: {
-        key: 'API_BASKETBALL_KEY',
-        value: process.env.API_BASKETBALL_KEY || '',
-        description: 'Clé API pour API-Basketball (RapidAPI)'
+        key: 'BASKETBALL_DATA_KEY',
+        value: process.env.BASKETBALL_DATA_KEY || '',
+        description: 'Clé API pour Basketball Data (BroadageSports sur RapidAPI)'
       }
     });
 
     await prisma.config.upsert({
-      where: { key: 'BALLDONTLIE_API_KEY' },
+      where: { key: 'GEMINI_API_KEY' },
       update: {},
       create: {
-        key: 'BALLDONTLIE_API_KEY',
-        value: process.env.BALLDONTLIE_API_KEY || '',
-        description: 'Clé API pour BallDontLie (NBA/WNBA gratuit)'
+        key: 'GEMINI_API_KEY',
+        value: process.env.GEMINI_API_KEY || '',
+        description: 'Clé API pour Gemini AI (enrichissement diffuseurs)'
       }
     });
 
-    console.log('✅ Configurations API initialisées (RapidAPI + BallDontLie + Euroleague)');
+    console.log('✅ Configurations API initialisées (Basketball Data + Gemini)');
     console.log('');
     
     checkJWTSecret();
