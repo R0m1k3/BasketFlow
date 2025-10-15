@@ -39,7 +39,7 @@ services:
     networks:
       - nginx_default
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
       postgres:
         condition: service_healthy
