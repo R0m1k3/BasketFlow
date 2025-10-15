@@ -37,22 +37,36 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
         );
       }
 
-      const calendarEvents = matches.map(match => ({
-        id: match.id,
-        title: `${match.homeTeam.shortName || match.homeTeam.name} vs ${match.awayTeam.shortName || match.awayTeam.name}`,
-        start: match.dateTime,
-        backgroundColor: getLeagueColor(match.league.name),
-        borderColor: getLeagueColor(match.league.name),
-        extendedProps: {
-          league: match.league.name,
-          homeTeamLogo: match.homeTeam.logo,
-          awayTeamLogo: match.awayTeam.logo,
-          broadcasters: match.broadcasts.map(b => ({
-            name: b.broadcaster.name,
-            logo: b.broadcaster.logo
-          }))
+      const calendarEvents = matches.map(match => {
+        // Create title with score if finished or live
+        let title = `${match.homeTeam.shortName || match.homeTeam.name}`;
+        if (match.status === 'finished' || match.status === 'live') {
+          title += ` ${match.homeScore}-${match.awayScore}`;
+        } else {
+          title += ' vs';
         }
-      }));
+        title += ` ${match.awayTeam.shortName || match.awayTeam.name}`;
+        
+        return {
+          id: match.id,
+          title: title,
+          start: match.dateTime,
+          backgroundColor: getLeagueColor(match.league.name),
+          borderColor: getLeagueColor(match.league.name),
+          extendedProps: {
+            league: match.league.name,
+            status: match.status || 'scheduled',
+            homeScore: match.homeScore,
+            awayScore: match.awayScore,
+            homeTeamLogo: match.homeTeam.logo,
+            awayTeamLogo: match.awayTeam.logo,
+            broadcasters: match.broadcasts.map(b => ({
+              name: b.broadcaster.name,
+              logo: b.broadcaster.logo
+            }))
+          }
+        };
+      });
 
       setEvents(calendarEvents);
     } catch (error) {
