@@ -6,14 +6,18 @@ A web application that displays basketball games broadcast in France, featuring 
 
 ## Recent Changes (October 15, 2025)
 
-### API-Basketball Integration avec Mapping Intelligent ✅
-- Utilise API-Basketball (RapidAPI) pour données en temps réel
+### 🔄 Système Multi-Sources avec Déduplication Intelligente ✅
+- **3 sources de données** agrégées sans doublons via externalId préfixés
+  - **RapidAPI (API-Basketball)** : NBA, WNBA, Euroleague, Betclic Elite (optionnel, 100 req/jour gratuit)
+  - **BallDontLie** : NBA et WNBA uniquement (gratuit, 60 req/min)
+  - **Euroleague API officielle** : Euroleague et EuroCup (gratuit, pas de clé)
+- **Déduplication robuste** : externalId avec préfixes `rapidapi-`, `balldontlie-NBA-`, `balldontlie-WNBA-`, `euroleague-`, `eurocup-`
+- **Fallback intelligent** : sample data uniquement si toutes les sources échouent
+- **Panel admin étendu** : configuration de 2 clés API (RapidAPI + BallDontLie)
 - Mapping automatique des diffuseurs français selon les ligues
 - beIN Sports (400+ matchs NBA), Prime Video (29 matchs dominicaux NBA)
 - SKWEEK (tous Euroleague), La Chaîne L'Équipe (matchs sélectionnés gratuits)
 - TV Monaco (tous matchs AS Monaco Euroleague)
-- Panel admin pour configuration API_BASKETBALL_KEY
-- Site renommé de "Basket France" à "Basket Flow"
 - Mise à jour automatique quotidienne à 6h00
 
 ### Authentication & Security System ✅
@@ -84,12 +88,29 @@ Preferred communication style: Simple, everyday language.
 
 ### External Dependencies
 
-**Basketball Data API**: 
-- API-Basketball.com via RapidAPI (requires API_BASKETBALL_KEY environment variable)
-- Fetches matches for NBA (league 12), WNBA (league 16), Euroleague (league 120), Betclic Elite (league 117)
-- Updates are idempotent using unique externalId constraint to prevent duplicates
-- Free tier: 100 requests/day, paid plans from €10/month
-- Fallback: Sample data seeding when API key is not configured
+**Basketball Data Sources (3 APIs agrégées)**: 
+
+1. **API-Basketball.com via RapidAPI** (optionnel)
+   - Couverture: NBA (league 12), WNBA (league 16), Euroleague (league 120), Betclic Elite (league 117)
+   - ExternalId prefix: `rapidapi-`
+   - Free tier: 100 requests/day
+   - Configuration: API_BASKETBALL_KEY dans panel admin
+
+2. **BallDontLie** (gratuit)
+   - Couverture: NBA et WNBA uniquement
+   - ExternalId prefix: `balldontlie-NBA-`, `balldontlie-WNBA-`
+   - Free tier: 60 requests/minute, illimité
+   - Configuration: BALLDONTLIE_API_KEY dans panel admin
+   - Saisons: NBA 2024-2025, WNBA 2025
+
+3. **Euroleague API officielle** (gratuit)
+   - Couverture: Euroleague et EuroCup
+   - ExternalId prefix: `euroleague-`, `eurocup-`
+   - Aucune clé API requise (fonctionne automatiquement)
+   - Season codes: E2025 (Euroleague), U2025 (EuroCup)
+
+**Déduplication**: Tous les services utilisent des externalId uniques préfixés pour éviter les doublons entre sources
+**Fallback**: Sample data seeding uniquement si les 3 sources échouent (totalMatches === 0)
 
 **Broadcaster Mapping** (Intelligence améliorée 2025):
 - **NBA**: beIN Sports (400+ matchs/saison), Prime Video (29 matchs dominicaux), NBA League Pass
@@ -114,9 +135,13 @@ Preferred communication style: Simple, everyday language.
 **Environment Configuration** (All configured in backend/.env):
 - JWT_SECRET: **REQUIRED** - Cryptographic secret for JWT signing (must be generated randomly)
 - SESSION_SECRET: **REQUIRED** - Session secret for Express sessions
-- API_BASKETBALL_KEY: **REQUIRED for production** - RapidAPI key for API-Basketball.com (falls back to sample data if missing)
+- API_BASKETBALL_KEY: **OPTIONAL** - RapidAPI key for API-Basketball.com (Source 1)
+- BALLDONTLIE_API_KEY: **OPTIONAL** - BallDontLie API key (Source 2, gratuit)
+- Euroleague API: **OPTIONAL** - Aucune clé requise (Source 3, gratuit)
 - PORT: Configurable server port (defaults to 3000)
 - DATABASE_URL: PostgreSQL connection string (Replit Neon database or Docker PostgreSQL)
+
+**Note**: Les 3 sources API sont optionnelles. L'app fonctionne avec sample data si aucune source n'est configurée.
 
 **Security Notes**:
 - .env files must NEVER be committed to version control
