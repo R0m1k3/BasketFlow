@@ -3,7 +3,8 @@ import axios from 'axios';
 import './AdminPanel.css';
 
 function ApiBasketballConfig() {
-  const [apiKey, setApiKey] = useState('');
+  const [rapidApiKey, setRapidApiKey] = useState('');
+  const [ballDontLieKey, setBallDontLieKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [testResult, setTestResult] = useState(null);
@@ -15,22 +16,41 @@ function ApiBasketballConfig() {
   const fetchConfig = async () => {
     try {
       const response = await axios.get('/api/admin/config');
-      const apiKeyConfig = response.data.find(c => c.key === 'API_BASKETBALL_KEY');
-      setApiKey(apiKeyConfig?.value || '');
+      const rapidApiConfig = response.data.find(c => c.key === 'API_BASKETBALL_KEY');
+      const ballDontLieConfig = response.data.find(c => c.key === 'BALLDONTLIE_API_KEY');
+      setRapidApiKey(rapidApiConfig?.value || '');
+      setBallDontLieKey(ballDontLieConfig?.value || '');
     } catch (error) {
       console.error('Error fetching config:', error);
     }
   };
 
-  const handleSaveApiKey = async () => {
+  const handleSaveRapidApi = async () => {
     setLoading(true);
     setMessage('');
     try {
       await axios.put('/api/admin/config/API_BASKETBALL_KEY', {
-        value: apiKey,
+        value: rapidApiKey,
         description: 'Clé API pour API-Basketball (RapidAPI)'
       });
-      setMessage('✅ Clé API sauvegardée avec succès');
+      setMessage('✅ Clé RapidAPI sauvegardée');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage('❌ Erreur lors de la sauvegarde');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveBallDontLie = async () => {
+    setLoading(true);
+    setMessage('');
+    try {
+      await axios.put('/api/admin/config/BALLDONTLIE_API_KEY', {
+        value: ballDontLieKey,
+        description: 'Clé API pour BallDontLie (NBA/WNBA gratuit)'
+      });
+      setMessage('✅ Clé BallDontLie sauvegardée');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       setMessage('❌ Erreur lors de la sauvegarde');
@@ -61,9 +81,16 @@ function ApiBasketballConfig() {
       {message && <div className="admin-message">{message}</div>}
 
       <div className="config-section">
-        <h3>🏀 Configuration API-Basketball</h3>
+        <h3>🏀 Sources de données multiples</h3>
         <p className="config-description">
-          API-Basketball fournit des données en temps réel pour NBA, WNBA, Euroleague, et Betclic Elite.
+          L'application utilise 3 sources pour maximiser la couverture des matchs sans doublons.
+        </p>
+      </div>
+
+      <div className="config-section">
+        <h3>📊 Source 1 : RapidAPI (Optionnel)</h3>
+        <p className="config-description">
+          Couvre NBA, WNBA, Euroleague, Betclic Elite.
           <br />
           <a href="https://rapidapi.com/api-sports/api/api-basketball" target="_blank" rel="noopener noreferrer">
             S'inscrire sur RapidAPI →
@@ -74,31 +101,68 @@ function ApiBasketballConfig() {
           <label>Clé API RapidAPI</label>
           <input
             type="text"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            value={rapidApiKey}
+            onChange={(e) => setRapidApiKey(e.target.value)}
             placeholder="Votre clé RapidAPI..."
             className="api-key-input"
           />
           <button 
-            onClick={handleSaveApiKey} 
+            onClick={handleSaveRapidApi} 
             disabled={loading}
             className="btn-save"
           >
-            {loading ? 'Sauvegarde...' : 'Sauvegarder la clé'}
+            {loading ? 'Sauvegarde...' : 'Sauvegarder'}
           </button>
         </div>
+      </div>
 
-        {apiKey && (
-          <div className="form-group">
-            <button 
-              onClick={handleTestConnection} 
-              disabled={loading}
-              className="btn-test"
-            >
-              {loading ? '⏳ Test en cours...' : '🚀 Mettre à jour les matchs'}
-            </button>
-          </div>
-        )}
+      <div className="config-section">
+        <h3>🆓 Source 2 : BallDontLie (Gratuit)</h3>
+        <p className="config-description">
+          API gratuite pour NBA et WNBA avec 60 requêtes/minute.
+          <br />
+          <a href="https://www.balldontlie.io" target="_blank" rel="noopener noreferrer">
+            S'inscrire sur BallDontLie →
+          </a>
+        </p>
+
+        <div className="form-group">
+          <label>Clé API BallDontLie</label>
+          <input
+            type="text"
+            value={ballDontLieKey}
+            onChange={(e) => setBallDontLieKey(e.target.value)}
+            placeholder="Votre clé BallDontLie..."
+            className="api-key-input"
+          />
+          <button 
+            onClick={handleSaveBallDontLie} 
+            disabled={loading}
+            className="btn-save"
+          >
+            {loading ? 'Sauvegarde...' : 'Sauvegarder'}
+          </button>
+        </div>
+      </div>
+
+      <div className="config-section">
+        <h3>✅ Source 3 : Euroleague (Gratuit)</h3>
+        <p className="config-description">
+          API officielle Euroleague, aucune clé requise. Fonctionne automatiquement.
+        </p>
+      </div>
+
+      <div className="config-section">
+        <div className="form-group">
+          <button 
+            onClick={handleTestConnection} 
+            disabled={loading}
+            className="btn-test"
+            style={{ width: '100%', marginTop: '1rem' }}
+          >
+            {loading ? '⏳ Mise à jour en cours...' : '🚀 Mettre à jour les matchs (toutes sources)'}
+          </button>
+        </div>
 
         {testResult && testResult.success && (
           <div className="test-result">

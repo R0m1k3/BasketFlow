@@ -45,7 +45,17 @@ async function initAdmin() {
       }
     });
 
-    console.log('✅ Configuration API-Basketball initialisée');
+    await prisma.config.upsert({
+      where: { key: 'BALLDONTLIE_API_KEY' },
+      update: {},
+      create: {
+        key: 'BALLDONTLIE_API_KEY',
+        value: process.env.BALLDONTLIE_API_KEY || '',
+        description: 'Clé API pour BallDontLie (NBA/WNBA gratuit)'
+      }
+    });
+
+    console.log('✅ Configurations API initialisées (RapidAPI + BallDontLie + Euroleague)');
     console.log('');
     
     checkJWTSecret();

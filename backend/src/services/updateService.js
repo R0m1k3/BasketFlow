@@ -1,5 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const axios = require('axios');
+const ballDontLieService = require('./ballDontLieService');
+const euroleagueService = require('./euroleagueService');
 const prisma = new PrismaClient();
 
 const BROADCASTER_MAPPING = {
@@ -34,22 +36,57 @@ const BROADCASTER_MAPPING = {
 
 async function updateMatches() {
   try {
-    console.log('🏀 Starting match update with API-Basketball...');
+    console.log('🏀 Starting match update with multiple sources...');
     
-    const apiKeyConfig = await prisma.config.findUnique({
+    const rapidApiKeyConfig = await prisma.config.findUnique({
       where: { key: 'API_BASKETBALL_KEY' }
     });
 
-    if (!apiKeyConfig || !apiKeyConfig.value) {
-      console.log('⚠️  API-Basketball key not configured, using sample data');
-      await seedSampleData();
-      return;
-    }
+    const ballDontLieKeyConfig = await prisma.config.findUnique({
+      where: { key: 'BALLDONTLIE_API_KEY' }
+    });
 
     await cleanOldMatches();
-    await fetchAndUpdateMatchesFromAPI(apiKeyConfig.value);
     
-    console.log('✅ Match update completed successfully');
+    let totalMatches = 0;
+
+    // Source 1: RapidAPI (NBA, WNBA, Euroleague, Betclic Elite)
+    if (rapidApiKeyConfig && rapidApiKeyConfig.value) {
+      console.log('📡 Source 1: RapidAPI (API-Basketball)');
+      try {
+        await fetchAndUpdateMatchesFromAPI(rapidApiKeyConfig.value);
+        totalMatches += await prisma.match.count();
+      } catch (error) {
+        console.error('  ❌ RapidAPI failed:', error.message);
+      }
+    }
+
+    // Source 2: BallDontLie (NBA, WNBA) - en complément
+    if (ballDontLieKeyConfig && ballDontLieKeyConfig.value) {
+      console.log('📡 Source 2: BallDontLie (NBA/WNBA)');
+      try {
+        const ballDontLieMatches = await ballDontLieService.fetchAndSaveNBA(ballDontLieKeyConfig.value);
+        totalMatches += ballDontLieMatches;
+      } catch (error) {
+        console.error('  ❌ BallDontLie failed:', error.message);
+      }
+    }
+
+    // Source 3: Euroleague API officielle (gratuite, pas de clé)
+    console.log('📡 Source 3: Euroleague Official API');
+    try {
+      const euroleagueMatches = await euroleagueService.fetchAndSaveEuroleague();
+      totalMatches += euroleagueMatches;
+    } catch (error) {
+      console.error('  ❌ Euroleague API failed:', error.message);
+    }
+
+    if (totalMatches === 0) {
+      console.log('⚠️  No matches found from any source, using sample data');
+      await seedSampleData();
+    } else {
+      console.log(`✅ Match update completed: ${totalMatches} matches from multiple sources`);
+    }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
     console.log('⚠️  Falling back to sample data');
@@ -104,10 +141,10 @@ async function fetchAndUpdateMatchesFromAPI(apiKey) {
 
         for (const game of games) {
           const homeTeam = await prisma.team.upsert({
-            where: { id: `${game.teams.home.id}` },
+            where: { id: `rapidapi-${game.teams.home.id}` },
             update: { name: game.teams.home.name },
             create: {
-              id: `${game.teams.home.id}`,
+              id: `rapidapi-${game.teams.home.id}`,
               name: game.teams.home.name,
               shortName: game.teams.home.code || game.teams.home.name.substring(0, 3).toUpperCase(),
               leagueId: league.id
@@ -115,10 +152,10 @@ async function fetchAndUpdateMatchesFromAPI(apiKey) {
           });
 
           const awayTeam = await prisma.team.upsert({
-            where: { id: `${game.teams.away.id}` },
+            where: { id: `rapidapi-${game.teams.away.id}` },
             update: { name: game.teams.away.name },
             create: {
-              id: `${game.teams.away.id}`,
+              id: `rapidapi-${game.teams.away.id}`,
               name: game.teams.away.name,
               shortName: game.teams.away.code || game.teams.away.name.substring(0, 3).toUpperCase(),
               leagueId: league.id
@@ -126,7 +163,7 @@ async function fetchAndUpdateMatchesFromAPI(apiKey) {
           });
 
           const match = await prisma.match.upsert({
-            where: { externalId: `${game.id}` },
+            where: { externalId: `rapidapi-${game.id}` },
             update: {
               dateTime: new Date(game.date),
               status: game.status.short,
@@ -134,7 +171,7 @@ async function fetchAndUpdateMatchesFromAPI(apiKey) {
               awayScore: game.scores.away.total
             },
             create: {
-              externalId: `${game.id}`,
+              externalId: `rapidapi-${game.id}`,
               leagueId: league.id,
               homeTeamId: homeTeam.id,
               awayTeamId: awayTeam.id,
