@@ -5,6 +5,8 @@ const cron = require('node-cron');
 const matchRoutes = require('./routes/matches');
 const leagueRoutes = require('./routes/leagues');
 const broadcasterRoutes = require('./routes/broadcasters');
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
 const updateService = require('./services/updateService');
 
 const app = express();
@@ -13,6 +15,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/leagues', leagueRoutes);
 app.use('/api/broadcasters', broadcasterRoutes);

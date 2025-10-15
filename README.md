@@ -12,39 +12,50 @@ Application web affichant les matchs de basket de la semaine diffusés en France
 
 ## 🚀 Installation avec Docker
 
-### Prérequis
+### ⚠️ Sécurité Important
 
-- Docker et Docker Compose installés
-- Network Docker `nginx_default` créé
-- Clé API Basketball (API-Basketball.com ou Sportradar)
+**Ne JAMAIS commiter les fichiers `.env` contenant des secrets !** 
 
-### Étapes d'installation
+Voir [INSTALLATION.md](INSTALLATION.md) pour le guide complet et sécurisé.
 
-1. **Cloner le projet** :
-```bash
-git clone <votre-repo>
-cd basket-app
-```
+### Étapes Rapides
 
-2. **Créer le network Docker** (si non existant) :
+1. **Créer le network Docker** :
 ```bash
 docker network create nginx_default
 ```
 
-3. **Configurer les variables d'environnement** :
+2. **Configurer les secrets** :
 ```bash
+cd backend
 cp .env.example .env
-# Éditer .env et ajouter votre API_BASKETBALL_KEY
+# Générer JWT_SECRET
+node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(32).toString('hex'))" >> .env
+# Générer SESSION_SECRET  
+node -e "console.log('SESSION_SECRET=' + require('crypto').randomBytes(32).toString('hex'))" >> .env
 ```
+
+3. **Initialiser l'admin** :
+```bash
+npm install
+npx prisma generate
+npx prisma db push
+npm run init-admin
+```
+
+**⚠️ Notez le mot de passe affiché - il ne sera plus montré !**
 
 4. **Lancer l'application** :
 ```bash
+cd ..
 docker-compose up -d
 ```
 
-5. **Accéder à l'application** :
+5. **Accéder** :
 - Frontend : http://localhost:5000
-- Backend API : http://localhost:3000
+- Login: `admin@basket.fr` / mot de passe généré
+
+📖 **Guide complet** : Voir [INSTALLATION.md](INSTALLATION.md)
 
 ### Commandes utiles
 
