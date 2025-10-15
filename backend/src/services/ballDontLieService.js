@@ -45,7 +45,7 @@ async function fetchGamesForLeague(apiKey, leagueName) {
       params: {
         start_date: today.toISOString().split('T')[0],
         end_date: nextWeek.toISOString().split('T')[0],
-        seasons: leagueConfig.seasons
+        per_page: 100
       },
       headers: {
         'Authorization': apiKey

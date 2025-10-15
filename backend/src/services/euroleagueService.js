@@ -2,8 +2,8 @@ const axios = require('axios');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const EUROLEAGUE_BASE_URL = 'https://live.euroleague.net/api';
-const EUROCUP_BASE_URL = 'https://live.eurocup.com/api';
+const EUROLEAGUE_BASE_URL = 'https://api-live.euroleague.net/v1';
+const EUROCUP_BASE_URL = 'https://api-live.euroleague.net/v1';
 
 const BROADCASTER_MAPPING = {
   Euroleague: [
@@ -25,7 +25,7 @@ const LEAGUE_CONFIGS = {
     country: 'Europe',
     color: '#FF6B35',
     baseUrl: EUROLEAGUE_BASE_URL,
-    seasonPrefix: 'E'
+    seasonCode: 'E2025'
   },
   EuroCup: {
     name: 'EuroCup',
@@ -33,35 +33,25 @@ const LEAGUE_CONFIGS = {
     country: 'Europe',
     color: '#0066CC',
     baseUrl: EUROCUP_BASE_URL,
-    seasonPrefix: 'U'
+    seasonCode: 'U2025'
   }
 };
 
 async function fetchGamesForLeague(leagueName) {
-  const today = new Date();
   const leagueConfig = LEAGUE_CONFIGS[leagueName];
-  const season = `${leagueConfig.seasonPrefix}${today.getFullYear()}`;
   
   try {
-    const response = await axios.get(`${leagueConfig.baseUrl}/Games`, {
+    const response = await axios.get(`${leagueConfig.baseUrl}/schedules`, {
       params: {
-        seasonCode: season
+        seasonCode: leagueConfig.seasonCode
       },
       timeout: 10000
     });
 
-    if (response.data) {
-      const games = Array.isArray(response.data) ? response.data : [];
-      
-      const upcomingGames = games.filter(game => {
-        const gameDate = new Date(game.Date);
-        const fourteenDaysFromNow = new Date(today);
-        fourteenDaysFromNow.setDate(today.getDate() + 14);
-        return gameDate >= today && gameDate <= fourteenDaysFromNow;
-      });
-
-      console.log(`  📊 ${leagueName} API: Found ${upcomingGames.length} games`);
-      return upcomingGames;
+    if (response.data && response.data.data) {
+      const games = response.data.data;
+      console.log(`  📊 ${leagueName} API: Found ${games.length} scheduled games`);
+      return games;
     }
     return [];
   } catch (error) {
@@ -88,46 +78,46 @@ async function saveMatches(games, leagueName) {
 
   for (const game of games) {
     try {
-      const homeTeamId = `${leagueName.toLowerCase()}-${game.HomeTeam?.Code || game.HomeTeam?.Name}`;
-      const awayTeamId = `${leagueName.toLowerCase()}-${game.AwayTeam?.Code || game.AwayTeam?.Name}`;
+      const homeTeamId = `${leagueName.toLowerCase()}-${game.home?.code || game.home?.name}`;
+      const awayTeamId = `${leagueName.toLowerCase()}-${game.away?.code || game.away?.name}`;
       
       const homeTeam = await prisma.team.upsert({
         where: { id: homeTeamId },
-        update: { name: game.HomeTeam?.Name },
+        update: { name: game.home?.name },
         create: {
           id: homeTeamId,
-          name: game.HomeTeam?.Name,
-          shortName: game.HomeTeam?.Code || game.HomeTeam?.Name?.substring(0, 3).toUpperCase(),
+          name: game.home?.name,
+          shortName: game.home?.code || game.home?.name?.substring(0, 3).toUpperCase(),
           leagueId: league.id
         }
       });
 
       const awayTeam = await prisma.team.upsert({
         where: { id: awayTeamId },
-        update: { name: game.AwayTeam?.Name },
+        update: { name: game.away?.name },
         create: {
           id: awayTeamId,
-          name: game.AwayTeam?.Name,
-          shortName: game.AwayTeam?.Code || game.AwayTeam?.Name?.substring(0, 3).toUpperCase(),
+          name: game.away?.name,
+          shortName: game.away?.code || game.away?.name?.substring(0, 3).toUpperCase(),
           leagueId: league.id
         }
       });
 
-      const externalId = `${leagueName.toLowerCase()}-${game.GameCode || game.GameId}`;
+      const externalId = `${leagueName.toLowerCase()}-${game.gamecode || game.id}`;
       const match = await prisma.match.upsert({
         where: { externalId },
         update: {
-          dateTime: new Date(game.Date),
-          status: game.Status || 'Scheduled'
+          dateTime: new Date(game.date),
+          status: game.status || 'Scheduled'
         },
         create: {
           externalId,
           leagueId: league.id,
           homeTeamId: homeTeam.id,
           awayTeamId: awayTeam.id,
-          dateTime: new Date(game.Date),
-          venue: game.Venue || null,
-          status: game.Status || 'Scheduled'
+          dateTime: new Date(game.date),
+          venue: game.venue || null,
+          status: game.status || 'Scheduled'
         }
       });
 
