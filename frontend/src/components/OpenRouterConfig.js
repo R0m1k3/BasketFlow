@@ -112,6 +112,24 @@ function OpenRouterConfig() {
     }
   };
 
+  const handleManualScrape = async () => {
+    setLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await axios.post('/api/openrouter/scrape-now');
+      if (response.data.success) {
+        setMessage(`✅ ${response.data.message} (${response.data.details.successfulSources}/${response.data.details.totalSources} sources)`);
+      } else {
+        setMessage(`⚠️ ${response.data.message} - ${response.data.details.successfulSources}/${response.data.details.totalSources} sources réussies`);
+      }
+    } catch (error) {
+      setMessage(error.response?.data?.error || '❌ Erreur lors du scraping');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const freeModels = models.filter(m => m.category === 'Gratuit');
   const paidModels = models.filter(m => m.category === 'Payant');
 
@@ -214,6 +232,15 @@ function OpenRouterConfig() {
                 style={{ marginLeft: '10px' }}
               >
                 {loading ? 'Test...' : 'Tester la connexion'}
+              </button>
+              
+              <button 
+                onClick={handleManualScrape} 
+                disabled={loading || !selectedModel}
+                className="btn-scrape"
+                style={{ marginLeft: '10px' }}
+              >
+                {loading ? '⏳ Scraping...' : '🚀 Lancer un scraping'}
               </button>
             </div>
 

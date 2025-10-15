@@ -125,4 +125,45 @@ router.get('/test', async (req, res) => {
   }
 });
 
+router.post('/scrape-now', async (req, res) => {
+  try {
+    const openrouterScraper = require('../services/openrouterScraper');
+    
+    console.log('🚀 Manual scraping triggered from admin panel...');
+    const result = await openrouterScraper.scrapeAllSources();
+    
+    if (result.successfulSources === 0) {
+      return res.json({
+        success: false,
+        message: 'Aucune source n\'a pu être scrapée',
+        details: {
+          matchesFound: result.matches.length,
+          successfulSources: result.successfulSources,
+          totalSources: result.totalSources
+        }
+      });
+    }
+    
+    await openrouterScraper.saveMatchesToDatabase(result.matches);
+    
+    res.json({
+      success: true,
+      message: `${result.matches.length} matchs extraits avec succès`,
+      details: {
+        matchesFound: result.matches.length,
+        successfulSources: result.successfulSources,
+        totalSources: result.totalSources
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in manual scraping:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors du scraping manuel',
+      details: error.message
+    });
+  }
+});
+
 module.exports = router;
