@@ -72,7 +72,7 @@ Pour chaque match, fournis:
 - Ligue/compétition
 - URL du logo de l'équipe domicile (format PNG ou SVG de préférence)
 - URL du logo de l'équipe extérieure (format PNG ou SVG de préférence)
-- Chaînes TV françaises qui diffusent le match (beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, TV Monaco, DAZN, NBA League Pass, EuroLeague TV, Courtside 1891)
+- Chaînes TV françaises qui diffusent le match avec leurs logos
 
 Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. Format:
 [
@@ -83,7 +83,10 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
     "awayTeam": "Real Madrid",
     "awayTeamLogo": "https://example.com/real-madrid-logo.png",
     "league": "Euroleague",
-    "broadcasters": ["SKWEEK", "La Chaîne L'Équipe"]
+    "broadcasters": [
+      {"name": "SKWEEK", "logo": "https://example.com/skweek-logo.png"},
+      {"name": "La Chaîne L'Équipe", "logo": "https://example.com/lequipe-logo.png"}
+    ]
   }
 ]`;
 
@@ -106,7 +109,14 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
               league: { type: 'string' },
               broadcasters: {
                 type: 'array',
-                items: { type: 'string' }
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    logo: { type: 'string' }
+                  },
+                  required: ['name']
+                }
               }
             },
             required: ['date', 'homeTeam', 'awayTeam', 'league']
@@ -214,25 +224,54 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
           }
         });
 
-        // Add broadcasters - always use default mapping based on league
-        const defaultBroadcasters = BROADCASTER_MAPPING[leagueName]?.map(b => b.name) || [];
+        // Add broadcasters - handle both Gemini format (with logos) and default mapping
         const geminiBroadcasters = matchData.broadcasters || [];
+        const defaultBroadcasters = BROADCASTER_MAPPING[leagueName] || [];
         
-        // Combine both, using default if Gemini didn't provide any
-        const broadcasterNames = geminiBroadcasters.length > 0 ? geminiBroadcasters : defaultBroadcasters;
+        // Use Gemini broadcasters if available, otherwise use defaults
+        let broadcastersToSave = [];
         
-        for (const broadcasterName of broadcasterNames) {
-          const broadcasterInfo = findBroadcasterInfo(leagueName, broadcasterName);
+        if (geminiBroadcasters.length > 0) {
+          // Gemini provided broadcasters with potential logos
+          broadcastersToSave = geminiBroadcasters.map(b => ({
+            name: typeof b === 'string' ? b : b.name,
+            logo: typeof b === 'object' ? b.logo : null,
+            isFree: false // Will be updated from mapping if exists
+          }));
+        } else {
+          // Use default mapping
+          broadcastersToSave = defaultBroadcasters.map(b => ({
+            name: b.name,
+            logo: null,
+            isFree: b.isFree
+          }));
+        }
+        
+        for (const broadcasterData of broadcastersToSave) {
+          const broadcasterInfo = findBroadcasterInfo(leagueName, broadcasterData.name);
           
-          const broadcaster = await prisma.broadcaster.upsert({
-            where: { name: broadcasterName },
-            update: {},
-            create: {
-              name: broadcasterName,
-              type: 'TV',
-              isFree: broadcasterInfo?.isFree || false
-            }
+          // Check if broadcaster exists
+          let broadcaster = await prisma.broadcaster.findUnique({
+            where: { name: broadcasterData.name }
           });
+          
+          if (!broadcaster) {
+            // Create new broadcaster with logo
+            broadcaster = await prisma.broadcaster.create({
+              data: {
+                name: broadcasterData.name,
+                type: 'TV',
+                logo: broadcasterData.logo,
+                isFree: broadcasterInfo?.isFree || broadcasterData.isFree
+              }
+            });
+          } else if (broadcasterData.logo && !broadcaster.logo) {
+            // Update logo if we have one and broadcaster doesn't
+            broadcaster = await prisma.broadcaster.update({
+              where: { id: broadcaster.id },
+              data: { logo: broadcasterData.logo }
+            });
+          }
 
           await prisma.matchBroadcast.upsert({
             where: {
