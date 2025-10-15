@@ -47,19 +47,25 @@ docker-compose build
 docker-compose up -d
 ```
 
-### 5. Récupérer le mot de passe admin
+### 5. Vérifier la création de l'admin
 
 ```bash
-docker-compose logs backend | grep "Mot de passe"
+docker-compose logs backend | grep "Administrateur"
 ```
 
-**Note** : Le mot de passe admin a déjà été généré précédemment : `64b1a1e2c89e2141`
+Vous verrez :
+```
+👤 Identifiant: admin
+🔑 Mot de passe: admin
+```
 
 ### 6. Accéder à l'application
 
 - **Frontend** : http://localhost:4000
 - **Backend API** : http://localhost:3001/api
-- **Login** : admin@basket.fr / `64b1a1e2c89e2141`
+- **Login** : 
+  - **Identifiant** : `admin`
+  - **Mot de passe** : `admin`
 
 ---
 
@@ -128,39 +134,55 @@ docker network inspect nginx_default
 
 ---
 
-## 📁 Structure des Fichiers
+## 📁 Structure des Fichiers Docker
 
 ```
 .
 ├── backend/
-│   ├── Dockerfile          # ✅ OpenSSL + Prisma
+│   ├── Dockerfile          # ✅ Node 20 + OpenSSL + Prisma
 │   ├── prisma/
-│   │   └── schema.prisma
+│   │   └── schema.prisma   # ✅ Schéma avec username
 │   └── src/
+│       ├── server.js
+│       └── initAdmin.js    # ✅ Crée admin/admin
 ├── frontend/
-│   ├── Dockerfile          # ✅ Serve (pas nginx)
-│   ├── .env.production     # Config production
+│   ├── Dockerfile          # ✅ Build + Serve (pas nginx)
+│   ├── .env.docker         # Config pour Docker (port 3001)
+│   ├── serve.json          # ⚠️ Pas utilisé avec serve CLI
 │   └── src/
-├── docker-compose.yml      # ✅ Ports 4000, 3001, 4532
-├── .env                    # ⚠️ Ne pas commiter (secrets)
-└── .env.docker            # Template
+├── docker-compose.yml      # ✅ Ports: 4000, 3001, 4532
+├── .env                    # ✅ Secrets générés auto
+└── docker-deploy-guide.md  # Ce guide
 
 ```
 
+### Ports Configurés
+
+| Service | Port Interne Docker | Port Externe | Accès |
+|---------|---------------------|--------------|-------|
+| Frontend | 80 | **4000** | http://localhost:4000 |
+| Backend | 3000 | **3001** | http://localhost:3001 |
+| PostgreSQL | 5432 | **4532** | localhost:4532 |
+
+**Important** : Le frontend accède au backend via `http://localhost:3001` depuis le navigateur (car il est servi en statique)
+
 ## 🔒 Sécurité
 
-### ✅ Sécurité Intégrée
+### ✅ Configuration par Défaut
 
 1. **JWT_SECRET & SESSION_SECRET** : Générés automatiquement (64 caractères hex)
-2. **Mot de passe admin** : Généré aléatoirement au premier démarrage
+2. **Compte admin** : 
+   - Identifiant : `admin`
+   - Mot de passe : `admin`
 3. **Fichier .env** : Automatiquement ajouté à `.gitignore`
 
-### ⚠️ Actions Recommandées
+### ⚠️ Actions Recommandées pour la Production
 
 1. **Changer le mot de passe admin** après la première connexion
-2. **Régénérer les secrets en production** si nécessaire
-3. **Configurer HTTPS** en production avec un reverse proxy (nginx, Caddy, Traefik)
-4. **Ne jamais commiter** le fichier `.env`
+2. **Modifier initAdmin.js** pour un mot de passe plus sécurisé en production
+3. **Régénérer les secrets** pour l'environnement de production
+4. **Configurer HTTPS** avec un reverse proxy (nginx, Caddy, Traefik)
+5. **Ne jamais commiter** le fichier `.env` avec vos vrais secrets
 
 ### 🔄 Régénérer les secrets (si nécessaire)
 
@@ -190,14 +212,38 @@ docker exec -it basket_postgres psql -U basketuser -d basketdb
 
 ## ✅ Checklist de Déploiement
 
-- [ ] Network Docker créé (`docker network create nginx_default`)
-- [ ] Fichier `.env` vérifié (secrets générés automatiquement ✅)
-- [ ] (Optionnel) Clé API Basketball configurée
-- [ ] Images Docker construites (`docker-compose build`)
-- [ ] Services démarrés (`docker-compose up -d`)
-- [ ] Logs vérifiés (`docker-compose logs`)
-- [ ] Connexion frontend testée (http://localhost:4000)
-- [ ] API backend testée (http://localhost:3001/api/health)
-- [ ] Mot de passe admin changé après première connexion
+### Première Installation
 
-**Votre application est prête ! 🎉**
+- [ ] 1. Créer le network : `docker network create nginx_default`
+- [ ] 2. Vérifier que `.env` existe avec les secrets
+- [ ] 3. Supprimer l'ancien Docker : `docker-compose down -v`
+- [ ] 4. Construire les images : `docker-compose build --no-cache`
+- [ ] 5. Lancer les services : `docker-compose up -d`
+- [ ] 6. Vérifier les logs : `docker-compose logs -f backend`
+- [ ] 7. Tester le frontend : http://localhost:4000
+- [ ] 8. Se connecter avec **admin / admin**
+- [ ] 9. (Optionnel) Ajouter la clé API Basketball dans le panel admin
+
+### Vérification Rapide
+
+```bash
+# Tout supprimer et recréer
+docker-compose down -v
+
+# Reconstruire from scratch
+docker-compose build --no-cache
+
+# Lancer
+docker-compose up -d
+
+# Voir les logs
+docker-compose logs -f
+
+# Tester
+curl http://localhost:4000
+curl http://localhost:3001/api/leagues
+```
+
+**Votre application Docker est prête ! 🎉**
+
+**Login : admin / admin**
