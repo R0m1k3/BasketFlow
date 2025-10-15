@@ -5,6 +5,11 @@ import './AdminPanel.css';
 function ApiBasketballConfig() {
   const [rapidApiKey, setRapidApiKey] = useState('');
   const [ballDontLieKey, setBallDontLieKey] = useState('');
+  const [geminiKey, setGeminiKey] = useState('');
+  const [rapidApiEnabled, setRapidApiEnabled] = useState(true);
+  const [ballDontLieEnabled, setBallDontLieEnabled] = useState(true);
+  const [euroleagueEnabled, setEuroleagueEnabled] = useState(true);
+  const [geminiEnabled, setGeminiEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [testResult, setTestResult] = useState(null);
@@ -18,8 +23,21 @@ function ApiBasketballConfig() {
       const response = await axios.get('/api/admin/config');
       const rapidApiConfig = response.data.find(c => c.key === 'API_BASKETBALL_KEY');
       const ballDontLieConfig = response.data.find(c => c.key === 'BALLDONTLIE_API_KEY');
+      const geminiConfig = response.data.find(c => c.key === 'GEMINI_API_KEY');
+      
+      const rapidApiEnabledConfig = response.data.find(c => c.key === 'SOURCE_RAPIDAPI_ENABLED');
+      const ballDontLieEnabledConfig = response.data.find(c => c.key === 'SOURCE_BALLDONTLIE_ENABLED');
+      const euroleagueEnabledConfig = response.data.find(c => c.key === 'SOURCE_EUROLEAGUE_ENABLED');
+      const geminiEnabledConfig = response.data.find(c => c.key === 'SOURCE_GEMINI_ENABLED');
+      
       setRapidApiKey(rapidApiConfig?.value || '');
       setBallDontLieKey(ballDontLieConfig?.value || '');
+      setGeminiKey(geminiConfig?.value || '');
+      
+      setRapidApiEnabled(rapidApiEnabledConfig?.value !== 'false');
+      setBallDontLieEnabled(ballDontLieEnabledConfig?.value !== 'false');
+      setEuroleagueEnabled(euroleagueEnabledConfig?.value !== 'false');
+      setGeminiEnabled(geminiEnabledConfig?.value !== 'false');
     } catch (error) {
       console.error('Error fetching config:', error);
     }
@@ -59,6 +77,37 @@ function ApiBasketballConfig() {
     }
   };
 
+  const handleSaveGemini = async () => {
+    setLoading(true);
+    setMessage('');
+    try {
+      await axios.put('/api/admin/config/GEMINI_API_KEY', {
+        value: geminiKey,
+        description: 'Clé API pour Gemini AI avec Google Search'
+      });
+      setMessage('✅ Clé Gemini sauvegardée');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage('❌ Erreur lors de la sauvegarde');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleSource = async (sourceName, isEnabled) => {
+    try {
+      await axios.put(`/api/admin/config/SOURCE_${sourceName}_ENABLED`, {
+        value: isEnabled ? 'true' : 'false',
+        description: `Activer/désactiver la source ${sourceName}`
+      });
+      setMessage(`✅ Source ${sourceName} ${isEnabled ? 'activée' : 'désactivée'}`);
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage('❌ Erreur lors de la modification');
+      fetchConfig(); // Reset state on error
+    }
+  };
+
   const handleTestConnection = async () => {
     setLoading(true);
     setMessage('');
@@ -83,12 +132,26 @@ function ApiBasketballConfig() {
       <div className="config-section">
         <h3>🏀 Sources de données multiples</h3>
         <p className="config-description">
-          L'application utilise 3 sources pour maximiser la couverture des matchs sans doublons.
+          L'application utilise 4 sources configurables pour maximiser la couverture des matchs sans doublons. 
+          Activez/désactivez les sources selon vos besoins.
         </p>
       </div>
 
       <div className="config-section">
-        <h3>📊 Source 1 : RapidAPI (Optionnel)</h3>
+        <h3>
+          📊 Source 1 : RapidAPI (Optionnel)
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={rapidApiEnabled}
+              onChange={(e) => {
+                setRapidApiEnabled(e.target.checked);
+                handleToggleSource('RAPIDAPI', e.target.checked);
+              }}
+            />
+            <span className="slider"></span>
+          </label>
+        </h3>
         <p className="config-description">
           Couvre NBA, WNBA, Euroleague, Betclic Elite.
           <br />
@@ -105,10 +168,11 @@ function ApiBasketballConfig() {
             onChange={(e) => setRapidApiKey(e.target.value)}
             placeholder="Votre clé RapidAPI..."
             className="api-key-input"
+            disabled={!rapidApiEnabled}
           />
           <button 
             onClick={handleSaveRapidApi} 
-            disabled={loading}
+            disabled={loading || !rapidApiEnabled}
             className="btn-save"
           >
             {loading ? 'Sauvegarde...' : 'Sauvegarder'}
@@ -117,7 +181,20 @@ function ApiBasketballConfig() {
       </div>
 
       <div className="config-section">
-        <h3>🆓 Source 2 : BallDontLie (Gratuit)</h3>
+        <h3>
+          🆓 Source 2 : BallDontLie (Gratuit)
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={ballDontLieEnabled}
+              onChange={(e) => {
+                setBallDontLieEnabled(e.target.checked);
+                handleToggleSource('BALLDONTLIE', e.target.checked);
+              }}
+            />
+            <span className="slider"></span>
+          </label>
+        </h3>
         <p className="config-description">
           API gratuite pour NBA et WNBA avec 60 requêtes/minute.
           <br />
@@ -134,10 +211,11 @@ function ApiBasketballConfig() {
             onChange={(e) => setBallDontLieKey(e.target.value)}
             placeholder="Votre clé BallDontLie..."
             className="api-key-input"
+            disabled={!ballDontLieEnabled}
           />
           <button 
             onClick={handleSaveBallDontLie} 
-            disabled={loading}
+            disabled={loading || !ballDontLieEnabled}
             className="btn-save"
           >
             {loading ? 'Sauvegarde...' : 'Sauvegarder'}
@@ -146,10 +224,66 @@ function ApiBasketballConfig() {
       </div>
 
       <div className="config-section">
-        <h3>✅ Source 3 : Euroleague (Gratuit)</h3>
+        <h3>
+          ✅ Source 3 : Euroleague (Gratuit)
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={euroleagueEnabled}
+              onChange={(e) => {
+                setEuroleagueEnabled(e.target.checked);
+                handleToggleSource('EUROLEAGUE', e.target.checked);
+              }}
+            />
+            <span className="slider"></span>
+          </label>
+        </h3>
         <p className="config-description">
           API officielle Euroleague, aucune clé requise. Fonctionne automatiquement.
         </p>
+      </div>
+
+      <div className="config-section">
+        <h3>
+          🤖 Source 4 : Gemini AI (Recommandé)
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={geminiEnabled}
+              onChange={(e) => {
+                setGeminiEnabled(e.target.checked);
+                handleToggleSource('GEMINI', e.target.checked);
+              }}
+            />
+            <span className="slider"></span>
+          </label>
+        </h3>
+        <p className="config-description">
+          Intelligence artificielle avec recherche Google temps réel. Trouve automatiquement les matchs et diffuseurs français.
+          <br />
+          <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer">
+            Obtenir une clé API Gemini (gratuit) →
+          </a>
+        </p>
+
+        <div className="form-group">
+          <label>Clé API Gemini</label>
+          <input
+            type="text"
+            value={geminiKey}
+            onChange={(e) => setGeminiKey(e.target.value)}
+            placeholder="Votre clé API Gemini..."
+            className="api-key-input"
+            disabled={!geminiEnabled}
+          />
+          <button 
+            onClick={handleSaveGemini} 
+            disabled={loading || !geminiEnabled}
+            className="btn-save"
+          >
+            {loading ? 'Sauvegarde...' : 'Sauvegarder'}
+          </button>
+        </div>
       </div>
 
       <div className="config-section">
