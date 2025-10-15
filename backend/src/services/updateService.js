@@ -55,17 +55,8 @@ async function updateMatches() {
     if (rapidApiKeyConfig && rapidApiKeyConfig.value) {
       console.log('📡 Source 1: RapidAPI (API-Basketball)');
       try {
-        await fetchAndUpdateMatchesFromAPI(rapidApiKeyConfig.value);
-        const rapidApiCount = await prisma.match.count({
-          where: {
-            externalId: {
-              startsWith: 'rapidapi-'
-            }
-          }
-        });
-        rapidApiMatches = rapidApiCount;
-        totalMatches += rapidApiCount;
-        console.log(`  ✅ RapidAPI: ${rapidApiCount} matches`);
+        const rapidApiMatches = await fetchAndUpdateMatchesFromAPI(rapidApiKeyConfig.value);
+        totalMatches += rapidApiMatches;
       } catch (error) {
         console.error('  ❌ RapidAPI failed:', error.message);
       }
@@ -117,6 +108,8 @@ async function fetchAndUpdateMatchesFromAPI(apiKey) {
   const today = new Date();
   const nextWeek = new Date(today);
   nextWeek.setDate(today.getDate() + 14);
+  
+  let totalSaved = 0;
 
   for (const [leagueName, leagueId] of Object.entries(LEAGUE_IDS)) {
     try {
@@ -150,7 +143,8 @@ async function fetchAndUpdateMatchesFromAPI(apiKey) {
         console.log(`  Found ${games.length} games for ${leagueName}`);
 
         for (const game of games) {
-          const homeTeam = await prisma.team.upsert({
+          try {
+            const homeTeam = await prisma.team.upsert({
             where: { id: `rapidapi-${game.teams.home.id}` },
             update: { name: game.teams.home.name },
             create: {
@@ -161,61 +155,66 @@ async function fetchAndUpdateMatchesFromAPI(apiKey) {
             }
           });
 
-          const awayTeam = await prisma.team.upsert({
-            where: { id: `rapidapi-${game.teams.away.id}` },
-            update: { name: game.teams.away.name },
-            create: {
-              id: `rapidapi-${game.teams.away.id}`,
-              name: game.teams.away.name,
-              shortName: game.teams.away.code || game.teams.away.name.substring(0, 3).toUpperCase(),
-              leagueId: league.id
-            }
-          });
-
-          const match = await prisma.match.upsert({
-            where: { externalId: `rapidapi-${game.id}` },
-            update: {
-              dateTime: new Date(game.date),
-              status: game.status.short,
-              homeScore: game.scores.home.total,
-              awayScore: game.scores.away.total
-            },
-            create: {
-              externalId: `rapidapi-${game.id}`,
-              leagueId: league.id,
-              homeTeamId: homeTeam.id,
-              awayTeamId: awayTeam.id,
-              dateTime: new Date(game.date),
-              venue: game.venue || null,
-              status: game.status.short
-            }
-          });
-
-          const broadcasters = BROADCASTER_MAPPING[leagueName] || [];
-          for (const b of broadcasters) {
-            const broadcaster = await prisma.broadcaster.upsert({
-              where: { name: b.name },
-              update: {},
+            const awayTeam = await prisma.team.upsert({
+              where: { id: `rapidapi-${game.teams.away.id}` },
+              update: { name: game.teams.away.name },
               create: {
-                name: b.name,
-                type: 'TV',
-                isFree: b.isFree
+                id: `rapidapi-${game.teams.away.id}`,
+                name: game.teams.away.name,
+                shortName: game.teams.away.code || game.teams.away.name.substring(0, 3).toUpperCase(),
+                leagueId: league.id
               }
             });
 
-            await prisma.matchBroadcast.upsert({
-              where: {
-                matchId_broadcasterId: {
+            const match = await prisma.match.upsert({
+              where: { externalId: `rapidapi-${game.id}` },
+              update: {
+                dateTime: new Date(game.date),
+                status: game.status.short,
+                homeScore: game.scores.home.total,
+                awayScore: game.scores.away.total
+              },
+              create: {
+                externalId: `rapidapi-${game.id}`,
+                leagueId: league.id,
+                homeTeamId: homeTeam.id,
+                awayTeamId: awayTeam.id,
+                dateTime: new Date(game.date),
+                venue: game.venue || null,
+                status: game.status.short
+              }
+            });
+
+            const broadcasters = BROADCASTER_MAPPING[leagueName] || [];
+            for (const b of broadcasters) {
+              const broadcaster = await prisma.broadcaster.upsert({
+                where: { name: b.name },
+                update: {},
+                create: {
+                  name: b.name,
+                  type: 'TV',
+                  isFree: b.isFree
+                }
+              });
+
+              await prisma.matchBroadcast.upsert({
+                where: {
+                  matchId_broadcasterId: {
+                    matchId: match.id,
+                    broadcasterId: broadcaster.id
+                  }
+                },
+                update: {},
+                create: {
                   matchId: match.id,
                   broadcasterId: broadcaster.id
                 }
-              },
-              update: {},
-              create: {
-                matchId: match.id,
-                broadcasterId: broadcaster.id
-              }
-            });
+              });
+            }
+            
+            totalSaved++;
+          } catch (error) {
+            console.error(`  ❌ Error saving RapidAPI match:`, error.message);
           }
         }
       }
@@ -224,7 +223,8 @@ async function fetchAndUpdateMatchesFromAPI(apiKey) {
     }
   }
 
-  console.log('✅ API data synchronized');
+  console.log(`  ✅ RapidAPI: Saved ${totalSaved} matches`);
+  return totalSaved;
 }
 
 function getLeagueColor(leagueName) {
