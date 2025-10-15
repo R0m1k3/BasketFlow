@@ -146,18 +146,24 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
           }
         });
 
-        // Get or create teams
-        const homeTeam = await prisma.team.upsert({
-          where: { name: matchData.homeTeam },
-          update: {},
-          create: { name: matchData.homeTeam }
+        // Get or create teams (Team.name is not unique, so use findFirst + create)
+        let homeTeam = await prisma.team.findFirst({
+          where: { name: matchData.homeTeam }
         });
+        if (!homeTeam) {
+          homeTeam = await prisma.team.create({
+            data: { name: matchData.homeTeam }
+          });
+        }
 
-        const awayTeam = await prisma.team.upsert({
-          where: { name: matchData.awayTeam },
-          update: {},
-          create: { name: matchData.awayTeam }
+        let awayTeam = await prisma.team.findFirst({
+          where: { name: matchData.awayTeam }
         });
+        if (!awayTeam) {
+          awayTeam = await prisma.team.create({
+            data: { name: matchData.awayTeam }
+          });
+        }
 
         // Create unique external ID with gemini prefix
         const externalId = `gemini-${leagueName}-${matchDate.getTime()}-${homeTeam.id}-${awayTeam.id}`;
