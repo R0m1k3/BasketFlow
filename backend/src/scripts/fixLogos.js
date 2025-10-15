@@ -11,12 +11,12 @@ async function fixLogos() {
 
   for (const team of teams) {
     const correctLogo = getTeamLogo(team.name);
-    if (correctLogo && correctLogo !== team.logo) {
+    if (correctLogo !== undefined && correctLogo !== team.logo) {
       await prisma.team.update({
         where: { id: team.id },
         data: { logo: correctLogo }
       });
-      console.log(`✅ Fixed logo for ${team.name}`);
+      console.log(`✅ Fixed logo for ${team.name}: ${correctLogo || 'NULL (fallback)'}`);
       teamsFixed++;
     }
   }
@@ -26,12 +26,12 @@ async function fixLogos() {
 
   for (const broadcaster of broadcasters) {
     const correctLogo = getBroadcasterLogo(broadcaster.name);
-    if (correctLogo && correctLogo !== broadcaster.logo) {
+    if (correctLogo !== undefined && correctLogo !== broadcaster.logo) {
       await prisma.broadcaster.update({
         where: { id: broadcaster.id },
         data: { logo: correctLogo }
       });
-      console.log(`✅ Fixed logo for ${broadcaster.name}`);
+      console.log(`✅ Fixed logo for ${broadcaster.name}: ${correctLogo || 'NULL (fallback)'}`);
       broadcastersFixed++;
     }
   }

@@ -6,16 +6,23 @@ A web application that displays basketball games broadcast in France, featuring 
 
 ## Recent Changes (October 15, 2025)
 
-### 🖼️ Image Proxy System for Logos ✅
-- **Backend image proxy** at `/api/image-proxy` to resolve CORS/CSP issues with external logo URLs in Replit iframe
-- **LRU Cache** with intelligent eviction based on lastUsed timestamps (100 entries max, 24h TTL)
+### 🖼️ Robust Logo Display System ✅
+**Image Proxy with Security & Fallbacks**:
+- **Backend proxy** (`/api/image-proxy`) resolves CORS/CSP issues with external logos in Replit iframe
+- **LRU Cache** with lastUsed-based eviction (100 entries, 24h TTL) for performance
 - **Security hardening**:
-  - Domain allowlist (Wikimedia, NBA, WNBA, Euroleague, FIBA, Imgur, Cloudinary)
-  - 5MB size limit per image to prevent resource exhaustion
-  - Blocks unauthorized domains with 403 responses
-- **Error handling**: Proper HTTP status codes (403 for blocked domains, 404 for not found, etc.)
-- **Frontend integration**: All logo URLs in WeeklyMatches and MonthlyCalendar automatically proxied
-- Performance: Cache reduces redundant downloads and improves load times
+  - Domain allowlist: Wikimedia, NBA/WNBA, Euroleague, team sites, logo CDNs
+  - 5MB size limit prevents resource exhaustion
+  - 403 blocks for unauthorized domains
+- **Smart fallbacks**:
+  - Teams: Circular gradient placeholders with initials (e.g., "BO" for Boston)
+  - Broadcasters: Text with emoji indicators (📺 free, 💰 paid)
+  - Auto-detection: onError handlers switch to fallback when image fails
+- **Logo Management**:
+  - `backend/src/utils/logoMapping.js`: Curated URLs for major teams/broadcasters
+  - `backend/src/scripts/fixLogos.js`: Script to update DB with verified URLs
+  - Verified URLs from Wikimedia Commons (PNG format for reliability)
+- **Frontend integration**: All logos in WeeklyMatches & MonthlyCalendar use proxy + fallbacks
 
 ### 🤖 Système Multi-Sources avec Gemini AI et Logos ✅
 - **4 sources de données** agrégées sans doublons via externalId préfixés
