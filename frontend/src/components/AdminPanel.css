@@ -157,6 +157,133 @@
   background: #a00d24;
 }
 
+.model-select {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+}
+
+.model-select:focus {
+  outline: none;
+  border-color: #1D428A;
+}
+
+.btn-refresh {
+  padding: 0.75rem 1rem;
+  background: #f5f5f5;
+  color: #333;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-test {
+  padding: 0.75rem 2rem;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-test:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.btn-test:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.model-info {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #f5f5f5;
+  border-radius: 6px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.test-result {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #e8f5e9;
+  border-radius: 8px;
+  border: 1px solid #4CAF50;
+}
+
+.test-result h4 {
+  color: #2e7d32;
+  margin-bottom: 1rem;
+}
+
+.test-result p {
+  margin: 0.5rem 0;
+  color: #333;
+}
+
+.usage-guide {
+  line-height: 1.8;
+  color: #666;
+}
+
+.usage-guide a {
+  color: #1D428A;
+  text-decoration: none;
+}
+
+.usage-guide a:hover {
+  text-decoration: underline;
+}
+
+.warning-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fff3cd;
+  border-radius: 6px;
+  color: #856404;
+  border: 1px solid #ffc107;
+}
+
+.config-section {
+  margin-bottom: 2rem;
+}
+
+.config-section:last-child {
+  margin-bottom: 0;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .admin-panel {
     padding: 1rem;

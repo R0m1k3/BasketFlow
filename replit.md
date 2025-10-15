@@ -1,10 +1,19 @@
-# Basketball Match Tracker - France
+# Basket Flow
 
 ## Overview
 
 A web application that displays basketball games broadcast in France, featuring a weekly match table and monthly calendar. The app aggregates games from NBA, WNBA, Euroleague, Eurocup, BCL, and Betclic Elite, showing which French TV channels (beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK, etc.) are broadcasting each game. The system includes automated daily updates via external basketball APIs (RapidAPI).
 
 ## Recent Changes (October 15, 2025)
+
+### OpenRouter IA Integration ✅
+- Remplacé API-Basketball par OpenRouter avec LLM gratuits (Gemini 2.5 Flash)
+- Scraping intelligent multi-sources (Prime Video, beIN Sports, L'Équipe, DAZN, Skweek)
+- Panel admin avec sélection dynamique des modèles LLM disponibles
+- Endpoint `/api/openrouter/models` pour récupérer la liste des modèles
+- Service `openrouterScraper.js` pour extraction automatique des matchs
+- Configuration OPENROUTER_API_KEY et OPENROUTER_MODEL dans la base de données
+- Site renommé de "Basket France" à "Basket Flow"
 
 ### Authentication & Security System ✅
 - Implemented JWT-based authentication with user/admin roles

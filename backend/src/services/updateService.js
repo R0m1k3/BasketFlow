@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const axios = require('axios');
+const openrouterScraper = require('./openrouterScraper');
 const prisma = new PrismaClient();
 
 const BROADCASTER_MAPPING = {
@@ -30,22 +31,35 @@ const BROADCASTER_MAPPING = {
 
 async function updateMatches() {
   try {
-    console.log('Starting match update...');
+    console.log('🏀 Starting match update with OpenRouter AI...');
     
-    const apiKey = process.env.API_BASKETBALL_KEY;
-    if (!apiKey || apiKey === 'your_api_key_here') {
-      console.log('⚠️  API key not configured, using sample data');
+    const apiKeyConfig = await prisma.config.findUnique({
+      where: { key: 'OPENROUTER_API_KEY' }
+    });
+
+    if (!apiKeyConfig || !apiKeyConfig.value) {
+      console.log('⚠️  OpenRouter API key not configured, using sample data');
       await seedSampleData();
       return;
     }
 
     await cleanOldMatches();
-    await fetchAndUpdateMatchesFromAPI(apiKey);
     
-    console.log('Match update completed');
+    const result = await openrouterScraper.scrapeAllSources();
+    
+    if (result.successfulSources === 0) {
+      console.log('⚠️  No sources successfully scraped, falling back to sample data');
+      await seedSampleData();
+      return;
+    }
+    
+    await openrouterScraper.saveMatchesToDatabase(result.matches);
+    
+    console.log('✅ Match update completed successfully');
   } catch (error) {
-    console.error('Error in updateMatches:', error);
-    throw error;
+    console.error('❌ Error in updateMatches:', error);
+    console.log('⚠️  Falling back to sample data');
+    await seedSampleData();
   }
 }
 

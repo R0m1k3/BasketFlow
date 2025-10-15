@@ -1,4 +1,4 @@
-# 🚀 Guide de Déploiement Docker - Basketball App
+# 🚀 Guide de Déploiement Docker - Basket Flow
 
 ## ✅ Modifications Effectuées
 
@@ -28,14 +28,17 @@ docker network create nginx_default
 
 Le fichier `.env` avec JWT_SECRET et SESSION_SECRET a été **généré automatiquement** pour vous !
 
-### 3. (Optionnel) Ajouter votre clé API Basketball
+### 3. (Optionnel) Ajouter votre clé API OpenRouter
 
-Si vous voulez des données réelles au lieu des exemples :
+Si vous voulez le scraping IA au lieu des données d'exemple :
 
 ```bash
-# Éditer .env et remplacer la ligne vide par :
-API_BASKETBALL_KEY=votre_cle_rapidapi_ici
+# Éditer .env et ajouter :
+OPENROUTER_API_KEY=sk-or-v1-votre_cle_ici
+OPENROUTER_MODEL=google/gemini-2.5-flash:free
 ```
+
+Obtenez votre clé sur [OpenRouter](https://openrouter.ai)
 
 ### 4. Construire et lancer
 

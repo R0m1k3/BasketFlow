@@ -16,7 +16,7 @@ function Header() {
     <header className="app-header">
       <div className="header-content">
         <Link to="/" className="logo">
-          <h1>🏀 Basket France</h1>
+          <h1>🏀 Basket Flow</h1>
         </Link>
 
         <nav className="header-nav">
