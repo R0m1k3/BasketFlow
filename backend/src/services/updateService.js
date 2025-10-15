@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const axios = require('axios');
 const ballDontLieService = require('./ballDontLieService');
 const euroleagueService = require('./euroleagueService');
+const geminiService = require('./geminiService');
 const prisma = new PrismaClient();
 
 const BROADCASTER_MAPPING = {
@@ -38,6 +39,7 @@ async function updateMatches() {
   try {
     console.log('🏀 Starting match update with multiple sources...');
     
+    // Get API keys
     const rapidApiKeyConfig = await prisma.config.findUnique({
       where: { key: 'API_BASKETBALL_KEY' }
     });
@@ -46,13 +48,22 @@ async function updateMatches() {
       where: { key: 'BALLDONTLIE_API_KEY' }
     });
 
+    const geminiKeyConfig = await prisma.config.findUnique({
+      where: { key: 'GEMINI_API_KEY' }
+    });
+
+    // Get enabled sources (default all to true if not configured)
+    const rapidApiEnabled = await isSourceEnabled('RAPIDAPI');
+    const ballDontLieEnabled = await isSourceEnabled('BALLDONTLIE');
+    const euroleagueEnabled = await isSourceEnabled('EUROLEAGUE');
+    const geminiEnabled = await isSourceEnabled('GEMINI');
+
     await cleanOldMatches();
     
     let totalMatches = 0;
-    let rapidApiMatches = 0;
 
     // Source 1: RapidAPI (NBA, WNBA, Euroleague, Betclic Elite)
-    if (rapidApiKeyConfig && rapidApiKeyConfig.value) {
+    if (rapidApiEnabled && rapidApiKeyConfig && rapidApiKeyConfig.value) {
       console.log('📡 Source 1: RapidAPI (API-Basketball)');
       try {
         const rapidApiMatches = await fetchAndUpdateMatchesFromAPI(rapidApiKeyConfig.value);
@@ -60,10 +71,12 @@ async function updateMatches() {
       } catch (error) {
         console.error('  ❌ RapidAPI failed:', error.message);
       }
+    } else if (rapidApiEnabled) {
+      console.log('⚠️  Source 1: RapidAPI - enabled but no API key configured');
     }
 
-    // Source 2: BallDontLie (NBA, WNBA) - en complément
-    if (ballDontLieKeyConfig && ballDontLieKeyConfig.value) {
+    // Source 2: BallDontLie (NBA, WNBA)
+    if (ballDontLieEnabled && ballDontLieKeyConfig && ballDontLieKeyConfig.value) {
       console.log('📡 Source 2: BallDontLie (NBA/WNBA)');
       try {
         const ballDontLieMatches = await ballDontLieService.fetchAndSave(ballDontLieKeyConfig.value);
@@ -71,15 +84,32 @@ async function updateMatches() {
       } catch (error) {
         console.error('  ❌ BallDontLie failed:', error.message);
       }
+    } else if (ballDontLieEnabled) {
+      console.log('⚠️  Source 2: BallDontLie - enabled but no API key configured');
     }
 
     // Source 3: Euroleague API officielle (gratuite, pas de clé)
-    console.log('📡 Source 3: Euroleague + EuroCup Official API');
-    try {
-      const euroleagueMatches = await euroleagueService.fetchAndSave();
-      totalMatches += euroleagueMatches;
-    } catch (error) {
-      console.error('  ❌ Euroleague/EuroCup API failed:', error.message);
+    if (euroleagueEnabled) {
+      console.log('📡 Source 3: Euroleague + EuroCup Official API');
+      try {
+        const euroleagueMatches = await euroleagueService.fetchAndSave();
+        totalMatches += euroleagueMatches;
+      } catch (error) {
+        console.error('  ❌ Euroleague/EuroCup API failed:', error.message);
+      }
+    }
+
+    // Source 4: Gemini with Google Search
+    if (geminiEnabled && geminiKeyConfig && geminiKeyConfig.value) {
+      console.log('📡 Source 4: Gemini AI with Google Search');
+      try {
+        const geminiMatches = await geminiService.fetchAndSave(geminiKeyConfig.value);
+        totalMatches += geminiMatches;
+      } catch (error) {
+        console.error('  ❌ Gemini failed:', error.message);
+      }
+    } else if (geminiEnabled) {
+      console.log('⚠️  Source 4: Gemini - enabled but no API key configured');
     }
 
     if (totalMatches === 0) {
@@ -93,6 +123,20 @@ async function updateMatches() {
     console.log('⚠️  Falling back to sample data');
     await seedSampleData();
   }
+}
+
+/**
+ * Check if a source is enabled (defaults to true)
+ */
+async function isSourceEnabled(sourceName) {
+  const config = await prisma.config.findUnique({
+    where: { key: `SOURCE_${sourceName}_ENABLED` }
+  });
+  
+  // Default to enabled if not configured
+  if (!config) return true;
+  
+  return config.value === 'true';
 }
 
 async function fetchAndUpdateMatchesFromAPI(apiKey) {
