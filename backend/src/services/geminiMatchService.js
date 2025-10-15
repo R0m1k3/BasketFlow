@@ -1,5 +1,5 @@
 // Gemini AI with Google Search to find and generate scheduled basketball matches
-const { GoogleGenerativeAI } = require('@google/genai');
+const { GoogleGenAI } = require('@google/genai');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -17,13 +17,7 @@ async function fetchAndGenerateMatches(apiKey) {
   try {
     console.log('  🤖 Using Gemini AI to find scheduled basketball matches...');
     
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-exp',
-      tools: [{
-        googleSearch: {}
-      }]
-    });
+    const ai = new GoogleGenAI({ apiKey });
 
     // Get date range for next 14 days
     const today = new Date();
@@ -65,8 +59,17 @@ Pour chaque match trouvé, retourne EXACTEMENT ce format JSON (pas de texte avan
 
 Retourne UNIQUEMENT le tableau JSON, rien d'autre.`;
 
-    const result = await model.generateContent(prompt);
-    const response = result.response.text();
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.0-flash-exp',
+      contents: prompt,
+      config: {
+        tools: [{
+          googleSearch: {}
+        }]
+      }
+    });
+    
+    const response = result.text;
     
     // Extract JSON from response
     let matchesData = [];
