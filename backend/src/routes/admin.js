@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const updateService = require('../services/updateService');
 
 const prisma = new PrismaClient();
 
@@ -130,6 +131,28 @@ router.post('/users', async (req, res) => {
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({ error: 'Erreur lors de la création de l\'utilisateur' });
+  }
+});
+
+router.post('/update-now', async (req, res) => {
+  try {
+    console.log('🚀 Manual update triggered by admin...');
+    await updateService.updateMatches();
+    
+    const matchCount = await prisma.match.count();
+    
+    res.json({
+      success: true,
+      message: 'Mise à jour effectuée',
+      matchesUpdated: matchCount
+    });
+  } catch (error) {
+    console.error('Error updating matches:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de la mise à jour des matchs',
+      details: error.message
+    });
   }
 });
 
