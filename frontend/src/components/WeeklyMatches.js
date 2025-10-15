@@ -5,10 +5,15 @@ import './WeeklyMatches.css';
 function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [failedImages, setFailedImages] = useState(new Set());
 
   const getProxiedImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
     return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
+
+  const handleImageError = (imageUrl) => {
+    setFailedImages(prev => new Set(prev).add(imageUrl));
   };
 
   const fetchMatches = useCallback(async () => {
@@ -86,15 +91,33 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
             <div className="match-info">
               <div className="match-teams">
                 <div className="team">
-                  {match.homeTeam.logo && (
-                    <img src={getProxiedImageUrl(match.homeTeam.logo)} alt={match.homeTeam.name} className="team-logo" />
+                  {match.homeTeam.logo && !failedImages.has(match.homeTeam.logo) ? (
+                    <img 
+                      src={getProxiedImageUrl(match.homeTeam.logo)} 
+                      alt={match.homeTeam.name} 
+                      className="team-logo"
+                      onError={() => handleImageError(match.homeTeam.logo)}
+                    />
+                  ) : (
+                    <div className="team-logo-placeholder">
+                      {match.homeTeam.name.substring(0, 2).toUpperCase()}
+                    </div>
                   )}
                   <span>{match.homeTeam.name}</span>
                 </div>
                 <div className="vs">vs</div>
                 <div className="team">
-                  {match.awayTeam.logo && (
-                    <img src={getProxiedImageUrl(match.awayTeam.logo)} alt={match.awayTeam.name} className="team-logo" />
+                  {match.awayTeam.logo && !failedImages.has(match.awayTeam.logo) ? (
+                    <img 
+                      src={getProxiedImageUrl(match.awayTeam.logo)} 
+                      alt={match.awayTeam.name} 
+                      className="team-logo"
+                      onError={() => handleImageError(match.awayTeam.logo)}
+                    />
+                  ) : (
+                    <div className="team-logo-placeholder">
+                      {match.awayTeam.name.substring(0, 2).toUpperCase()}
+                    </div>
                   )}
                   <span>{match.awayTeam.name}</span>
                 </div>
@@ -114,9 +137,14 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
                     key={broadcast.id} 
                     className={`broadcaster-tag ${broadcast.broadcaster.isFree ? 'free' : 'paid'}`}
                   >
-                    {broadcast.broadcaster.logo ? (
+                    {broadcast.broadcaster.logo && !failedImages.has(broadcast.broadcaster.logo) ? (
                       <>
-                        <img src={getProxiedImageUrl(broadcast.broadcaster.logo)} alt={broadcast.broadcaster.name} className="broadcaster-logo" />
+                        <img 
+                          src={getProxiedImageUrl(broadcast.broadcaster.logo)} 
+                          alt={broadcast.broadcaster.name} 
+                          className="broadcaster-logo"
+                          onError={() => handleImageError(broadcast.broadcaster.logo)}
+                        />
                         <span className="broadcaster-name">{broadcast.broadcaster.name}</span>
                       </>
                     ) : (

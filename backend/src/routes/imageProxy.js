@@ -17,12 +17,30 @@ const ALLOWED_DOMAINS = [
   'www.nba.com',
   'cdn.wnba.com',
   'www.wnba.com',
+  'wnba.com',
   'euroleague.net',
   'www.euroleague.net',
   'www.fiba.basketball',
   'cdn.fiba.com',
   'i.imgur.com',
-  'cloudinary.com'
+  'cloudinary.com',
+  'logos-marques.com',
+  'asmonaco.basketball',
+  'www.asmonaco.basketball',
+  'parisbasketball.com',
+  'www.parisbasketball.com',
+  'jdadijon.com',
+  'thelondonlions.com',
+  'www.thelondonlions.com',
+  'hapoeluta.com',
+  'www.hapoeluta.com',
+  'sigstrasbourg.fr',
+  'www.sigstrasbourg.fr',
+  'logoeps.com',
+  'seeklogo.com',
+  'brandslogos.com',
+  'pngimg.com',
+  'freepnglogos.com'
 ];
 
 function downloadImage(imageUrl) {

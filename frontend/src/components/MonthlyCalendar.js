@@ -8,10 +8,15 @@ import './MonthlyCalendar.css';
 function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
   const [events, setEvents] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [failedImages, setFailedImages] = useState(new Set());
 
   const getProxiedImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
     return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
+
+  const handleImageError = (imageUrl) => {
+    setFailedImages(prev => new Set(prev).add(imageUrl));
   };
 
   const fetchMonthMatches = useCallback(async () => {
@@ -81,14 +86,39 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
     return (
       <div className="event-content">
         <div className="event-teams-logos">
-          {homeTeamLogo && <img src={getProxiedImageUrl(homeTeamLogo)} alt="Home" className="event-team-logo" />}
-          {awayTeamLogo && <img src={getProxiedImageUrl(awayTeamLogo)} alt="Away" className="event-team-logo" />}
+          {homeTeamLogo && !failedImages.has(homeTeamLogo) ? (
+            <img 
+              src={getProxiedImageUrl(homeTeamLogo)} 
+              alt="Home" 
+              className="event-team-logo"
+              onError={() => handleImageError(homeTeamLogo)}
+            />
+          ) : homeTeamLogo && (
+            <div className="event-team-placeholder">🏀</div>
+          )}
+          {awayTeamLogo && !failedImages.has(awayTeamLogo) ? (
+            <img 
+              src={getProxiedImageUrl(awayTeamLogo)} 
+              alt="Away" 
+              className="event-team-logo"
+              onError={() => handleImageError(awayTeamLogo)}
+            />
+          ) : awayTeamLogo && (
+            <div className="event-team-placeholder">🏀</div>
+          )}
         </div>
         <div className="event-title">{eventInfo.event.title}</div>
         <div className="event-broadcasters">
           {broadcasters && broadcasters.slice(0, 2).map((b, idx) => (
-            b.logo ? (
-              <img key={idx} src={getProxiedImageUrl(b.logo)} alt={b.name} className="event-broadcaster-logo" title={b.name} />
+            b.logo && !failedImages.has(b.logo) ? (
+              <img 
+                key={idx} 
+                src={getProxiedImageUrl(b.logo)} 
+                alt={b.name} 
+                className="event-broadcaster-logo" 
+                title={b.name}
+                onError={() => handleImageError(b.logo)}
+              />
             ) : (
               <span key={idx} className="event-broadcaster-text" title={b.name}>
                 {b.name.substring(0, 3)}
