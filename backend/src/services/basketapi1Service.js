@@ -1,182 +1,283 @@
+// BasketAPI1 integration for basketball live scores and match data
+// API: https://rapidapi.com/fluis.lacasse/api/basketapi1
 const axios = require('axios');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const BASKETAPI1_KEY = process.env.BASKETAPI1_KEY;
-const BASKETAPI1_HOST = 'api-basketball.p.rapidapi.com';
-
-const LEAGUE_IDS = {
-  NBA: 12,
-  WNBA: 16,
-  EUROLEAGUE: 120,
-  EUROCUP: 121,
-  BETCLIC_ELITE: 117
-};
-
-const BROADCASTER_MAPPING = {
-  NBA: ['beIN Sports', 'Prime Video', 'NBA League Pass'],
-  WNBA: ['NBA League Pass', 'beIN Sports'],
-  EUROLEAGUE: ['SKWEEK', 'La Chaîne L\'Équipe', 'EuroLeague TV'],
-  EUROCUP: ['SKWEEK', 'EuroLeague TV'],
-  BETCLIC_ELITE: ['beIN Sports', 'La Chaîne L\'Équipe', 'DAZN']
-};
-
-async function fetchGames(leagueId, season = '2024-2025') {
-  if (!BASKETAPI1_KEY) {
-    console.log('⚠️  BASKETAPI1_KEY not configured, skipping...');
-    return [];
+/**
+ * Fetch matches from BasketAPI1
+ * @param {string} apiKey - RapidAPI key for BasketAPI1
+ * @returns {Promise<number>} Number of matches saved
+ */
+async function fetchAndSave(apiKey) {
+  if (!apiKey) {
+    console.log('  ⚠️  No BasketAPI1 API key configured');
+    return 0;
   }
 
   try {
-    const response = await axios.get('https://api-basketball.p.rapidapi.com/games', {
-      params: { league: leagueId, season },
-      headers: {
-        'X-RapidAPI-Key': BASKETAPI1_KEY,
-        'X-RapidAPI-Host': BASKETAPI1_HOST
-      }
-    });
+    console.log('  🏀 Fetching matches from BasketAPI1...');
+    
+    // Get today and next 14 days
+    const today = new Date();
+    const dates = [];
+    
+    // Generate array of dates for next 14 days
+    for (let i = 0; i <= 14; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dates.push(formatDate(date));
+    }
 
-    return response.data.response || [];
+    let totalSaved = 0;
+
+    // Fetch matches for each date
+    for (const date of dates) {
+      try {
+        const matches = await fetchMatchesByDate(apiKey, date);
+        const saved = await saveMatches(matches);
+        totalSaved += saved;
+        
+        if (saved > 0) {
+          console.log(`  ✅ ${date}: ${saved} matches saved`);
+        }
+      } catch (error) {
+        console.error(`  ❌ Error fetching ${date}:`, error.message);
+      }
+    }
+
+    console.log(`  📊 Total matches saved from BasketAPI1: ${totalSaved}`);
+    return totalSaved;
   } catch (error) {
-    console.error(`❌ BasketAPI1 error for league ${leagueId}:`, error.message);
-    return [];
+    console.error('  ❌ BasketAPI1 error:', error.message);
+    return 0;
   }
 }
 
-async function updateMatches() {
-  console.log('\n🏀 Starting BasketAPI1 update...');
+/**
+ * Fetch matches for a specific date
+ */
+async function fetchMatchesByDate(apiKey, date) {
+  const url = `https://basketapi1.p.rapidapi.com/api/basketball/matches/${date}`;
   
-  let totalCreated = 0;
-  let totalUpdated = 0;
+  const response = await axios.get(url, {
+    headers: {
+      'X-RapidAPI-Key': apiKey,
+      'X-RapidAPI-Host': 'basketapi1.p.rapidapi.com'
+    },
+    timeout: 10000
+  });
 
-  for (const [leagueName, leagueId] of Object.entries(LEAGUE_IDS)) {
-    console.log(`\n📊 Fetching ${leagueName} matches...`);
-    
-    const games = await fetchGames(leagueId);
-    console.log(`   Found ${games.length} games for ${leagueName}`);
+  return response.data?.events || [];
+}
 
-    for (const game of games) {
-      try {
-        const league = await prisma.league.upsert({
-          where: { name: leagueName },
-          update: {},
-          create: {
-            name: leagueName,
-            shortName: leagueName,
-            country: leagueName === 'NBA' || leagueName === 'WNBA' ? 'USA' : 
-                     leagueName === 'BETCLIC_ELITE' ? 'France' : 'Europe',
-            color: getLeagueColor(leagueName)
-          }
-        });
+/**
+ * Save matches to database
+ */
+async function saveMatches(matches) {
+  if (!matches || matches.length === 0) return 0;
 
-        const homeTeam = await prisma.team.upsert({
-          where: { 
-            name_leagueId: { 
-              name: game.teams.home.name, 
-              leagueId: league.id 
-            } 
-          },
-          update: {},
-          create: {
-            name: game.teams.home.name,
-            shortName: game.teams.home.code || game.teams.home.name.substring(0, 3).toUpperCase(),
-            logo: game.teams.home.logo || null,
-            leagueId: league.id
-          }
-        });
+  let savedCount = 0;
 
-        const awayTeam = await prisma.team.upsert({
-          where: { 
-            name_leagueId: { 
-              name: game.teams.away.name, 
-              leagueId: league.id 
-            } 
-          },
-          update: {},
-          create: {
-            name: game.teams.away.name,
-            shortName: game.teams.away.code || game.teams.away.name.substring(0, 3).toUpperCase(),
-            logo: game.teams.away.logo || null,
-            leagueId: league.id
-          }
-        });
+  for (const match of matches) {
+    try {
+      // Skip if no tournament info
+      if (!match.tournament) continue;
 
-        const matchDate = new Date(game.date);
-        const externalId = `basketapi1-${leagueId}-${game.id}`;
+      // Map tournament to our league names
+      const leagueName = mapTournamentToLeague(match.tournament);
+      if (!leagueName) continue; // Skip leagues we don't track
 
-        const status = game.status.short === 'FT' ? 'finished' : 
-                      game.status.short === 'LIVE' ? 'live' : 'scheduled';
-
-        const existingMatch = await prisma.match.findUnique({
-          where: { externalId }
-        });
-
-        if (existingMatch) {
-          await prisma.match.update({
-            where: { externalId },
-            data: {
-              status,
-              homeScore: game.scores?.home?.total || null,
-              awayScore: game.scores?.away?.total || null
-            }
-          });
-          totalUpdated++;
-        } else {
-          const match = await prisma.match.create({
-            data: {
-              leagueId: league.id,
-              homeTeamId: homeTeam.id,
-              awayTeamId: awayTeam.id,
-              dateTime: matchDate,
-              venue: game.venue || null,
-              status,
-              homeScore: game.scores?.home?.total || null,
-              awayScore: game.scores?.away?.total || null,
-              externalId
-            }
-          });
-
-          const broadcasters = BROADCASTER_MAPPING[leagueName] || [];
-          for (const broadcasterName of broadcasters) {
-            const broadcaster = await prisma.broadcaster.upsert({
-              where: { name: broadcasterName },
-              update: {},
-              create: {
-                name: broadcasterName,
-                type: 'TV',
-                isFree: broadcasterName.includes('Équipe')
-              }
-            });
-
-            await prisma.broadcast.create({
-              data: {
-                matchId: match.id,
-                broadcasterId: broadcaster.id
-              }
-            });
-          }
-
-          totalCreated++;
+      // Parse match data
+      const matchDate = new Date(match.startTimestamp * 1000);
+      
+      // Get or create league
+      const league = await prisma.league.upsert({
+        where: { name: leagueName },
+        update: {},
+        create: {
+          name: leagueName,
+          shortName: getShortName(leagueName),
+          country: getCountry(leagueName),
+          color: getLeagueColor(leagueName)
         }
-      } catch (error) {
-        console.error(`   ❌ Error processing game ${game.id}:`, error.message);
+      });
+
+      // Get or create home team
+      let homeTeam = await prisma.team.findFirst({
+        where: { name: match.homeTeam?.name }
+      });
+      
+      if (!homeTeam && match.homeTeam?.name) {
+        homeTeam = await prisma.team.create({
+          data: {
+            name: match.homeTeam.name,
+            shortName: match.homeTeam.shortName || null,
+            logo: null
+          }
+        });
       }
+
+      // Get or create away team
+      let awayTeam = await prisma.team.findFirst({
+        where: { name: match.awayTeam?.name }
+      });
+      
+      if (!awayTeam && match.awayTeam?.name) {
+        awayTeam = await prisma.team.create({
+          data: {
+            name: match.awayTeam.name,
+            shortName: match.awayTeam.shortName || null,
+            logo: null
+          }
+        });
+      }
+
+      if (!homeTeam || !awayTeam) continue;
+
+      // Create unique external ID
+      const externalId = `basketapi1-${match.id}`;
+
+      // Check if match already exists
+      const existingMatch = await prisma.match.findUnique({
+        where: { externalId }
+      });
+
+      // Determine status and scores
+      let status = 'scheduled';
+      let homeScore = null;
+      let awayScore = null;
+
+      if (match.status?.type === 'finished') {
+        status = 'finished';
+        homeScore = match.homeScore?.current;
+        awayScore = match.awayScore?.current;
+      } else if (match.status?.type === 'inprogress') {
+        status = 'live';
+        homeScore = match.homeScore?.current;
+        awayScore = match.awayScore?.current;
+      }
+
+      if (existingMatch) {
+        // Update existing match
+        await prisma.match.update({
+          where: { id: existingMatch.id },
+          data: {
+            status,
+            homeScore,
+            awayScore,
+            dateTime: matchDate
+          }
+        });
+      } else {
+        // Create new match
+        await prisma.match.create({
+          data: {
+            externalId,
+            dateTime: matchDate,
+            homeTeamId: homeTeam.id,
+            awayTeamId: awayTeam.id,
+            leagueId: league.id,
+            status,
+            homeScore,
+            awayScore
+          }
+        });
+        savedCount++;
+      }
+    } catch (error) {
+      console.error(`  ⚠️  Error saving match:`, error.message);
     }
   }
 
-  console.log(`\n✅ BasketAPI1 update complete: ${totalCreated} created, ${totalUpdated} updated`);
-  return { created: totalCreated, updated: totalUpdated };
+  return savedCount;
+}
+
+/**
+ * Map tournament name to our league names
+ */
+function mapTournamentToLeague(tournament) {
+  const tournamentName = tournament.name?.toLowerCase() || '';
+  const categoryName = tournament.category?.name?.toLowerCase() || '';
+  
+  // NBA
+  if (tournamentName.includes('nba') || categoryName.includes('nba')) {
+    return 'NBA';
+  }
+  
+  // WNBA
+  if (tournamentName.includes('wnba') || categoryName.includes('wnba')) {
+    return 'WNBA';
+  }
+  
+  // Euroleague
+  if (tournamentName.includes('euroleague') || tournamentName.includes('euro league')) {
+    return 'Euroleague';
+  }
+  
+  // EuroCup
+  if (tournamentName.includes('eurocup') || tournamentName.includes('euro cup')) {
+    return 'EuroCup';
+  }
+  
+  // Betclic Elite (France LNB)
+  if (tournamentName.includes('betclic') || tournamentName.includes('lnb') || 
+      (categoryName.includes('france') && tournamentName.includes('pro'))) {
+    return 'Betclic Elite';
+  }
+  
+  // BCL (Basketball Champions League)
+  if (tournamentName.includes('champions league') || tournamentName.includes('bcl')) {
+    return 'BCL';
+  }
+  
+  return null; // Skip other tournaments
+}
+
+/**
+ * Helper functions
+ */
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`; // Format: YYYYMMDD
+}
+
+function getShortName(leagueName) {
+  const shortNames = {
+    'NBA': 'NBA',
+    'WNBA': 'WNBA',
+    'Euroleague': 'EL',
+    'EuroCup': 'EC',
+    'Betclic Elite': 'LNB',
+    'BCL': 'BCL'
+  };
+  return shortNames[leagueName] || leagueName.substring(0, 3).toUpperCase();
+}
+
+function getCountry(leagueName) {
+  const countries = {
+    'NBA': 'USA',
+    'WNBA': 'USA',
+    'Euroleague': 'Europe',
+    'EuroCup': 'Europe',
+    'Betclic Elite': 'France',
+    'BCL': 'Europe'
+  };
+  return countries[leagueName] || 'International';
 }
 
 function getLeagueColor(leagueName) {
   const colors = {
-    NBA: '#1D428A',
-    WNBA: '#C8102E',
-    EUROLEAGUE: '#FF7900',
-    EUROCUP: '#009CDE',
-    BETCLIC_ELITE: '#002654'
+    'NBA': '#1D428A',
+    'WNBA': '#C8102E',
+    'Euroleague': '#FF7900',
+    'EuroCup': '#009CDE',
+    'Betclic Elite': '#002654',
+    'BCL': '#000000'
   };
-  return colors[leagueName] || '#333';
+  return colors[leagueName] || '#333333';
 }
 
-module.exports = { updateMatches };
+module.exports = { fetchAndSave };

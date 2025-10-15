@@ -3,9 +3,9 @@ import axios from 'axios';
 import './AdminPanel.css';
 
 function ApiBasketballConfig() {
-  const [basketballDataKey, setBasketballDataKey] = useState('');
+  const [basketapi1Key, setBasketapi1Key] = useState('');
   const [geminiKey, setGeminiKey] = useState('');
-  const [basketballDataEnabled, setBasketballDataEnabled] = useState(true);
+  const [basketapi1Enabled, setBasketapi1Enabled] = useState(true);
   const [geminiEnabled, setGeminiEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -18,31 +18,31 @@ function ApiBasketballConfig() {
   const fetchConfig = async () => {
     try {
       const response = await axios.get('/api/admin/config');
-      const basketballDataConfig = response.data.find(c => c.key === 'BASKETBALL_DATA_KEY');
+      const basketapi1Config = response.data.find(c => c.key === 'BASKETAPI1_KEY');
       const geminiConfig = response.data.find(c => c.key === 'GEMINI_API_KEY');
       
-      const basketballDataEnabledConfig = response.data.find(c => c.key === 'SOURCE_BASKETBALL_DATA_ENABLED');
+      const basketapi1EnabledConfig = response.data.find(c => c.key === 'SOURCE_BASKETAPI1_ENABLED');
       const geminiEnabledConfig = response.data.find(c => c.key === 'SOURCE_GEMINI_ENABLED');
       
-      setBasketballDataKey(basketballDataConfig?.value || '');
+      setBasketapi1Key(basketapi1Config?.value || '');
       setGeminiKey(geminiConfig?.value || '');
       
-      setBasketballDataEnabled(basketballDataEnabledConfig?.value !== 'false');
+      setBasketapi1Enabled(basketapi1EnabledConfig?.value !== 'false');
       setGeminiEnabled(geminiEnabledConfig?.value !== 'false');
     } catch (error) {
       console.error('Error fetching config:', error);
     }
   };
 
-  const handleSaveBasketballData = async () => {
+  const handleSaveBasketapi1 = async () => {
     setLoading(true);
     setMessage('');
     try {
-      await axios.put('/api/admin/config/BASKETBALL_DATA_KEY', {
-        value: basketballDataKey,
-        description: 'Clé API pour Basketball Data (BroadageSports sur RapidAPI)'
+      await axios.put('/api/admin/config/BASKETAPI1_KEY', {
+        value: basketapi1Key,
+        description: 'Clé API pour BasketAPI1 (70+ ligues basketball)'
       });
-      setMessage('✅ Clé Basketball Data sauvegardée');
+      setMessage('✅ Clé BasketAPI1 sauvegardée');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       setMessage('❌ Erreur lors de la sauvegarde');
@@ -104,48 +104,48 @@ function ApiBasketballConfig() {
       {message && <div className="admin-message">{message}</div>}
 
       <div className="config-section">
-        <h3>🏀 Sources de données optimisées</h3>
+        <h3>🏀 Sources de données basket</h3>
         <p className="config-description">
-          Basketball Data récupère les matchs et scores en temps réel. Gemini enrichit ensuite avec les diffuseurs français.
+          BasketAPI1 récupère les matchs et scores en temps réel. Gemini enrichit ensuite avec les diffuseurs français.
         </p>
       </div>
 
       <div className="config-section">
         <h3>
-          📊 Source 1 : Basketball Data API
+          📊 Source 1 : BasketAPI1
           <label className="toggle-switch">
             <input
               type="checkbox"
-              checked={basketballDataEnabled}
+              checked={basketapi1Enabled}
               onChange={(e) => {
-                setBasketballDataEnabled(e.target.checked);
-                handleToggleSource('BASKETBALL_DATA', e.target.checked);
+                setBasketapi1Enabled(e.target.checked);
+                handleToggleSource('BASKETAPI1', e.target.checked);
               }}
             />
             <span className="slider"></span>
           </label>
         </h3>
         <p className="config-description">
-          Couvre 100+ tournois : NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL. Live scores avec mise à jour toutes les 15 secondes.
+          Couvre 70+ ligues : NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL, NCAA. Live scores en temps réel.
           <br />
-          <a href="https://rapidapi.com/BroadageSports/api/basketball-data" target="_blank" rel="noopener noreferrer">
-            S'inscrire sur RapidAPI (Basketball Data) →
+          <a href="https://rapidapi.com/fluis.lacasse/api/basketapi1" target="_blank" rel="noopener noreferrer">
+            S'inscrire sur RapidAPI (BasketAPI1) →
           </a>
         </p>
 
         <div className="form-group">
-          <label>Clé API RapidAPI (Basketball Data)</label>
+          <label>Clé API RapidAPI (BasketAPI1)</label>
           <input
             type="text"
-            value={basketballDataKey}
-            onChange={(e) => setBasketballDataKey(e.target.value)}
+            value={basketapi1Key}
+            onChange={(e) => setBasketapi1Key(e.target.value)}
             placeholder="Votre clé RapidAPI..."
             className="api-key-input"
-            disabled={!basketballDataEnabled}
+            disabled={!basketapi1Enabled}
           />
           <button 
-            onClick={handleSaveBasketballData} 
-            disabled={loading || !basketballDataEnabled}
+            onClick={handleSaveBasketapi1} 
+            disabled={loading || !basketapi1Enabled}
             className="btn-save"
           >
             {loading ? 'Sauvegarde...' : 'Sauvegarder'}
@@ -221,7 +221,7 @@ function ApiBasketballConfig() {
         <h3>📖 Guide d'utilisation</h3>
         <ol className="usage-guide">
           <li>Créez un compte sur <a href="https://rapidapi.com" target="_blank" rel="noopener noreferrer">RapidAPI</a></li>
-          <li>Abonnez-vous à <a href="https://rapidapi.com/BroadageSports/api/basketball-data" target="_blank" rel="noopener noreferrer">Basketball Data</a> (plan gratuit disponible)</li>
+          <li>Abonnez-vous à <a href="https://rapidapi.com/fluis.lacasse/api/basketapi1" target="_blank" rel="noopener noreferrer">BasketAPI1</a> (plan gratuit disponible)</li>
           <li>Copiez votre clé API RapidAPI</li>
           <li>Collez la clé ci-dessus et cliquez sur "Sauvegarder"</li>
           <li>Optionnel : Ajoutez une clé Gemini pour enrichir avec les diffuseurs français</li>
@@ -232,7 +232,7 @@ function ApiBasketballConfig() {
         <div className="info-box">
           <h4>🎯 Fonctionnement :</h4>
           <ul>
-            <li><strong>Basketball Data :</strong> Récupère les matchs et scores en temps réel pour 100+ tournois</li>
+            <li><strong>BasketAPI1 :</strong> Récupère les matchs et scores en temps réel pour 70+ ligues (NBA, WNBA, Euroleague, NCAA, etc.)</li>
             <li><strong>Gemini AI :</strong> Enrichit automatiquement avec les diffuseurs français (beIN Sports, Prime Video, SKWEEK, etc.)</li>
             <li><strong>Affichage :</strong> Les scores des matchs terminés/en cours s'affichent automatiquement</li>
           </ul>
@@ -251,7 +251,7 @@ function ApiBasketballConfig() {
         </div>
 
         <div className="warning-box">
-          ⚠️ <strong>Plan gratuit :</strong> Basketball Data offre un plan gratuit avec quotas limités.
+          ⚠️ <strong>Plan gratuit :</strong> BasketAPI1 offre un plan gratuit ($0/mois) avec quotas limités. Plans payants dès $9.99/mois.
         </div>
       </div>
     </div>

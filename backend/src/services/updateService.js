@@ -1,15 +1,15 @@
 const { PrismaClient } = require('@prisma/client');
-const basketballDataService = require('./basketballDataService');
+const basketapi1Service = require('./basketapi1Service');
 const geminiEnrichmentService = require('./geminiEnrichmentService');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
   try {
-    console.log('🏀 Starting match update with Basketball Data + Gemini enrichment...');
+    console.log('🏀 Starting match update with BasketAPI1 + Gemini enrichment...');
     
     // Get API keys
-    const basketballDataKeyConfig = await prisma.config.findUnique({
-      where: { key: 'BASKETBALL_DATA_KEY' }
+    const basketapi1KeyConfig = await prisma.config.findUnique({
+      where: { key: 'BASKETAPI1_KEY' }
     });
 
     const geminiKeyConfig = await prisma.config.findUnique({
@@ -17,24 +17,24 @@ async function updateMatches() {
     });
 
     // Get enabled sources (default all to true if not configured)
-    const basketballDataEnabled = await isSourceEnabled('BASKETBALL_DATA');
+    const basketapi1Enabled = await isSourceEnabled('BASKETAPI1');
     const geminiEnabled = await isSourceEnabled('GEMINI');
 
     await cleanOldMatches();
     
     let totalMatches = 0;
 
-    // Source 1: Basketball Data API (NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL)
-    if (basketballDataEnabled && basketballDataKeyConfig && basketballDataKeyConfig.value) {
-      console.log('📡 Source 1: Basketball Data API (live scores & matches)');
+    // Source 1: BasketAPI1 (70+ leagues including NBA, WNBA, Euroleague, etc.)
+    if (basketapi1Enabled && basketapi1KeyConfig && basketapi1KeyConfig.value) {
+      console.log('📡 Source 1: BasketAPI1 (70+ leagues, live scores)');
       try {
-        const basketballDataMatches = await basketballDataService.fetchAndSave(basketballDataKeyConfig.value);
-        totalMatches += basketballDataMatches;
+        const basketapi1Matches = await basketapi1Service.fetchAndSave(basketapi1KeyConfig.value);
+        totalMatches += basketapi1Matches;
       } catch (error) {
-        console.error('  ❌ Basketball Data failed:', error.message);
+        console.error('  ❌ BasketAPI1 failed:', error.message);
       }
-    } else if (basketballDataEnabled) {
-      console.log('⚠️  Source 1: Basketball Data - enabled but no API key configured');
+    } else if (basketapi1Enabled) {
+      console.log('⚠️  Source 1: BasketAPI1 - enabled but no API key configured');
     }
 
     // Source 2: Gemini enrichment for French broadcasters
@@ -53,7 +53,7 @@ async function updateMatches() {
     if (totalMatches === 0) {
       console.log('⚠️  No matches found from any source');
     } else {
-      console.log(`✅ Match update completed: ${totalMatches} matches from Basketball Data`);
+      console.log(`✅ Match update completed: ${totalMatches} matches from BasketAPI1`);
     }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
