@@ -105,7 +105,18 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
                   )}
                   <span>{match.homeTeam.name}</span>
                 </div>
-                <div className="vs">vs</div>
+                <div className={`score-separator ${match.status}`}>
+                  {match.status === 'finished' || match.status === 'live' ? (
+                    <div className="score">
+                      <span className="home-score">{match.homeScore}</span>
+                      <span className="separator">-</span>
+                      <span className="away-score">{match.awayScore}</span>
+                      {match.status === 'live' && <span className="live-indicator">LIVE</span>}
+                    </div>
+                  ) : (
+                    <span>vs</span>
+                  )}
+                </div>
                 <div className="team">
                   {match.awayTeam.logo && !failedImages.has(match.awayTeam.logo) ? (
                     <img 
