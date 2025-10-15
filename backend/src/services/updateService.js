@@ -1,59 +1,43 @@
 const { PrismaClient } = require('@prisma/client');
-const basketapi1Service = require('./basketapi1Service');
-const geminiEnrichmentService = require('./geminiEnrichmentService');
+const geminiMatchService = require('./geminiMatchService');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
   try {
-    console.log('🏀 Starting match update with BasketAPI1 + Gemini enrichment...');
+    console.log('🏀 Starting match update with Gemini AI Google Search...');
     
     // Get API keys
-    const basketapi1KeyConfig = await prisma.config.findUnique({
-      where: { key: 'BASKETAPI1_KEY' }
-    });
-
     const geminiKeyConfig = await prisma.config.findUnique({
       where: { key: 'GEMINI_API_KEY' }
     });
 
     // Get enabled sources (default all to true if not configured)
-    const basketapi1Enabled = await isSourceEnabled('BASKETAPI1');
     const geminiEnabled = await isSourceEnabled('GEMINI');
 
     await cleanOldMatches();
     
     let totalMatches = 0;
 
-    // Source 1: BasketAPI1 (70+ leagues including NBA, WNBA, Euroleague, etc.)
-    if (basketapi1Enabled && basketapi1KeyConfig && basketapi1KeyConfig.value) {
-      console.log('📡 Source 1: BasketAPI1 (70+ leagues, live scores)');
-      try {
-        const basketapi1Matches = await basketapi1Service.fetchAndSave(basketapi1KeyConfig.value);
-        totalMatches += basketapi1Matches;
-      } catch (error) {
-        console.error('  ❌ BasketAPI1 failed:', error.message);
-      }
-    } else if (basketapi1Enabled) {
-      console.log('⚠️  Source 1: BasketAPI1 - enabled but no API key configured');
-    }
-
-    // Source 2: Gemini enrichment for French broadcasters
+    // Source 1: Gemini AI with Google Search to find scheduled matches
     if (geminiEnabled && geminiKeyConfig && geminiKeyConfig.value) {
-      console.log('📡 Source 2: Gemini AI (French broadcaster enrichment)');
+      console.log('📡 Gemini AI: Searching Google for official schedules (NBA, WNBA, Euroleague, Betclic Elite, EuroCup, BCL)');
       try {
-        const enrichedMatches = await geminiEnrichmentService.enrichBroadcasters(geminiKeyConfig.value);
-        console.log(`  ✅ Enriched ${enrichedMatches} matches with broadcasters`);
+        const geminiMatches = await geminiMatchService.fetchAndGenerateMatches(geminiKeyConfig.value);
+        totalMatches += geminiMatches;
       } catch (error) {
-        console.error('  ❌ Gemini enrichment failed:', error.message);
+        console.error('  ❌ Gemini failed:', error.message);
       }
     } else if (geminiEnabled) {
-      console.log('⚠️  Source 2: Gemini - enabled but no API key configured');
+      console.log('⚠️  Gemini - enabled but no API key configured');
     }
+
+    // Source 2: Update live scores (future enhancement with BasketAPI1 if available)
+    // For now, Gemini handles everything
 
     if (totalMatches === 0) {
       console.log('⚠️  No matches found from any source');
     } else {
-      console.log(`✅ Match update completed: ${totalMatches} matches from BasketAPI1`);
+      console.log(`✅ Match update completed: ${totalMatches} matches from Gemini`);
     }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
