@@ -169,6 +169,7 @@ router.get('/', async (req, res) => {
   } catch (error) {
     const statusCode = error.statusCode || 500;
     const isClientError = statusCode >= 400 && statusCode < 500;
+    const { url } = req.query;
     
     if (isClientError) {
       console.warn(`Image proxy client error (${statusCode}):`, url, error.message);
