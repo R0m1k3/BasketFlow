@@ -61,6 +61,16 @@
   color: #333;
   flex: 1;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.team-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 .vs {
@@ -110,6 +120,19 @@
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.broadcaster-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.broadcaster-name {
+  vertical-align: middle;
 }
 
 .broadcaster-tag.free {

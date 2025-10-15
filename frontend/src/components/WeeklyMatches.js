@@ -80,9 +80,19 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
             
             <div className="match-info">
               <div className="match-teams">
-                <div className="team">{match.homeTeam.name}</div>
+                <div className="team">
+                  {match.homeTeam.logo && (
+                    <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="team-logo" />
+                  )}
+                  <span>{match.homeTeam.name}</span>
+                </div>
                 <div className="vs">vs</div>
-                <div className="team">{match.awayTeam.name}</div>
+                <div className="team">
+                  {match.awayTeam.logo && (
+                    <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="team-logo" />
+                  )}
+                  <span>{match.awayTeam.name}</span>
+                </div>
               </div>
               
               <div className="match-details">
@@ -99,8 +109,17 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
                     key={broadcast.id} 
                     className={`broadcaster-tag ${broadcast.broadcaster.isFree ? 'free' : 'paid'}`}
                   >
-                    {broadcast.broadcaster.name}
-                    {broadcast.broadcaster.isFree ? ' 📺' : ' 💰'}
+                    {broadcast.broadcaster.logo ? (
+                      <>
+                        <img src={broadcast.broadcaster.logo} alt={broadcast.broadcaster.name} className="broadcaster-logo" />
+                        <span className="broadcaster-name">{broadcast.broadcaster.name}</span>
+                      </>
+                    ) : (
+                      <>
+                        {broadcast.broadcaster.name}
+                        {broadcast.broadcaster.isFree ? ' 📺' : ' 💰'}
+                      </>
+                    )}
                   </span>
                 ))}
               </div>

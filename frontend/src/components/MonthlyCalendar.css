@@ -36,8 +36,46 @@
   font-size: 0.85rem;
 }
 
+.event-teams-logos {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 2px;
+  justify-content: center;
+}
+
+.event-team-logo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
 .event-title {
   font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.event-broadcasters {
+  display: flex;
+  gap: 3px;
+  margin-top: 2px;
+  justify-content: center;
+  align-items: center;
+}
+
+.event-broadcaster-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  opacity: 0.9;
+}
+
+.event-broadcaster-text {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 1px 3px;
+  border-radius: 2px;
 }
 
 .event-league {

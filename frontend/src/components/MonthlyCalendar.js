@@ -35,7 +35,12 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
         borderColor: getLeagueColor(match.league.name),
         extendedProps: {
           league: match.league.name,
-          broadcasters: match.broadcasts.map(b => b.broadcaster.name).join(', ')
+          homeTeamLogo: match.homeTeam.logo,
+          awayTeamLogo: match.awayTeam.logo,
+          broadcasters: match.broadcasts.map(b => ({
+            name: b.broadcaster.name,
+            logo: b.broadcaster.logo
+          }))
         }
       }));
 
@@ -66,10 +71,26 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
   };
 
   const renderEventContent = (eventInfo) => {
+    const { homeTeamLogo, awayTeamLogo, broadcasters } = eventInfo.event.extendedProps;
+    
     return (
       <div className="event-content">
+        <div className="event-teams-logos">
+          {homeTeamLogo && <img src={homeTeamLogo} alt="Home" className="event-team-logo" />}
+          {awayTeamLogo && <img src={awayTeamLogo} alt="Away" className="event-team-logo" />}
+        </div>
         <div className="event-title">{eventInfo.event.title}</div>
-        <div className="event-league">{eventInfo.event.extendedProps.league}</div>
+        <div className="event-broadcasters">
+          {broadcasters && broadcasters.slice(0, 2).map((b, idx) => (
+            b.logo ? (
+              <img key={idx} src={b.logo} alt={b.name} className="event-broadcaster-logo" title={b.name} />
+            ) : (
+              <span key={idx} className="event-broadcaster-text" title={b.name}>
+                {b.name.substring(0, 3)}
+              </span>
+            )
+          ))}
+        </div>
       </div>
     );
   };
