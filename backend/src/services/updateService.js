@@ -1,6 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
 const axios = require('axios');
-const openrouterScraper = require('./openrouterScraper');
 const prisma = new PrismaClient();
 
 const BROADCASTER_MAPPING = {

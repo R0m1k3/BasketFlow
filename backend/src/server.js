@@ -7,7 +7,6 @@ const leagueRoutes = require('./routes/leagues');
 const broadcasterRoutes = require('./routes/broadcasters');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
-const openrouterRoutes = require('./routes/openrouter');
 const updateService = require('./services/updateService');
 
 const app = express();
@@ -18,7 +17,6 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/openrouter', openrouterRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/leagues', leagueRoutes);
 app.use('/api/broadcasters', broadcasterRoutes);
