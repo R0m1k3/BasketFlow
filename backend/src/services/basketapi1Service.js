@@ -58,7 +58,9 @@ async function fetchAndSave(apiKey) {
  * Fetch matches for a specific date
  */
 async function fetchMatchesByDate(apiKey, date) {
-  const url = `https://basketapi1.p.rapidapi.com/api/basketball/matches/${date}`;
+  // BasketAPI1 uses date in URL path: /api/basketball/matches/{date}
+  const dateFormatted = formatDateForAPI(date); // Convert to YYYY-MM-DD
+  const url = `https://basketapi1.p.rapidapi.com/api/basketball/matches/${dateFormatted}`;
   
   const response = await axios.get(url, {
     headers: {
@@ -242,6 +244,14 @@ function formatDate(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}${month}${day}`; // Format: YYYYMMDD
+}
+
+function formatDateForAPI(dateString) {
+  // Convert YYYYMMDD to YYYY-MM-DD
+  if (dateString.length === 8) {
+    return `${dateString.substring(0,4)}-${dateString.substring(4,6)}-${dateString.substring(6,8)}`;
+  }
+  return dateString;
 }
 
 function getShortName(leagueName) {
