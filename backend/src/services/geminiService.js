@@ -182,7 +182,7 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
         const match = await prisma.match.create({
           data: {
             externalId,
-            date: matchDate,
+            dateTime: matchDate,
             homeTeamId: homeTeam.id,
             awayTeamId: awayTeam.id,
             leagueId: league.id,
@@ -201,13 +201,20 @@ Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. For
             update: {},
             create: {
               name: broadcasterName,
-              isFree: broadcasterInfo?.isFree || false,
-              description: broadcasterInfo?.description || null
+              type: 'TV',
+              isFree: broadcasterInfo?.isFree || false
             }
           });
 
-          await prisma.broadcast.create({
-            data: {
+          await prisma.matchBroadcast.upsert({
+            where: {
+              matchId_broadcasterId: {
+                matchId: match.id,
+                broadcasterId: broadcaster.id
+              }
+            },
+            update: {},
+            create: {
               matchId: match.id,
               broadcasterId: broadcaster.id
             }

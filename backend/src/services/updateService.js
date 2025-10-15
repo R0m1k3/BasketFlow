@@ -113,15 +113,12 @@ async function updateMatches() {
     }
 
     if (totalMatches === 0) {
-      console.log('⚠️  No matches found from any source, using sample data');
-      await seedSampleData();
+      console.log('⚠️  No matches found from any source');
     } else {
       console.log(`✅ Match update completed: ${totalMatches} matches from multiple sources`);
     }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
-    console.log('⚠️  Falling back to sample data');
-    await seedSampleData();
   }
 }
 
