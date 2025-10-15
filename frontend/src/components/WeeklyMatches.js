@@ -80,7 +80,7 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
       <h2>Matchs de la semaine</h2>
       <div className="matches-list">
         {matches.map(match => (
-          <div key={match.id} className="match-card">
+          <div key={match.id} className={`match-card ${match.status || 'scheduled'}`}>
             <div 
               className="league-badge" 
               style={{ backgroundColor: getLeagueColor(match.league.name) }}
