@@ -1,0 +1,117 @@
+import React, { useState, useEffect } from 'react';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import axios from 'axios';
+import './MonthlyCalendar.css';
+
+function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
+  const [events, setEvents] = useState([]);
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  useEffect(() => {
+    fetchMonthMatches();
+  }, [currentDate, selectedLeague, selectedBroadcaster]);
+
+  const fetchMonthMatches = async () => {
+    try {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      const response = await axios.get(`/api/matches/month/${year}/${month}`);
+      
+      let matches = response.data;
+
+      if (selectedLeague !== 'all') {
+        matches = matches.filter(m => m.leagueId === selectedLeague);
+      }
+
+      if (selectedBroadcaster !== 'all') {
+        matches = matches.filter(m => 
+          m.broadcasts.some(b => b.broadcasterId === selectedBroadcaster)
+        );
+      }
+
+      const calendarEvents = matches.map(match => ({
+        id: match.id,
+        title: `${match.homeTeam.shortName || match.homeTeam.name} vs ${match.awayTeam.shortName || match.awayTeam.name}`,
+        start: match.dateTime,
+        backgroundColor: getLeagueColor(match.league.name),
+        borderColor: getLeagueColor(match.league.name),
+        extendedProps: {
+          league: match.league.name,
+          broadcasters: match.broadcasts.map(b => b.broadcaster.name).join(', ')
+        }
+      }));
+
+      setEvents(calendarEvents);
+    } catch (error) {
+      console.error('Error fetching month matches:', error);
+    }
+  };
+
+  const getLeagueColor = (leagueName) => {
+    const colors = {
+      'NBA': '#1D428A',
+      'WNBA': '#C8102E',
+      'Euroleague': '#FF7900',
+      'EuroCup': '#009CDE',
+      'BCL': '#000000',
+      'Betclic Elite': '#002654'
+    };
+    return colors[leagueName] || '#333';
+  };
+
+  const handleDateSet = (arg) => {
+    setCurrentDate(arg.view.currentStart);
+  };
+
+  const renderEventContent = (eventInfo) => {
+    return (
+      <div className="event-content">
+        <div className="event-title">{eventInfo.event.title}</div>
+        <div className="event-league">{eventInfo.event.extendedProps.league}</div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="monthly-calendar">
+      <h2>Calendrier mensuel</h2>
+      <FullCalendar
+        plugins={[dayGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth"
+        locale="fr"
+        events={events}
+        datesSet={handleDateSet}
+        eventContent={renderEventContent}
+        headerToolbar={{
+          left: 'prev,next today',
+          center: 'title',
+          right: ''
+        }}
+        height="auto"
+        eventTimeFormat={{
+          hour: '2-digit',
+          minute: '2-digit',
+          meridiem: false
+        }}
+        buttonText={{
+          today: "Aujourd'hui"
+        }}
+      />
+      <div className="calendar-legend">
+        <h3>Légende :</h3>
+        <div className="legend-items">
+          <div className="legend-item"><span style={{backgroundColor: '#1D428A'}}></span> NBA</div>
+          <div className="legend-item"><span style={{backgroundColor: '#C8102E'}}></span> WNBA</div>
+          <div className="legend-item"><span style={{backgroundColor: '#FF7900'}}></span> Euroleague</div>
+          <div className="legend-item"><span style={{backgroundColor: '#009CDE'}}></span> EuroCup</div>
+          <div className="legend-item"><span style={{backgroundColor: '#000000'}}></span> BCL</div>
+          <div className="legend-item"><span style={{backgroundColor: '#002654'}}></span> Betclic Elite</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default MonthlyCalendar;

@@ -1,0 +1,94 @@
+.monthly-calendar h2 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.monthly-calendar {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.fc {
+  font-family: inherit;
+}
+
+.fc .fc-button-primary {
+  background-color: #1D428A;
+  border-color: #1D428A;
+}
+
+.fc .fc-button-primary:hover {
+  background-color: #152d5f;
+  border-color: #152d5f;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #152d5f;
+  border-color: #152d5f;
+}
+
+.event-content {
+  padding: 2px;
+  font-size: 0.85rem;
+}
+
+.event-title {
+  font-weight: 600;
+}
+
+.event-league {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.calendar-legend {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #f0f0f0;
+}
+
+.calendar-legend h3 {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.legend-item span {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .monthly-calendar {
+    padding: 1rem;
+  }
+
+  .legend-items {
+    gap: 1rem;
+  }
+
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
