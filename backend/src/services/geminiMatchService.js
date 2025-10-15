@@ -27,37 +27,24 @@ async function fetchAndGenerateMatches(apiKey) {
     const dateFrom = formatDate(today);
     const dateTo = formatDate(endDate);
 
-    const prompt = `Tu es un expert en basketball. Recherche sur Google les calendriers officiels et trouve TOUS les matchs programmés des ligues suivantes du ${dateFrom} au ${dateTo} :
+    const prompt = `Recherche sur Google les calendriers officiels de basketball et trouve les matchs programmés du ${dateFrom} au ${dateTo} pour :
+- NBA (NBA.com)
+- WNBA (WNBA.com)
+- Euroleague (Euroleague.net)
+- EuroCup (Eurocupbasketball.com)
+- Betclic Elite (LNB.fr)
+- BCL (championsleague.basketball)
 
-1. **NBA** (États-Unis) - Recherche sur NBA.com ou ESPN
-2. **WNBA** (États-Unis) - Recherche sur WNBA.com  
-3. **Euroleague** (Europe) - Recherche sur Euroleague.net
-4. **EuroCup** (Europe) - Recherche sur Eurocupbasketball.com
-5. **Betclic Elite / LNB** (France) - Recherche sur LNB.fr ou Betclic Elite
-6. **Basketball Champions League (BCL)** (Europe) - Recherche sur championsleague.basketball
+Retourne un tableau JSON avec ce format exact pour chaque match :
+{
+  "league": "NBA",
+  "homeTeam": "Boston Celtics", 
+  "awayTeam": "Miami Heat",
+  "dateTime": "2025-10-17T19:30:00Z",
+  "broadcaster": "beIN Sports"
+}
 
-Pour chaque match trouvé, retourne EXACTEMENT ce format JSON (pas de texte avant/après, SEULEMENT le JSON) :
-
-\`\`\`json
-[
-  {
-    "league": "NBA",
-    "homeTeam": "Boston Celtics",
-    "awayTeam": "Miami Heat",
-    "dateTime": "2025-10-17T19:30:00Z",
-    "broadcaster": "beIN Sports"
-  }
-]
-\`\`\`
-
-**IMPORTANT** :
-- Format ISO 8601 pour dateTime (avec timezone)
-- Noms d'équipes EXACTS (pas d'abréviations)
-- broadcaster = chaîne française qui diffuse (beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN, NBA League Pass, ou "Non diffusé" si inconnu)
-- Trouve TOUS les matchs programmés, pas seulement quelques-uns
-- Vérifie les calendriers officiels sur Google
-
-Retourne UNIQUEMENT le tableau JSON, rien d'autre.`;
+broadcaster = diffuseur français (beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN) ou "Non diffusé"`;
 
     const result = await ai.models.generateContent({
       model: 'gemini-2.0-flash-exp',
@@ -65,7 +52,22 @@ Retourne UNIQUEMENT le tableau JSON, rien d'autre.`;
       config: {
         tools: [{
           googleSearch: {}
-        }]
+        }],
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              league: { type: 'string' },
+              homeTeam: { type: 'string' },
+              awayTeam: { type: 'string' },
+              dateTime: { type: 'string' },
+              broadcaster: { type: 'string' }
+            },
+            required: ['league', 'homeTeam', 'awayTeam', 'dateTime', 'broadcaster']
+          }
+        }
       }
     });
     
@@ -99,6 +101,7 @@ Retourne UNIQUEMENT le tableau JSON, rien d'autre.`;
     let savedCount = 0;
     for (const matchData of matchesData) {
       try {
+        console.log(`  → Saving: ${matchData.homeTeam} vs ${matchData.awayTeam} | Broadcaster: ${matchData.broadcaster || 'none'}`);
         await saveMatch(matchData);
         savedCount++;
       } catch (error) {
@@ -177,6 +180,8 @@ async function saveMatch(matchData) {
     where: { externalId }
   });
 
+  let match;
+  
   if (existingMatch) {
     // Update existing match
     await prisma.match.update({
@@ -185,9 +190,10 @@ async function saveMatch(matchData) {
         dateTime: matchDate
       }
     });
+    match = existingMatch;
   } else {
     // Create new match
-    const match = await prisma.match.create({
+    match = await prisma.match.create({
       data: {
         externalId,
         dateTime: matchDate,
@@ -199,20 +205,33 @@ async function saveMatch(matchData) {
         awayScore: null
       }
     });
+  }
 
-    // Add broadcaster if specified
-    if (broadcaster && broadcaster !== 'Non diffusé') {
-      const broadcasterRecord = await prisma.broadcaster.upsert({
-        where: { name: broadcaster },
-        update: {},
-        create: {
-          name: broadcaster,
-          logo: null,
-          subscriptionRequired: !broadcaster.includes('gratuit')
+  // Add broadcaster if specified (for both new and existing matches)
+  if (broadcaster && broadcaster !== 'Non diffusé') {
+    const broadcasterRecord = await prisma.broadcaster.upsert({
+      where: { name: broadcaster },
+      update: {},
+      create: {
+        name: broadcaster,
+        type: 'TV',
+        logo: null,
+        isFree: broadcaster.includes('gratuit') || broadcaster.includes("L'Équipe") || broadcaster.includes('Monaco')
+      }
+    });
+
+    // Check if broadcast link already exists
+    const existingBroadcast = await prisma.matchBroadcast.findUnique({
+      where: {
+        matchId_broadcasterId: {
+          matchId: match.id,
+          broadcasterId: broadcasterRecord.id
         }
-      });
+      }
+    });
 
-      await prisma.broadcast.create({
+    if (!existingBroadcast) {
+      await prisma.matchBroadcast.create({
         data: {
           matchId: match.id,
           broadcasterId: broadcasterRecord.id

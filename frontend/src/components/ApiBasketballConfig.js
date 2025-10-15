@@ -104,58 +104,15 @@ function ApiBasketballConfig() {
       {message && <div className="admin-message">{message}</div>}
 
       <div className="config-section">
-        <h3>🏀 Sources de données basket</h3>
+        <h3>🏀 Source de données : Gemini AI avec Google Search</h3>
         <p className="config-description">
-          BasketAPI1 récupère les matchs et scores en temps réel. Gemini enrichit ensuite avec les diffuseurs français.
+          Gemini recherche sur Google les calendriers officiels (NBA.com, Euroleague.net, LNB.fr) et génère automatiquement tous les matchs programmés avec les diffuseurs français.
         </p>
       </div>
 
       <div className="config-section">
         <h3>
-          📊 Source 1 : BasketAPI1
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={basketapi1Enabled}
-              onChange={(e) => {
-                setBasketapi1Enabled(e.target.checked);
-                handleToggleSource('BASKETAPI1', e.target.checked);
-              }}
-            />
-            <span className="slider"></span>
-          </label>
-        </h3>
-        <p className="config-description">
-          Couvre 70+ ligues : NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL, NCAA. Live scores en temps réel.
-          <br />
-          <a href="https://rapidapi.com/fluis.lacasse/api/basketapi1" target="_blank" rel="noopener noreferrer">
-            S'inscrire sur RapidAPI (BasketAPI1) →
-          </a>
-        </p>
-
-        <div className="form-group">
-          <label>Clé API RapidAPI (BasketAPI1)</label>
-          <input
-            type="text"
-            value={basketapi1Key}
-            onChange={(e) => setBasketapi1Key(e.target.value)}
-            placeholder="Votre clé RapidAPI..."
-            className="api-key-input"
-            disabled={!basketapi1Enabled}
-          />
-          <button 
-            onClick={handleSaveBasketapi1} 
-            disabled={loading || !basketapi1Enabled}
-            className="btn-save"
-          >
-            {loading ? 'Sauvegarde...' : 'Sauvegarder'}
-          </button>
-        </div>
-      </div>
-
-      <div className="config-section">
-        <h3>
-          🤖 Source 2 : Gemini AI (Enrichissement)
+          🤖 Gemini AI (Matchs + Diffuseurs)
           <label className="toggle-switch">
             <input
               type="checkbox"
@@ -169,7 +126,9 @@ function ApiBasketballConfig() {
           </label>
         </h3>
         <p className="config-description">
-          Intelligence artificielle avec recherche Google. Enrichit les matchs avec les diffuseurs français (beIN Sports, Prime Video, SKWEEK, etc.).
+          Intelligence artificielle avec recherche Google. Trouve TOUS les matchs programmés et ajoute automatiquement les diffuseurs français (beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN, etc.).
+          <br />
+          <strong>Couverture complète :</strong> NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
           <br />
           <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer">
             Obtenir une clé API Gemini (gratuit) →
@@ -220,26 +179,25 @@ function ApiBasketballConfig() {
       <div className="config-section">
         <h3>📖 Guide d'utilisation</h3>
         <ol className="usage-guide">
-          <li>Créez un compte sur <a href="https://rapidapi.com" target="_blank" rel="noopener noreferrer">RapidAPI</a></li>
-          <li>Abonnez-vous à <a href="https://rapidapi.com/fluis.lacasse/api/basketapi1" target="_blank" rel="noopener noreferrer">BasketAPI1</a> (plan gratuit disponible)</li>
-          <li>Copiez votre clé API RapidAPI</li>
+          <li>Obtenez une clé API Gemini sur <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer">Google AI Studio</a> (gratuit)</li>
           <li>Collez la clé ci-dessus et cliquez sur "Sauvegarder"</li>
-          <li>Optionnel : Ajoutez une clé Gemini pour enrichir avec les diffuseurs français</li>
-          <li>Cliquez sur "Mettre à jour les matchs" pour tester</li>
+          <li>Cliquez sur "Mettre à jour les matchs" pour lancer la recherche Gemini</li>
+          <li>Gemini va rechercher sur Google les calendriers officiels et générer tous les matchs</li>
           <li>Les matchs seront automatiquement mis à jour tous les jours à 6h00</li>
         </ol>
         
         <div className="info-box">
-          <h4>🎯 Fonctionnement :</h4>
+          <h4>🎯 Fonctionnement intelligent :</h4>
           <ul>
-            <li><strong>BasketAPI1 :</strong> Récupère les matchs et scores en temps réel pour 70+ ligues (NBA, WNBA, Euroleague, NCAA, etc.)</li>
-            <li><strong>Gemini AI :</strong> Enrichit automatiquement avec les diffuseurs français (beIN Sports, Prime Video, SKWEEK, etc.)</li>
-            <li><strong>Affichage :</strong> Les scores des matchs terminés/en cours s'affichent automatiquement</li>
+            <li><strong>Recherche Google :</strong> Gemini cherche les calendriers officiels (NBA.com, Euroleague.net, LNB.fr, etc.)</li>
+            <li><strong>Génération de matchs :</strong> Création automatique des matchs programmés avec dates/équipes exactes</li>
+            <li><strong>Diffuseurs français :</strong> Ajout automatique des chaînes TV (beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN)</li>
+            <li><strong>Couverture complète :</strong> NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL</li>
           </ul>
         </div>
 
         <div className="info-box">
-          <h4>📺 Diffuseurs français :</h4>
+          <h4>📺 Diffuseurs français détectés :</h4>
           <ul>
             <li><strong>NBA :</strong> beIN Sports, Prime Video, NBA League Pass</li>
             <li><strong>WNBA :</strong> NBA League Pass, beIN Sports</li>
@@ -250,8 +208,8 @@ function ApiBasketballConfig() {
           </ul>
         </div>
 
-        <div className="warning-box">
-          ⚠️ <strong>Plan gratuit :</strong> BasketAPI1 offre un plan gratuit ($0/mois) avec quotas limités. Plans payants dès $9.99/mois.
+        <div className="info-box success">
+          ✅ <strong>Gemini AI :</strong> API gratuite avec quota généreux (Google AI Studio). Pas besoin de payer pour BasketAPI ou autres services RapidAPI !
         </div>
       </div>
     </div>
