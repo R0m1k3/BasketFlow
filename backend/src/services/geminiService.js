@@ -70,9 +70,9 @@ Pour chaque match, fournis:
 - Équipe domicile (nom EXACT et court, sans sponsor)
 - Équipe extérieure (nom EXACT et court, sans sponsor)
 - Ligue/compétition
-- URL du logo de l'équipe domicile (format PNG ou SVG de préférence)
-- URL du logo de l'équipe extérieure (format PNG ou SVG de préférence)
-- Chaînes TV françaises qui diffusent le match avec leurs logos
+- URL du logo de l'équipe domicile (UNIQUEMENT format PNG ou JPG direct, pas de SVG ni de /thumb/)
+- URL du logo de l'équipe extérieure (UNIQUEMENT format PNG ou JPG direct, pas de SVG ni de /thumb/)
+- Chaînes TV françaises qui diffusent le match avec leurs logos (UNIQUEMENT PNG ou JPG direct)
 
 Réponds UNIQUEMENT avec un JSON array valide contenant les matchs trouvés. Format:
 [
