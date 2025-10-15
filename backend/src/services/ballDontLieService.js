@@ -16,17 +16,36 @@ const BROADCASTER_MAPPING = {
   ]
 };
 
-async function fetchNBAMatches(apiKey) {
+const LEAGUE_CONFIGS = {
+  NBA: {
+    name: 'NBA',
+    shortName: 'NBA',
+    country: 'USA',
+    color: '#1D428A',
+    seasons: [new Date().getFullYear() - 1]
+  },
+  WNBA: {
+    name: 'WNBA',
+    shortName: 'WNBA',
+    country: 'USA',
+    color: '#FE5000',
+    seasons: [new Date().getFullYear()]
+  }
+};
+
+async function fetchGamesForLeague(apiKey, leagueName) {
   const today = new Date();
   const nextWeek = new Date(today);
   nextWeek.setDate(today.getDate() + 14);
+
+  const leagueConfig = LEAGUE_CONFIGS[leagueName];
 
   try {
     const response = await axios.get(`${BALLDONTLIE_BASE_URL}/games`, {
       params: {
         start_date: today.toISOString().split('T')[0],
         end_date: nextWeek.toISOString().split('T')[0],
-        seasons: [new Date().getFullYear() - 1] // NBA season 2024-2025
+        seasons: leagueConfig.seasons
       },
       headers: {
         'Authorization': apiKey
@@ -36,25 +55,27 @@ async function fetchNBAMatches(apiKey) {
 
     if (response.data && response.data.data) {
       const games = response.data.data;
-      console.log(`  📊 BallDontLie: Found ${games.length} NBA games`);
+      console.log(`  📊 BallDontLie: Found ${games.length} ${leagueName} games`);
       return games;
     }
     return [];
   } catch (error) {
-    console.error(`  ❌ BallDontLie NBA error:`, error.message);
+    console.error(`  ❌ BallDontLie ${leagueName} error:`, error.message);
     return [];
   }
 }
 
-async function saveNBAMatches(games) {
+async function saveMatches(games, leagueName) {
+  const leagueConfig = LEAGUE_CONFIGS[leagueName];
+  
   const league = await prisma.league.upsert({
-    where: { name: 'NBA' },
+    where: { name: leagueConfig.name },
     update: {},
     create: {
-      name: 'NBA',
-      shortName: 'NBA',
-      country: 'USA',
-      color: '#1D428A'
+      name: leagueConfig.name,
+      shortName: leagueConfig.shortName,
+      country: leagueConfig.country,
+      color: leagueConfig.color
     }
   });
 
@@ -63,10 +84,10 @@ async function saveNBAMatches(games) {
   for (const game of games) {
     try {
       const homeTeam = await prisma.team.upsert({
-        where: { id: `balldontlie-${game.home_team.id}` },
+        where: { id: `balldontlie-${leagueName}-${game.home_team.id}` },
         update: { name: game.home_team.full_name },
         create: {
-          id: `balldontlie-${game.home_team.id}`,
+          id: `balldontlie-${leagueName}-${game.home_team.id}`,
           name: game.home_team.full_name,
           shortName: game.home_team.abbreviation,
           leagueId: league.id
@@ -74,10 +95,10 @@ async function saveNBAMatches(games) {
       });
 
       const awayTeam = await prisma.team.upsert({
-        where: { id: `balldontlie-${game.visitor_team.id}` },
+        where: { id: `balldontlie-${leagueName}-${game.visitor_team.id}` },
         update: { name: game.visitor_team.full_name },
         create: {
-          id: `balldontlie-${game.visitor_team.id}`,
+          id: `balldontlie-${leagueName}-${game.visitor_team.id}`,
           name: game.visitor_team.full_name,
           shortName: game.visitor_team.abbreviation,
           leagueId: league.id
@@ -85,7 +106,7 @@ async function saveNBAMatches(games) {
       });
 
       const match = await prisma.match.upsert({
-        where: { externalId: `balldontlie-${game.id}` },
+        where: { externalId: `balldontlie-${leagueName}-${game.id}` },
         update: {
           dateTime: new Date(game.date),
           status: game.status,
@@ -93,7 +114,7 @@ async function saveNBAMatches(games) {
           awayScore: game.visitor_team_score
         },
         create: {
-          externalId: `balldontlie-${game.id}`,
+          externalId: `balldontlie-${leagueName}-${game.id}`,
           leagueId: league.id,
           homeTeamId: homeTeam.id,
           awayTeamId: awayTeam.id,
@@ -102,7 +123,7 @@ async function saveNBAMatches(games) {
         }
       });
 
-      const broadcasters = BROADCASTER_MAPPING.NBA;
+      const broadcasters = BROADCASTER_MAPPING[leagueName];
       for (const b of broadcasters) {
         const broadcaster = await prisma.broadcaster.upsert({
           where: { name: b.name },
@@ -131,28 +152,37 @@ async function saveNBAMatches(games) {
 
       savedCount++;
     } catch (error) {
-      console.error(`  ❌ Error saving NBA match ${game.id}:`, error.message);
+      console.error(`  ❌ Error saving ${leagueName} match ${game.id}:`, error.message);
     }
   }
 
-  console.log(`  ✅ BallDontLie: Saved ${savedCount} NBA matches`);
+  console.log(`  ✅ BallDontLie: Saved ${savedCount} ${leagueName} matches`);
   return savedCount;
 }
 
-async function fetchAndSaveNBA(apiKey) {
+async function fetchAndSave(apiKey) {
   if (!apiKey) {
     console.log('  ⚠️  BallDontLie API key not configured, skipping');
     return 0;
   }
 
+  let totalSaved = 0;
+
   console.log('  📡 Fetching NBA matches from BallDontLie...');
-  const games = await fetchNBAMatches(apiKey);
-  if (games.length > 0) {
-    return await saveNBAMatches(games);
+  const nbaGames = await fetchGamesForLeague(apiKey, 'NBA');
+  if (nbaGames.length > 0) {
+    totalSaved += await saveMatches(nbaGames, 'NBA');
   }
-  return 0;
+
+  console.log('  📡 Fetching WNBA matches from BallDontLie...');
+  const wnbaGames = await fetchGamesForLeague(apiKey, 'WNBA');
+  if (wnbaGames.length > 0) {
+    totalSaved += await saveMatches(wnbaGames, 'WNBA');
+  }
+
+  return totalSaved;
 }
 
 module.exports = {
-  fetchAndSaveNBA
+  fetchAndSave
 };

@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const EUROLEAGUE_BASE_URL = 'https://live.euroleague.net/api';
+const EUROCUP_BASE_URL = 'https://live.eurocup.com/api';
 
 const BROADCASTER_MAPPING = {
   Euroleague: [
@@ -17,12 +18,32 @@ const BROADCASTER_MAPPING = {
   ]
 };
 
-async function fetchEuroleagueMatches() {
+const LEAGUE_CONFIGS = {
+  Euroleague: {
+    name: 'Euroleague',
+    shortName: 'EL',
+    country: 'Europe',
+    color: '#FF6B35',
+    baseUrl: EUROLEAGUE_BASE_URL,
+    seasonPrefix: 'E'
+  },
+  EuroCup: {
+    name: 'EuroCup',
+    shortName: 'EC',
+    country: 'Europe',
+    color: '#0066CC',
+    baseUrl: EUROCUP_BASE_URL,
+    seasonPrefix: 'U'
+  }
+};
+
+async function fetchGamesForLeague(leagueName) {
   const today = new Date();
-  const season = `E${today.getFullYear()}`;
+  const leagueConfig = LEAGUE_CONFIGS[leagueName];
+  const season = `${leagueConfig.seasonPrefix}${today.getFullYear()}`;
   
   try {
-    const response = await axios.get(`${EUROLEAGUE_BASE_URL}/Games`, {
+    const response = await axios.get(`${leagueConfig.baseUrl}/Games`, {
       params: {
         seasonCode: season
       },
@@ -39,25 +60,27 @@ async function fetchEuroleagueMatches() {
         return gameDate >= today && gameDate <= fourteenDaysFromNow;
       });
 
-      console.log(`  📊 Euroleague API: Found ${upcomingGames.length} Euroleague games`);
+      console.log(`  📊 ${leagueName} API: Found ${upcomingGames.length} games`);
       return upcomingGames;
     }
     return [];
   } catch (error) {
-    console.error(`  ❌ Euroleague API error:`, error.message);
+    console.error(`  ❌ ${leagueName} API error:`, error.message);
     return [];
   }
 }
 
-async function saveEuroleagueMatches(games) {
+async function saveMatches(games, leagueName) {
+  const leagueConfig = LEAGUE_CONFIGS[leagueName];
+  
   const league = await prisma.league.upsert({
-    where: { name: 'Euroleague' },
+    where: { name: leagueConfig.name },
     update: {},
     create: {
-      name: 'Euroleague',
-      shortName: 'EL',
-      country: 'Europe',
-      color: '#FF6B35'
+      name: leagueConfig.name,
+      shortName: leagueConfig.shortName,
+      country: leagueConfig.country,
+      color: leagueConfig.color
     }
   });
 
@@ -65,11 +88,14 @@ async function saveEuroleagueMatches(games) {
 
   for (const game of games) {
     try {
+      const homeTeamId = `${leagueName.toLowerCase()}-${game.HomeTeam?.Code || game.HomeTeam?.Name}`;
+      const awayTeamId = `${leagueName.toLowerCase()}-${game.AwayTeam?.Code || game.AwayTeam?.Name}`;
+      
       const homeTeam = await prisma.team.upsert({
-        where: { id: `euroleague-${game.HomeTeam?.Code || game.HomeTeam?.Name}` },
+        where: { id: homeTeamId },
         update: { name: game.HomeTeam?.Name },
         create: {
-          id: `euroleague-${game.HomeTeam?.Code || game.HomeTeam?.Name}`,
+          id: homeTeamId,
           name: game.HomeTeam?.Name,
           shortName: game.HomeTeam?.Code || game.HomeTeam?.Name?.substring(0, 3).toUpperCase(),
           leagueId: league.id
@@ -77,24 +103,25 @@ async function saveEuroleagueMatches(games) {
       });
 
       const awayTeam = await prisma.team.upsert({
-        where: { id: `euroleague-${game.AwayTeam?.Code || game.AwayTeam?.Name}` },
+        where: { id: awayTeamId },
         update: { name: game.AwayTeam?.Name },
         create: {
-          id: `euroleague-${game.AwayTeam?.Code || game.AwayTeam?.Name}`,
+          id: awayTeamId,
           name: game.AwayTeam?.Name,
           shortName: game.AwayTeam?.Code || game.AwayTeam?.Name?.substring(0, 3).toUpperCase(),
           leagueId: league.id
         }
       });
 
+      const externalId = `${leagueName.toLowerCase()}-${game.GameCode || game.GameId}`;
       const match = await prisma.match.upsert({
-        where: { externalId: `euroleague-${game.GameCode || game.GameId}` },
+        where: { externalId },
         update: {
           dateTime: new Date(game.Date),
           status: game.Status || 'Scheduled'
         },
         create: {
-          externalId: `euroleague-${game.GameCode || game.GameId}`,
+          externalId,
           leagueId: league.id,
           homeTeamId: homeTeam.id,
           awayTeamId: awayTeam.id,
@@ -104,7 +131,7 @@ async function saveEuroleagueMatches(games) {
         }
       });
 
-      const broadcasters = BROADCASTER_MAPPING.Euroleague;
+      const broadcasters = BROADCASTER_MAPPING[leagueName];
       for (const b of broadcasters) {
         const broadcaster = await prisma.broadcaster.upsert({
           where: { name: b.name },
@@ -133,23 +160,32 @@ async function saveEuroleagueMatches(games) {
 
       savedCount++;
     } catch (error) {
-      console.error(`  ❌ Error saving Euroleague match:`, error.message);
+      console.error(`  ❌ Error saving ${leagueName} match:`, error.message);
     }
   }
 
-  console.log(`  ✅ Euroleague API: Saved ${savedCount} Euroleague matches`);
+  console.log(`  ✅ ${leagueName} API: Saved ${savedCount} matches`);
   return savedCount;
 }
 
-async function fetchAndSaveEuroleague() {
+async function fetchAndSave() {
+  let totalSaved = 0;
+
   console.log('  📡 Fetching Euroleague matches from official API...');
-  const games = await fetchEuroleagueMatches();
-  if (games.length > 0) {
-    return await saveEuroleagueMatches(games);
+  const euroleagueGames = await fetchGamesForLeague('Euroleague');
+  if (euroleagueGames.length > 0) {
+    totalSaved += await saveMatches(euroleagueGames, 'Euroleague');
   }
-  return 0;
+
+  console.log('  📡 Fetching EuroCup matches from official API...');
+  const eurocupGames = await fetchGamesForLeague('EuroCup');
+  if (eurocupGames.length > 0) {
+    totalSaved += await saveMatches(eurocupGames, 'EuroCup');
+  }
+
+  return totalSaved;
 }
 
 module.exports = {
-  fetchAndSaveEuroleague
+  fetchAndSave
 };

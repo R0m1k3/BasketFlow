@@ -49,13 +49,23 @@ async function updateMatches() {
     await cleanOldMatches();
     
     let totalMatches = 0;
+    let rapidApiMatches = 0;
 
     // Source 1: RapidAPI (NBA, WNBA, Euroleague, Betclic Elite)
     if (rapidApiKeyConfig && rapidApiKeyConfig.value) {
       console.log('📡 Source 1: RapidAPI (API-Basketball)');
       try {
         await fetchAndUpdateMatchesFromAPI(rapidApiKeyConfig.value);
-        totalMatches += await prisma.match.count();
+        const rapidApiCount = await prisma.match.count({
+          where: {
+            externalId: {
+              startsWith: 'rapidapi-'
+            }
+          }
+        });
+        rapidApiMatches = rapidApiCount;
+        totalMatches += rapidApiCount;
+        console.log(`  ✅ RapidAPI: ${rapidApiCount} matches`);
       } catch (error) {
         console.error('  ❌ RapidAPI failed:', error.message);
       }
@@ -65,7 +75,7 @@ async function updateMatches() {
     if (ballDontLieKeyConfig && ballDontLieKeyConfig.value) {
       console.log('📡 Source 2: BallDontLie (NBA/WNBA)');
       try {
-        const ballDontLieMatches = await ballDontLieService.fetchAndSaveNBA(ballDontLieKeyConfig.value);
+        const ballDontLieMatches = await ballDontLieService.fetchAndSave(ballDontLieKeyConfig.value);
         totalMatches += ballDontLieMatches;
       } catch (error) {
         console.error('  ❌ BallDontLie failed:', error.message);
@@ -73,12 +83,12 @@ async function updateMatches() {
     }
 
     // Source 3: Euroleague API officielle (gratuite, pas de clé)
-    console.log('📡 Source 3: Euroleague Official API');
+    console.log('📡 Source 3: Euroleague + EuroCup Official API');
     try {
-      const euroleagueMatches = await euroleagueService.fetchAndSaveEuroleague();
+      const euroleagueMatches = await euroleagueService.fetchAndSave();
       totalMatches += euroleagueMatches;
     } catch (error) {
-      console.error('  ❌ Euroleague API failed:', error.message);
+      console.error('  ❌ Euroleague/EuroCup API failed:', error.message);
     }
 
     if (totalMatches === 0) {

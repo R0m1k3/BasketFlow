@@ -6,11 +6,15 @@ Application web affichant les matchs de basketball diffusés en France avec cale
 
 - **Ligues supportées** : NBA, WNBA, Euroleague, EuroCup, BCL, Betclic Elite
 - **Chaînes de diffusion** : beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK, NBA League Pass, Euroleague TV, etc.
-- **API en temps réel** : Utilise API-Basketball (RapidAPI) pour données officielles des matchs
+- **🔄 Système multi-sources** : Agrège les données de 3 API différentes avec déduplication intelligente
+  - **RapidAPI** (API-Basketball) : NBA, WNBA, Euroleague, Betclic Elite
+  - **BallDontLie** : NBA et WNBA (gratuit, 60 requêtes/minute)
+  - **Euroleague API** : Euroleague et Eurocup (gratuit, officiel)
 - **Mapping intelligent des diffuseurs** : Associe automatiquement les matchs aux chaînes françaises (400+ matchs NBA sur beIN Sports, etc.)
 - **Mise à jour journalière automatique** : Synchronisation quotidienne à 6h du matin
+- **Déduplication** : Système intelligent avec externalId préfixé (rapidapi-, balldontlie-, euroleague-) qui évite les doublons
 - **Filtres** : Par ligue et par chaîne de diffusion
-- **Panel admin** : Configuration API-Basketball et gestion des utilisateurs
+- **Panel admin** : Configuration multi-API et gestion des utilisateurs
 
 ## 🚀 Installation avec Docker
 
@@ -129,8 +133,11 @@ docker-compose logs -f
 
 - `JWT_SECRET` : **Obligatoire** - Secret pour signer les tokens JWT
 - `SESSION_SECRET` : **Obligatoire** - Secret pour les sessions Express
-- `API_BASKETBALL_KEY` : **Recommandé** - Clé API RapidAPI pour API-Basketball (utilise données d'exemple si absent)
+- `API_BASKETBALL_KEY` : **Optionnel** - Clé API RapidAPI pour API-Basketball
+- `BALLDONTLIE_API_KEY` : **Optionnel** - Clé API BallDontLie (gratuit)
 - `DATABASE_URL` : URL de connexion PostgreSQL
+
+**Note** : Les 3 sources API sont optionnelles. L'application fonctionne avec données d'exemple si aucune clé n'est configurée.
 
 ### Bonnes pratiques
 
@@ -140,24 +147,38 @@ docker-compose logs -f
 4. ✅ Utiliser HTTPS en production
 5. ✅ Configurer un pare-feu
 
-## 🏀 API-Basketball pour données en temps réel
+## 🏀 Configuration des sources API
 
-L'application utilise **API-Basketball** (via RapidAPI) pour obtenir les matchs officiels :
+L'application utilise **3 sources de données** qui peuvent être combinées ou utilisées indépendamment :
 
-- **Données officielles** : NBA, WNBA, Euroleague, Betclic Elite en temps réel
-- **Mapping intelligent** : Les matchs sont automatiquement associés aux diffuseurs français
-- **100+ requêtes/jour** : Plan gratuit suffisant pour tester
-- **Configuration simple** : Via le panneau d'administration
+### 📊 Source 1 : RapidAPI (API-Basketball) - Optionnel
 
-Sans clé API, l'application fonctionne avec des données d'exemple.
+- **Couverture** : NBA, WNBA, Euroleague, Betclic Elite
+- **Données officielles** : Temps réel avec scores et statuts
+- **Plan gratuit** : 100 requêtes/jour (suffisant pour tester)
+- **Configuration** : [RapidAPI → API-Basketball](https://rapidapi.com/api-sports/api/api-basketball)
 
-### Configuration API-Basketball
+### 🆓 Source 2 : BallDontLie - Gratuit
 
-1. Créez un compte sur [RapidAPI](https://rapidapi.com)
-2. Abonnez-vous à [API-Basketball](https://rapidapi.com/api-sports/api/api-basketball)
-3. Connectez-vous en tant qu'admin (identifiant: `admin`, mot de passe: `admin`)
-4. Allez dans le panneau d'administration
-5. Configurez votre clé API et sélectionnez un modèle gratuit (Gemini 2.5 Flash recommandé)
+- **Couverture** : NBA et WNBA uniquement
+- **100% gratuit** : 60 requêtes/minute, aucun paiement
+- **Fiable** : API communautaire stable
+- **Configuration** : [Inscription BallDontLie](https://www.balldontlie.io)
+
+### ✅ Source 3 : Euroleague API - Gratuit
+
+- **Couverture** : Euroleague et Eurocup
+- **API officielle** : Données directement de l'Euroleague
+- **Aucune clé requise** : Fonctionne automatiquement
+
+### Configuration
+
+1. Connectez-vous en tant qu'admin (`admin` / `admin`)
+2. Allez dans le panneau d'administration
+3. Configurez les clés API que vous souhaitez utiliser
+4. Cliquez sur "Mettre à jour les matchs" pour synchroniser
+
+**Le système évite automatiquement les doublons** grâce à des identifiants uniques préfixés par source.
 
 ## 🐳 Déploiement Docker
 
