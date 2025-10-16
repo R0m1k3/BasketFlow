@@ -1,77 +1,50 @@
 const { PrismaClient } = require('@prisma/client');
 const nbaConnector = require('./nbaConnector');
-const wnbaConnector = require('./wnbaConnector');
-const euroleagueScraper = require('./euroleagueScraper');
-const lnbScraper = require('./lnbScraper');
-const bclScraper = require('./bclScraper');
+const rapidApiBasketball = require('./rapidApiBasketballConnector');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
   try {
-    console.log('🏀 Starting match update with APIs & Web Scraping...\n');
+    console.log('🏀 Starting match update with Basketball APIs...\n');
 
     await cleanOldMatches();
     
     let totalMatches = 0;
 
-    // Source 1: NBA Official API
-    console.log('📡 Source 1: NBA Official API (cdn.nba.com)');
-    try {
-      const nbaMatches = await nbaConnector.fetchNBASchedule();
-      totalMatches += nbaMatches;
-    } catch (error) {
-      console.error('  ❌ NBA API failed:', error.message);
-    }
+    // Check for RapidAPI Basketball key
+    const rapidApiConfig = await prisma.config.findUnique({
+      where: { key: 'RAPIDAPI_BASKETBALL_KEY' }
+    });
 
-    // Source 2: WNBA Official API
-    console.log('\n📡 Source 2: WNBA Official API (cdn.wnba.com)');
-    try {
-      const wnbaMatches = await wnbaConnector.fetchWNBASchedule();
-      totalMatches += wnbaMatches;
-    } catch (error) {
-      console.error('  ❌ WNBA API failed:', error.message);
-    }
-
-    // Source 3: Euroleague Web Scraping
-    console.log('\n🕷️  Source 3: Euroleague Web Scraping (euroleaguebasketball.net)');
-    try {
-      const elMatches = await euroleagueScraper.scrapeEuroleagueSchedule();
-      totalMatches += elMatches;
-    } catch (error) {
-      console.error('  ❌ Euroleague scraping failed:', error.message);
-    }
-
-    // Source 4: EuroCup Web Scraping
-    console.log('\n🕷️  Source 4: EuroCup Web Scraping (eurocupbasketball.com)');
-    try {
-      const ecMatches = await euroleagueScraper.scrapeEurocupSchedule();
-      totalMatches += ecMatches;
-    } catch (error) {
-      console.error('  ❌ EuroCup scraping failed:', error.message);
-    }
-
-    // Source 5: Betclic Elite Web Scraping
-    console.log('\n🕷️  Source 5: Betclic Elite Web Scraping (lnb.fr)');
-    try {
-      const beMatches = await lnbScraper.scrapeBetclicEliteSchedule();
-      totalMatches += beMatches;
-    } catch (error) {
-      console.error('  ❌ Betclic Elite scraping failed:', error.message);
-    }
-
-    // Source 6: BCL Web Scraping
-    console.log('\n🕷️  Source 6: BCL Web Scraping (championsleague.basketball)');
-    try {
-      const bclMatches = await bclScraper.scrapeBCLSchedule();
-      totalMatches += bclMatches;
-    } catch (error) {
-      console.error('  ❌ BCL scraping failed:', error.message);
+    if (rapidApiConfig?.value) {
+      // Use RapidAPI Basketball for ALL leagues (NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL)
+      console.log('📡 RapidAPI Basketball - Fetching all leagues');
+      console.log('   (NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL)\n');
+      
+      try {
+        const rapidApiMatches = await rapidApiBasketball.fetchRapidApiGames(rapidApiConfig.value);
+        totalMatches += rapidApiMatches;
+      } catch (error) {
+        console.error('  ❌ RapidAPI Basketball failed:', error.message);
+      }
+    } else {
+      // Fallback to NBA official API only
+      console.log('⚠️  No RapidAPI Basketball key configured');
+      console.log('📡 Fallback: Using NBA Official API only\n');
+      
+      try {
+        const nbaMatches = await nbaConnector.fetchNBASchedule();
+        totalMatches += nbaMatches;
+      } catch (error) {
+        console.error('  ❌ NBA API failed:', error.message);
+      }
     }
 
     if (totalMatches === 0) {
       console.log('\n⚠️  No matches found from any source');
+      console.log('💡 Add RAPIDAPI_BASKETBALL_KEY in admin panel for full coverage');
     } else {
-      console.log(`\n✅ Match update completed: ${totalMatches} matches from APIs & Web Scraping`);
+      console.log(`\n✅ Match update completed: ${totalMatches} matches`);
     }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);

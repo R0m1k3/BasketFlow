@@ -4,7 +4,23 @@
 
 A web application that displays basketball games broadcast in France, featuring a weekly match table and monthly calendar. The app aggregates games from NBA, WNBA, Euroleague, Eurocup, BCL, and Betclic Elite, showing which French TV channels (beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK, etc.) are broadcasting each game. The system includes automated daily updates via external basketball APIs (RapidAPI).
 
-## Recent Changes (October 15, 2025)
+## Recent Changes (October 16, 2025)
+
+### 🏀 RapidAPI Basketball Integration ✅
+**Complete Basketball Data Coverage**:
+- **basketball-api1.p.rapidapi.com** - All leagues supported
+  - NBA (Tournament ID: 132)
+  - WNBA (Tournament ID: 146)
+  - Euroleague (Tournament ID: 138)
+  - EuroCup (Tournament ID: 325)
+  - Betclic Elite (Tournament ID: 149)
+  - BCL (Tournament ID: 390)
+- **Admin Panel**: Configure RAPIDAPI_BASKETBALL_KEY
+- **Automatic Broadcaster Mapping**: beIN Sports, SKWEEK, La Chaîne L'Équipe, DAZN, Prime Video, Courtside 1891
+- **Fallback**: NBA Official API if RapidAPI key not configured
+- Service: `rapidApiBasketballConnector.js` (complete match data + French broadcasters)
+
+## Previous Updates (October 15, 2025)
 
 ### 🤖 Gemini AI Primary Match Source Architecture ✅
 **Complete Match Generation with Google Search**:

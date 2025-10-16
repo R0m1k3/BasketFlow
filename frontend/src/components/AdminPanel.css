@@ -381,6 +381,18 @@
   font-weight: 600;
 }
 
+.api-configs {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.api-divider {
+  height: 2px;
+  background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+  margin: 1rem 0;
+}
+
 @media (max-width: 768px) {
   .admin-panel {
     padding: 1rem;

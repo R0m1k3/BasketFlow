@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import ApiBasketballConfig from './ApiBasketballConfig';
+import RapidApiBasketballConfig from './RapidApiBasketballConfig';
 import './AdminPanel.css';
 
 function AdminPanel() {
@@ -72,7 +73,13 @@ function AdminPanel() {
         </button>
       </div>
 
-      {activeTab === 'config' && <ApiBasketballConfig />}
+      {activeTab === 'config' && (
+        <div className="api-configs">
+          <RapidApiBasketballConfig />
+          <div className="api-divider"></div>
+          <ApiBasketballConfig />
+        </div>
+      )}
 
       {activeTab === 'users' && (
         <div className="admin-content">

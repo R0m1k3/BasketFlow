@@ -156,4 +156,83 @@ router.post('/update-now', async (req, res) => {
   }
 });
 
+router.get('/config/:key', async (req, res) => {
+  try {
+    const { key } = req.params;
+    const config = await prisma.config.findUnique({
+      where: { key }
+    });
+    res.json(config || { key, value: null });
+  } catch (error) {
+    console.error('Error fetching config:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération de la configuration' });
+  }
+});
+
+router.post('/config', async (req, res) => {
+  try {
+    const { key, value, description } = req.body;
+    const config = await prisma.config.upsert({
+      where: { key },
+      update: { value, description },
+      create: { key, value, description: description || null }
+    });
+    res.json(config);
+  } catch (error) {
+    console.error('Error saving config:', error);
+    res.status(500).json({ error: 'Erreur lors de la sauvegarde de la configuration' });
+  }
+});
+
+router.post('/test-rapidapi-basketball', async (req, res) => {
+  try {
+    const { apiKey } = req.body;
+    
+    if (!apiKey) {
+      return res.status(400).json({ error: 'API key required' });
+    }
+
+    const axios = require('axios');
+    const testResponse = await axios.get('https://basketball-api1.p.rapidapi.com/api/basketball/matches/live', {
+      headers: {
+        'X-RapidAPI-Key': apiKey,
+        'X-RapidAPI-Host': 'basketball-api1.p.rapidapi.com'
+      },
+      timeout: 10000
+    });
+
+    const events = testResponse.data?.events || [];
+    
+    res.json({
+      success: true,
+      totalMatches: events.length,
+      leagues: [
+        { name: 'Connection Test', matches: events.length }
+      ]
+    });
+  } catch (error) {
+    console.error('RapidAPI test error:', error);
+    res.status(500).json({ 
+      error: error.response?.data?.message || error.message 
+    });
+  }
+});
+
+router.post('/update-matches', async (req, res) => {
+  try {
+    console.log('🚀 Manual match update triggered...');
+    await updateService.updateMatches();
+    
+    const matchCount = await prisma.match.count();
+    
+    res.json({
+      success: true,
+      count: matchCount
+    });
+  } catch (error) {
+    console.error('Error updating matches:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
