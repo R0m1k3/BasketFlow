@@ -2,7 +2,17 @@ const puppeteer = require('puppeteer-core');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const BROWSERLESS_URL = 'wss://browserless.vonrodbox.eu';
+const BROWSERLESS_TOKEN = process.env.BROWSERLESS_TOKEN;
+const BROWSERLESS_BASE = 'browserless.vonrodbox.eu';
+
+// Try different endpoint patterns
+function getBrowserlessURL() {
+  if (!BROWSERLESS_TOKEN) {
+    throw new Error('BROWSERLESS_TOKEN not configured');
+  }
+  // Standard Browserless endpoint pattern
+  return `wss://${BROWSERLESS_BASE}?token=${BROWSERLESS_TOKEN}`;
+}
 
 // Broadcaster mapping
 const BROADCASTER_MAP = {
@@ -18,7 +28,7 @@ async function scrapeEuroleague() {
   let browser;
   try {
     browser = await puppeteer.connect({
-      browserWSEndpoint: BROWSERLESS_URL
+      browserWSEndpoint: getBrowserlessURL()
     });
     
     const page = await browser.newPage();
@@ -83,7 +93,7 @@ async function scrapeBetclicElite() {
   let browser;
   try {
     browser = await puppeteer.connect({
-      browserWSEndpoint: BROWSERLESS_URL
+      browserWSEndpoint: getBrowserlessURL()
     });
     
     const page = await browser.newPage();
@@ -145,7 +155,7 @@ async function scrapeEurocup() {
   let browser;
   try {
     browser = await puppeteer.connect({
-      browserWSEndpoint: BROWSERLESS_URL
+      browserWSEndpoint: getBrowserlessURL()
     });
     
     const page = await browser.newPage();
@@ -209,7 +219,7 @@ async function scrapeBCL() {
   let browser;
   try {
     browser = await puppeteer.connect({
-      browserWSEndpoint: BROWSERLESS_URL
+      browserWSEndpoint: getBrowserlessURL()
     });
     
     const page = await browser.newPage();

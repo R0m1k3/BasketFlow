@@ -1,8 +1,19 @@
 const axios = require('axios');
+const xml2js = require('xml2js');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const EUROLEAGUE_API_BASE = 'https://api-live.euroleague.net/v1';
+
+const BROADCASTER_MAP = {
+  'Euroleague': [
+    { name: 'SKWEEK', type: 'streaming', isFree: false },
+    { name: 'La Chaîne L\'Équipe', type: 'cable', isFree: true }
+  ],
+  'EuroCup': [
+    { name: 'SKWEEK', type: 'streaming', isFree: false }
+  ]
+};
 
 async function fetchEuroleagueSchedule() {
   console.log('  🏀 Fetching Euroleague schedule from official API...');
@@ -15,29 +26,110 @@ async function fetchEuroleagueSchedule() {
       timeout: 15000
     });
     
-    const games = response.data;
+    const parser = new xml2js.Parser();
+    const result = await parser.parseStringPromise(response.data);
     
-    if (!Array.isArray(games)) {
-      throw new Error('Invalid Euroleague schedule response');
-    }
+    const items = result.schedule?.item || [];
+    console.log(`  📅 Found ${items.length} Euroleague games in XML`);
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const endDate = new Date();
-    endDate.setDate(today.getDate() + 21);
-    endDate.setHours(23, 59, 59, 999);
-    
-    const upcomingGames = games.filter(game => {
-      const gameDate = new Date(game.date);
-      return gameDate >= today && gameDate <= endDate && game.played === false;
+    const league = await prisma.league.upsert({
+      where: { name: 'Euroleague' },
+      update: {},
+      create: {
+        name: 'Euroleague',
+        shortName: 'EL',
+        country: 'Europe'
+      }
     });
-    
-    console.log(`  📅 Found ${upcomingGames.length} Euroleague games in next 21 days`);
+
+    const broadcasters = await Promise.all(
+      BROADCASTER_MAP['Euroleague'].map(b =>
+        prisma.broadcaster.upsert({
+          where: { name: b.name },
+          update: {},
+          create: b
+        })
+      )
+    );
     
     let matchCount = 0;
-    for (const game of upcomingGames) {
-      await saveEuroleagueMatch(game, 'Euroleague');
-      matchCount++;
+    for (const item of items) {
+      try {
+        const dateStr = item.date?.[0];
+        const timeStr = item.startime?.[0];
+        const homeTeamName = item.hometeam?.[0];
+        const awayTeamName = item.awayteam?.[0];
+        const gameCode = item.gamecode?.[0];
+        
+        if (!homeTeamName || !awayTeamName || !dateStr) {
+          continue;
+        }
+        
+        const gameDate = new Date(`${dateStr} ${timeStr || '20:00'}`);
+        if (isNaN(gameDate.getTime())) {
+          continue;
+        }
+        
+        let homeTeam = await prisma.team.findFirst({
+          where: { name: homeTeamName }
+        });
+        if (!homeTeam) {
+          homeTeam = await prisma.team.create({
+            data: { name: homeTeamName, logo: null }
+          });
+        }
+
+        let awayTeam = await prisma.team.findFirst({
+          where: { name: awayTeamName }
+        });
+        if (!awayTeam) {
+          awayTeam = await prisma.team.create({
+            data: { name: awayTeamName, logo: null }
+          });
+        }
+
+        const externalId = `euroleague-${gameCode || gameDate.getTime()}`;
+        
+        const match = await prisma.match.upsert({
+          where: { externalId },
+          update: {
+            dateTime: gameDate,
+            homeTeamId: homeTeam.id,
+            awayTeamId: awayTeam.id,
+            leagueId: league.id,
+            status: 'scheduled'
+          },
+          create: {
+            externalId,
+            dateTime: gameDate,
+            homeTeamId: homeTeam.id,
+            awayTeamId: awayTeam.id,
+            leagueId: league.id,
+            homeScore: null,
+            awayScore: null,
+            status: 'scheduled'
+          }
+        });
+
+        await prisma.matchBroadcast.deleteMany({
+          where: { matchId: match.id }
+        });
+
+        await Promise.all(
+          broadcasters.map(broadcaster =>
+            prisma.matchBroadcast.create({
+              data: {
+                matchId: match.id,
+                broadcasterId: broadcaster.id
+              }
+            })
+          )
+        );
+        
+        matchCount++;
+      } catch (err) {
+        console.log('     ⚠️  Error saving game:', err.message);
+      }
     }
     
     console.log(`  ✅ Euroleague: Saved ${matchCount} matches`);
@@ -63,29 +155,110 @@ async function fetchEurocupSchedule() {
       timeout: 15000
     });
     
-    const games = response.data;
+    const parser = new xml2js.Parser();
+    const result = await parser.parseStringPromise(response.data);
     
-    if (!Array.isArray(games)) {
-      throw new Error('Invalid Eurocup schedule response');
-    }
+    const items = result.schedule?.item || [];
+    console.log(`  📅 Found ${items.length} Eurocup games in XML`);
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const endDate = new Date();
-    endDate.setDate(today.getDate() + 21);
-    endDate.setHours(23, 59, 59, 999);
-    
-    const upcomingGames = games.filter(game => {
-      const gameDate = new Date(game.date);
-      return gameDate >= today && gameDate <= endDate && game.played === false;
+    const league = await prisma.league.upsert({
+      where: { name: 'EuroCup' },
+      update: {},
+      create: {
+        name: 'EuroCup',
+        shortName: 'EC',
+        country: 'Europe'
+      }
     });
-    
-    console.log(`  📅 Found ${upcomingGames.length} Eurocup games in next 21 days`);
+
+    const broadcasters = await Promise.all(
+      BROADCASTER_MAP['EuroCup'].map(b =>
+        prisma.broadcaster.upsert({
+          where: { name: b.name },
+          update: {},
+          create: b
+        })
+      )
+    );
     
     let matchCount = 0;
-    for (const game of upcomingGames) {
-      await saveEuroleagueMatch(game, 'EuroCup');
-      matchCount++;
+    for (const item of items) {
+      try {
+        const dateStr = item.date?.[0];
+        const timeStr = item.startime?.[0];
+        const homeTeamName = item.hometeam?.[0];
+        const awayTeamName = item.awayteam?.[0];
+        const gameCode = item.gamecode?.[0];
+        
+        if (!homeTeamName || !awayTeamName || !dateStr) {
+          continue;
+        }
+        
+        const gameDate = new Date(`${dateStr} ${timeStr || '20:00'}`);
+        if (isNaN(gameDate.getTime())) {
+          continue;
+        }
+        
+        let homeTeam = await prisma.team.findFirst({
+          where: { name: homeTeamName }
+        });
+        if (!homeTeam) {
+          homeTeam = await prisma.team.create({
+            data: { name: homeTeamName, logo: null }
+          });
+        }
+
+        let awayTeam = await prisma.team.findFirst({
+          where: { name: awayTeamName }
+        });
+        if (!awayTeam) {
+          awayTeam = await prisma.team.create({
+            data: { name: awayTeamName, logo: null }
+          });
+        }
+
+        const externalId = `eurocup-${gameCode || gameDate.getTime()}`;
+        
+        const match = await prisma.match.upsert({
+          where: { externalId },
+          update: {
+            dateTime: gameDate,
+            homeTeamId: homeTeam.id,
+            awayTeamId: awayTeam.id,
+            leagueId: league.id,
+            status: 'scheduled'
+          },
+          create: {
+            externalId,
+            dateTime: gameDate,
+            homeTeamId: homeTeam.id,
+            awayTeamId: awayTeam.id,
+            leagueId: league.id,
+            homeScore: null,
+            awayScore: null,
+            status: 'scheduled'
+          }
+        });
+
+        await prisma.matchBroadcast.deleteMany({
+          where: { matchId: match.id }
+        });
+
+        await Promise.all(
+          broadcasters.map(broadcaster =>
+            prisma.matchBroadcast.create({
+              data: {
+                matchId: match.id,
+                broadcasterId: broadcaster.id
+              }
+            })
+          )
+        );
+        
+        matchCount++;
+      } catch (err) {
+        console.log('     ⚠️  Error saving game:', err.message);
+      }
     }
     
     console.log(`  ✅ Eurocup: Saved ${matchCount} matches`);
@@ -94,80 +267,6 @@ async function fetchEurocupSchedule() {
   } catch (error) {
     console.error('  ❌ Eurocup API error:', error.message);
     return 0;
-  }
-}
-
-async function saveEuroleagueMatch(game, leagueName) {
-  const externalId = `${leagueName.toLowerCase()}-${game.gameId || game.code}`;
-  
-  const homeTeamName = game.home?.name || game.homeTeam || 'Unknown';
-  const awayTeamName = game.away?.name || game.awayTeam || 'Unknown';
-  const gameDateTime = new Date(game.date);
-  
-  const league = await prisma.league.upsert({
-    where: { name: leagueName },
-    update: {},
-    create: {
-      name: leagueName,
-      shortName: leagueName === 'Euroleague' ? 'EL' : 'EC',
-      country: 'Europe',
-      logo: null
-    }
-  });
-  
-  let homeTeam = await prisma.team.findFirst({
-    where: { name: homeTeamName }
-  });
-  
-  if (!homeTeam) {
-    homeTeam = await prisma.team.create({
-      data: {
-        name: homeTeamName,
-        logo: null
-      }
-    });
-  }
-  
-  let awayTeam = await prisma.team.findFirst({
-    where: { name: awayTeamName }
-  });
-  
-  if (!awayTeam) {
-    awayTeam = await prisma.team.create({
-      data: {
-        name: awayTeamName,
-        logo: null
-      }
-    });
-  }
-  
-  const existingMatch = await prisma.match.findUnique({
-    where: { externalId }
-  });
-  
-  if (existingMatch) {
-    await prisma.match.update({
-      where: { id: existingMatch.id },
-      data: {
-        dateTime: gameDateTime,
-        status: game.played ? 'finished' : 'scheduled',
-        homeScore: game.home?.score || null,
-        awayScore: game.away?.score || null
-      }
-    });
-  } else {
-    await prisma.match.create({
-      data: {
-        externalId,
-        dateTime: gameDateTime,
-        homeTeamId: homeTeam.id,
-        awayTeamId: awayTeam.id,
-        leagueId: league.id,
-        status: game.played ? 'finished' : 'scheduled',
-        homeScore: game.home?.score || null,
-        awayScore: game.away?.score || null
-      }
-    });
   }
 }
 
