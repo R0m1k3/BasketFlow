@@ -1,43 +1,69 @@
 const { PrismaClient } = require('@prisma/client');
-const geminiMatchService = require('./geminiMatchService');
+const nbaConnector = require('./nbaConnector');
+const wnbaConnector = require('./wnbaConnector');
+const euroleagueConnector = require('./euroleagueOfficialConnector');
+const lnbConnector = require('./lnbConnector');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
   try {
-    console.log('🏀 Starting match update with Gemini AI Google Search...');
-    
-    // Get API keys
-    const geminiKeyConfig = await prisma.config.findUnique({
-      where: { key: 'GEMINI_API_KEY' }
-    });
-
-    // Get enabled sources (default all to true if not configured)
-    const geminiEnabled = await isSourceEnabled('GEMINI');
+    console.log('🏀 Starting match update with Official APIs...\n');
 
     await cleanOldMatches();
     
     let totalMatches = 0;
 
-    // Source 1: Gemini AI with Google Search to find scheduled matches
-    if (geminiEnabled && geminiKeyConfig && geminiKeyConfig.value) {
-      console.log('📡 Gemini AI: Searching Google for official schedules (NBA, WNBA, Euroleague, Betclic Elite, EuroCup, BCL)');
-      try {
-        const geminiMatches = await geminiMatchService.fetchAndGenerateMatches(geminiKeyConfig.value);
-        totalMatches += geminiMatches;
-      } catch (error) {
-        console.error('  ❌ Gemini failed:', error.message);
-      }
-    } else if (geminiEnabled) {
-      console.log('⚠️  Gemini - enabled but no API key configured');
+    // Source 1: NBA Official API
+    console.log('📡 Source 1: NBA Official API (cdn.nba.com)');
+    try {
+      const nbaMatches = await nbaConnector.fetchNBASchedule();
+      totalMatches += nbaMatches;
+    } catch (error) {
+      console.error('  ❌ NBA API failed:', error.message);
     }
 
-    // Source 2: Update live scores (future enhancement with BasketAPI1 if available)
-    // For now, Gemini handles everything
+    // Source 2: WNBA Official API
+    console.log('\n📡 Source 2: WNBA Official API (cdn.wnba.com)');
+    try {
+      const wnbaMatches = await wnbaConnector.fetchWNBASchedule();
+      totalMatches += wnbaMatches;
+    } catch (error) {
+      console.error('  ❌ WNBA API failed:', error.message);
+    }
+
+    // Source 3: Euroleague Official API
+    console.log('\n📡 Source 3: Euroleague Official API (live.euroleague.net)');
+    try {
+      const elMatches = await euroleagueConnector.fetchEuroleagueSchedule();
+      totalMatches += elMatches;
+    } catch (error) {
+      console.error('  ❌ Euroleague API failed:', error.message);
+    }
+
+    // Source 4: EuroCup Official API
+    console.log('\n📡 Source 4: EuroCup Official API (live.euroleague.net)');
+    try {
+      const ecMatches = await euroleagueConnector.fetchEurocupSchedule();
+      totalMatches += ecMatches;
+    } catch (error) {
+      console.error('  ❌ EuroCup API failed:', error.message);
+    }
+
+    // Source 5: Betclic Elite (LNB) Official API
+    console.log('\n📡 Source 5: Betclic Elite Official API (lnb.fr)');
+    try {
+      const beMatches = await lnbConnector.fetchBetclicEliteSchedule();
+      totalMatches += beMatches;
+    } catch (error) {
+      console.error('  ❌ Betclic Elite API failed:', error.message);
+    }
+
+    // Note: BCL (Basketball Champions League) requires FIBA API key - can be added later
 
     if (totalMatches === 0) {
-      console.log('⚠️  No matches found from any source');
+      console.log('\n⚠️  No matches found from any source');
     } else {
-      console.log(`✅ Match update completed: ${totalMatches} matches from Gemini`);
+      console.log(`\n✅ Match update completed: ${totalMatches} matches from official APIs`);
     }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
