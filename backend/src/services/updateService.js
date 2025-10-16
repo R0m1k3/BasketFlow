@@ -15,7 +15,7 @@ async function updateMatches() {
     console.log('📡 Using 100% Free APIs for all leagues\n');
     
     try {
-      console.log('1️⃣  NBA/WNBA - Official NBA API');
+      console.log('1️⃣  NBA - Official NBA API');
       const nbaMatches = await nbaConnector.fetchNBASchedule();
       totalMatches += nbaMatches;
     } catch (error) {
@@ -23,7 +23,15 @@ async function updateMatches() {
     }
 
     try {
-      console.log('\n2️⃣  Euroleague - Official XML API');
+      console.log('\n2️⃣  WNBA - Official WNBA API');
+      const wnbaMatches = await nbaConnector.fetchWNBASchedule();
+      totalMatches += wnbaMatches;
+    } catch (error) {
+      console.error('  ❌ WNBA API failed:', error.message);
+    }
+
+    try {
+      console.log('\n3️⃣  Euroleague - Official XML API');
       const euroleagueMatches = await euroleagueConnector.fetchEuroleagueSchedule();
       totalMatches += euroleagueMatches;
     } catch (error) {
@@ -31,7 +39,7 @@ async function updateMatches() {
     }
     
     try {
-      console.log('\n3️⃣  EuroCup - Official XML API');
+      console.log('\n4️⃣  EuroCup - Official XML API');
       const eurocupMatches = await euroleagueConnector.fetchEurocupSchedule();
       totalMatches += eurocupMatches;
     } catch (error) {
@@ -39,7 +47,7 @@ async function updateMatches() {
     }
     
     try {
-      console.log('\n4️⃣  Betclic Elite - TheSportsDB API');
+      console.log('\n5️⃣  Betclic Elite - TheSportsDB API');
       const betclicMatches = await betclicEliteConnector.fetchBetclicEliteSchedule();
       totalMatches += betclicMatches;
     } catch (error) {

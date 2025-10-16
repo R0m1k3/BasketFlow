@@ -2,39 +2,48 @@
 
 ## Overview
 
-A web application that displays basketball games broadcast in France, featuring a weekly match table and monthly calendar. The app aggregates games from NBA, WNBA, Euroleague, Eurocup, BCL, and Betclic Elite, showing which French TV channels (beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK, etc.) are broadcasting each game. The system includes automated daily updates via external basketball APIs (RapidAPI).
+A web application that displays basketball games broadcast in France, featuring a weekly match table and monthly calendar. The app aggregates games from NBA, WNBA, Euroleague, EuroCup, and Betclic Elite, showing which French TV channels (beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK, etc.) are broadcasting each game. The system uses 100% free official APIs with automated daily updates at 6 AM.
 
 ## Recent Changes (October 16, 2025)
 
-### 🏀 RapidAPI Basketball Integration ✅
-**Complete Basketball Data Coverage**:
-- **basketball-api1.p.rapidapi.com** - All leagues supported
-  - NBA (Tournament ID: 132)
-  - WNBA (Tournament ID: 146)
-  - Euroleague (Tournament ID: 138)
-  - EuroCup (Tournament ID: 325)
-  - Betclic Elite (Tournament ID: 149)
-  - BCL (Tournament ID: 390)
-- **Admin Panel**: Configure RAPIDAPI_BASKETBALL_KEY
-- **Automatic Broadcaster Mapping**: beIN Sports, SKWEEK, La Chaîne L'Équipe, DAZN, Prime Video, Courtside 1891
-- **Fallback**: NBA Official API if RapidAPI key not configured
-- Service: `rapidApiBasketballConnector.js` (complete match data + French broadcasters)
+### 🆓 100% Free APIs Architecture ✅
+**Complete Transition to Free Basketball Data Sources**:
 
-## Previous Updates (October 15, 2025)
+**Data Sources (All FREE)**:
+1. **NBA** - Official NBA API (cdn.nba.com)
+   - ExternalId prefix: `nba-{gameId}`
+   - ~134 matches per 21-day window
+   
+2. **WNBA** - Official WNBA API (cdn.wnba.com)
+   - ExternalId prefix: `wnba-{gameId}`
+   - Season: May-September (0 matches in offseason)
+   
+3. **Euroleague** - Official XML API (api-live.euroleague.net)
+   - ExternalId prefix: `euroleague-{gameId}`
+   - ~380 matches via XML parsing
+   
+4. **EuroCup** - Official XML API (api-live.euroleague.net)
+   - ExternalId prefix: `eurocup-{gameId}`
+   - ~380 matches via XML parsing
+   
+5. **Betclic Elite** - TheSportsDB API (thesportsdb.com)
+   - ExternalId prefix: `betclic-{eventId}`
+   - ~15 matches (free tier with key "3")
 
-### 🤖 Gemini AI Primary Match Source Architecture ✅
-**Complete Match Generation with Google Search**:
-- **Gemini AI** as primary source for scheduled basketball matches
-  - Searches official calendars (NBA.com, Euroleague.net, LNB.fr) via Google Search
-  - Generates matches with French broadcaster information in one step
-  - ExternalId prefix: `gemini-{league}-{date}-{teams}`
-  - JSON schema enforcement via `responseMimeType: 'application/json'` + `responseSchema`
-  - Covers: NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
-- **Broadcaster detection**: beIN Sports, SKWEEK, La Chaîne L'Équipe, Prime Video, DAZN
-- **Automated updates**: Daily at 6:00 AM
-- **Admin Panel**: Configure GEMINI_API_KEY and toggle updates ON/OFF
-- Service: `geminiMatchService.js` (complete match generation + broadcasters)
-- **Prisma integration**: Uses `matchBroadcast` join table with `isFree` field for broadcaster links
+**Services**:
+- `nbaConnector.js` - NBA/WNBA official APIs
+- `euroleagueConnector.js` - Euroleague/EuroCup XML APIs
+- `betclicEliteConnector.js` - TheSportsDB API
+- `updateService.js` - Orchestrates all free connectors
+
+**Total Coverage**: ~909 matches across 5 leagues (100% free)
+**BCL excluded**: No free API available
+
+**Removed Dependencies**:
+- ❌ RapidAPI Basketball (paid)
+- ❌ Gemini AI (hallucinated data)
+- ❌ Browserless (persistent errors)
+- ❌ AllSportAPI (paid)
 
 ### 🖼️ Robust Logo Display System ✅
 **Image Proxy with Security & Fallbacks**:
@@ -106,7 +115,10 @@ Preferred communication style: Simple, everyday language.
 **Database**: Prisma ORM (configured for SQL databases, likely PostgreSQL based on dependencies)
 
 **Core Services**:
-- **updateService**: Handles data synchronization with API-Basketball via RapidAPI, manages broadcaster mappings, and ensures idempotent updates using unique externalId constraint
+- **updateService**: Orchestrates all free basketball connectors (NBA, WNBA, Euroleague, EuroCup, Betclic Elite)
+- **nbaConnector**: Fetches NBA/WNBA schedules from official APIs (cdn.nba.com, cdn.wnba.com)
+- **euroleagueConnector**: Fetches Euroleague/EuroCup schedules from XML API (api-live.euroleague.net)
+- **betclicEliteConnector**: Fetches Betclic Elite schedule from TheSportsDB API
 - **Match Routes** (`/api/matches/week`, `/api/matches/month/:year/:month`): Retrieves filtered match data with related entities
 - **League Routes** (`/api/leagues`): Returns available basketball leagues
 - **Broadcaster Routes** (`/api/broadcasters`): Returns TV channels/streaming platforms
@@ -118,23 +130,31 @@ Preferred communication style: Simple, everyday language.
 
 **Scheduled Jobs**: Node-cron configured to run daily updates at 6:00 AM for automatic match synchronization
 
-**Fallback Strategy**: When API key is unavailable, system seeds sample data instead of failing
+**Data Strategy**: Uses only free, official APIs - no paid services required
 
 ### External Dependencies
 
-**Basketball Data Source**: 
+**Basketball Data Sources (100% Free)**:
 
-**Gemini AI (Primary Source)** - Complete Match Generation
-   - Purpose: Generates scheduled basketball matches with French broadcaster information
-   - Method: Google Search to find official calendars (NBA.com, Euroleague.net, LNB.fr, etc.)
-   - Coverage: NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
-   - ExternalId prefix: `gemini-{league}-{date}-{teams}`
-   - Configuration: GEMINI_API_KEY (Replit integration JavaScript) in admin panel
-   - Broadcasters detected: beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN
-   - JSON schema enforcement for reliable data structure
-   - Returns 8-15 matches per query with broadcaster associations
+1. **NBA Official API** (cdn.nba.com)
+   - Provides NBA match schedules
+   - 21-day lookahead window
+   - No API key required
+   
+2. **WNBA Official API** (cdn.wnba.com)
+   - Provides WNBA match schedules
+   - Season: May-September (offseason Oct-Apr)
+   - No API key required
 
-**Configuration**: Gemini can be toggled ON/OFF in admin panel, with daily automated updates at 6:00 AM
+3. **Euroleague XML API** (api-live.euroleague.net)
+   - Provides Euroleague and EuroCup schedules
+   - XML format parsed with xml2js
+   - No API key required
+
+4. **TheSportsDB API** (thesportsdb.com)
+   - Provides Betclic Elite (French LNB) schedules
+   - Free tier (key: "3")
+   - League ID: 4423
 
 **Broadcaster Mapping** (Intelligence améliorée 2025):
 - **NBA**: beIN Sports (400+ matchs/saison), Prime Video (29 matchs dominicaux), NBA League Pass
@@ -159,13 +179,10 @@ Preferred communication style: Simple, everyday language.
 **Environment Configuration** (All configured in backend/.env):
 - JWT_SECRET: **REQUIRED** - Cryptographic secret for JWT signing (must be generated randomly)
 - SESSION_SECRET: **REQUIRED** - Session secret for Express sessions
-- API_BASKETBALL_KEY: **OPTIONAL** - RapidAPI key for API-Basketball.com (Source 1)
-- BALLDONTLIE_API_KEY: **OPTIONAL** - BallDontLie API key (Source 2, gratuit)
-- Euroleague API: **OPTIONAL** - Aucune clé requise (Source 3, gratuit)
 - PORT: Configurable server port (defaults to 3000)
 - DATABASE_URL: PostgreSQL connection string (Replit Neon database or Docker PostgreSQL)
 
-**Note**: Les 3 sources API sont optionnelles. L'app fonctionne avec sample data si aucune source n'est configurée.
+**Note**: No API keys required - all basketball data sources are free and publicly accessible.
 
 **Security Notes**:
 - .env files must NEVER be committed to version control

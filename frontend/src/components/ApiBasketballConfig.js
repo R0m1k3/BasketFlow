@@ -1,74 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './AdminPanel.css';
 
 function ApiBasketballConfig() {
-  const [geminiKey, setGeminiKey] = useState('');
-  const [geminiEnabled, setGeminiEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [testResult, setTestResult] = useState(null);
 
-  useEffect(() => {
-    fetchConfig();
-  }, []);
-
-  const fetchConfig = async () => {
-    try {
-      const response = await axios.get('/api/admin/config');
-      const geminiConfig = response.data.find(c => c.key === 'GEMINI_API_KEY');
-      const geminiEnabledConfig = response.data.find(c => c.key === 'SOURCE_GEMINI_ENABLED');
-      
-      setGeminiKey(geminiConfig?.value || '');
-      setGeminiEnabled(geminiEnabledConfig?.value !== 'false');
-    } catch (error) {
-      console.error('Error fetching config:', error);
-    }
-  };
-
-  const handleSaveGemini = async () => {
-    setLoading(true);
-    setMessage('');
-    try {
-      await axios.put('/api/admin/config/GEMINI_API_KEY', {
-        value: geminiKey,
-        description: 'Clé API pour Gemini AI avec Google Search'
-      });
-      setMessage('✅ Clé Gemini sauvegardée');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      setMessage('❌ Erreur lors de la sauvegarde');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleToggleSource = async (sourceName, isEnabled) => {
-    try {
-      await axios.put(`/api/admin/config/SOURCE_${sourceName}_ENABLED`, {
-        value: isEnabled ? 'true' : 'false',
-        description: `Activer/désactiver la source ${sourceName}`
-      });
-      setMessage(`✅ Source ${sourceName} ${isEnabled ? 'activée' : 'désactivée'}`);
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      setMessage('❌ Erreur lors de la modification');
-      fetchConfig(); // Reset state on error
-    }
-  };
-
-  const handleTestConnection = async () => {
+  const handleUpdateMatches = async () => {
     setLoading(true);
     setMessage('');
     setTestResult(null);
     
     try {
-      const response = await axios.post('/api/admin/update-now');
+      const response = await axios.post('/api/admin/update-matches');
       setTestResult(response.data);
-      setMessage('✅ Test réussi ! Matchs mis à jour.');
+      setMessage('✅ Mise à jour réussie !');
     } catch (error) {
       setTestResult(null);
-      setMessage(error.response?.data?.error || '❌ Erreur lors du test');
+      setMessage(error.response?.data?.error || '❌ Erreur lors de la mise à jour');
     } finally {
       setLoading(false);
     }
@@ -79,112 +29,63 @@ function ApiBasketballConfig() {
       {message && <div className="admin-message">{message}</div>}
 
       <div className="config-section">
-        <h3>🏀 Source de données : Gemini AI avec Google Search</h3>
+        <h3>🆓 Sources de données (100% gratuites)</h3>
         <p className="config-description">
-          Gemini recherche sur Google les calendriers officiels (NBA.com, Euroleague.net, LNB.fr) et génère automatiquement tous les matchs programmés avec les diffuseurs français.
+          Le système utilise uniquement des APIs officielles gratuites pour récupérer les matchs de basketball.
         </p>
       </div>
 
       <div className="config-section">
-        <h3>
-          🤖 Gemini AI (Matchs + Diffuseurs)
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={geminiEnabled}
-              onChange={(e) => {
-                setGeminiEnabled(e.target.checked);
-                handleToggleSource('GEMINI', e.target.checked);
-              }}
-            />
-            <span className="slider"></span>
-          </label>
-        </h3>
-        <p className="config-description">
-          Intelligence artificielle avec recherche Google. Trouve TOUS les matchs programmés et ajoute automatiquement les diffuseurs français (beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN, etc.).
-          <br />
-          <strong>Couverture complète :</strong> NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
-          <br />
-          <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer">
-            Obtenir une clé API Gemini (gratuit) →
-          </a>
-        </p>
-
-        <div className="form-group">
-          <label>Clé API Gemini</label>
-          <input
-            type="text"
-            value={geminiKey}
-            onChange={(e) => setGeminiKey(e.target.value)}
-            placeholder="Votre clé API Gemini..."
-            className="api-key-input"
-            disabled={!geminiEnabled}
-          />
-          <button 
-            onClick={handleSaveGemini} 
-            disabled={loading || !geminiEnabled}
-            className="btn-save"
-          >
-            {loading ? 'Sauvegarde...' : 'Sauvegarder'}
-          </button>
+        <h3>📊 Couverture actuelle</h3>
+        <div className="info-box">
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            <li>✅ <strong>NBA</strong> - Official NBA API (cdn.nba.com) - ~134 matchs</li>
+            <li>✅ <strong>WNBA</strong> - Official WNBA API (cdn.wnba.com) - Saison Mai-Sept</li>
+            <li>✅ <strong>Euroleague</strong> - XML API (api-live.euroleague.net) - ~380 matchs</li>
+            <li>✅ <strong>EuroCup</strong> - XML API (api-live.euroleague.net) - ~380 matchs</li>
+            <li>✅ <strong>Betclic Elite</strong> - TheSportsDB API (thesportsdb.com) - ~15 matchs</li>
+          </ul>
+          <p style={{ marginTop: '1rem', fontStyle: 'italic' }}>
+            <strong>Total : ~909 matchs</strong> sur 5 ligues professionnelles
+          </p>
         </div>
       </div>
 
       <div className="config-section">
+        <h3>🚀 Mise à jour manuelle</h3>
+        <p className="config-description">
+          Les matchs sont automatiquement mis à jour tous les jours à 6h00. 
+          Vous pouvez aussi lancer une mise à jour manuelle :
+        </p>
         <div className="form-group">
           <button 
-            onClick={handleTestConnection} 
+            onClick={handleUpdateMatches} 
             disabled={loading}
             className="btn-test"
             style={{ width: '100%', marginTop: '1rem' }}
           >
-            {loading ? '⏳ Mise à jour en cours...' : '🚀 Mettre à jour les matchs'}
+            {loading ? '⏳ Mise à jour en cours...' : '🔄 Mettre à jour les matchs maintenant'}
           </button>
         </div>
 
         {testResult && testResult.success && (
           <div className="test-result">
             <h4>✅ Mise à jour réussie</h4>
-            <p><strong>Matchs mis à jour :</strong> {testResult.matchesUpdated || 0}</p>
+            <p><strong>Matchs en base de données :</strong> {testResult.count || 0}</p>
             <p>Les matchs devraient apparaître dans la vue principale.</p>
           </div>
         )}
       </div>
 
       <div className="config-section">
-        <h3>📖 Guide d'utilisation</h3>
-        <ol className="usage-guide">
-          <li>Obtenez une clé API Gemini sur <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer">Google AI Studio</a> (gratuit)</li>
-          <li>Collez la clé ci-dessus et cliquez sur "Sauvegarder"</li>
-          <li>Cliquez sur "Mettre à jour les matchs" pour lancer la recherche Gemini</li>
-          <li>Gemini va rechercher sur Google les calendriers officiels et générer tous les matchs</li>
-          <li>Les matchs seront automatiquement mis à jour tous les jours à 6h00</li>
-        </ol>
-        
+        <h3>ℹ️ Informations</h3>
         <div className="info-box">
-          <h4>🎯 Fonctionnement intelligent :</h4>
           <ul>
-            <li><strong>Recherche Google :</strong> Gemini cherche les calendriers officiels (NBA.com, Euroleague.net, LNB.fr, etc.)</li>
-            <li><strong>Génération de matchs :</strong> Création automatique des matchs programmés avec dates/équipes exactes</li>
-            <li><strong>Diffuseurs français :</strong> Ajout automatique des chaînes TV (beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN)</li>
-            <li><strong>Couverture complète :</strong> NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL</li>
+            <li><strong>Aucune clé API requise</strong> - Toutes les sources sont publiques et gratuites</li>
+            <li><strong>Mises à jour automatiques</strong> - Cron quotidien à 6h00 du matin</li>
+            <li><strong>Diffuseurs français</strong> - beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN</li>
+            <li><strong>Données authentiques</strong> - Directement depuis les APIs officielles des ligues</li>
           </ul>
-        </div>
-
-        <div className="info-box">
-          <h4>📺 Diffuseurs français détectés :</h4>
-          <ul>
-            <li><strong>NBA :</strong> beIN Sports, Prime Video, NBA League Pass</li>
-            <li><strong>WNBA :</strong> NBA League Pass, beIN Sports</li>
-            <li><strong>Euroleague :</strong> SKWEEK, La Chaîne L'Équipe, TV Monaco</li>
-            <li><strong>Betclic Elite :</strong> beIN Sports, La Chaîne L'Équipe, DAZN</li>
-            <li><strong>EuroCup :</strong> SKWEEK, EuroLeague TV</li>
-            <li><strong>BCL :</strong> Courtside 1891</li>
-          </ul>
-        </div>
-
-        <div className="info-box success">
-          ✅ <strong>Gemini AI :</strong> API gratuite avec quota généreux (Google AI Studio). Pas besoin de payer pour BasketAPI ou autres services RapidAPI !
         </div>
       </div>
     </div>

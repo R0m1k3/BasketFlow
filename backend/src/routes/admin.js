@@ -184,40 +184,6 @@ router.post('/config', async (req, res) => {
   }
 });
 
-router.post('/test-rapidapi-basketball', async (req, res) => {
-  try {
-    const { apiKey } = req.body;
-    
-    if (!apiKey) {
-      return res.status(400).json({ error: 'API key required' });
-    }
-
-    const axios = require('axios');
-    const testResponse = await axios.get('https://basketball-api1.p.rapidapi.com/api/basketball/matches/live', {
-      headers: {
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': 'basketball-api1.p.rapidapi.com'
-      },
-      timeout: 10000
-    });
-
-    const events = testResponse.data?.events || [];
-    
-    res.json({
-      success: true,
-      totalMatches: events.length,
-      leagues: [
-        { name: 'Connection Test', matches: events.length }
-      ]
-    });
-  } catch (error) {
-    console.error('RapidAPI test error:', error);
-    res.status(500).json({ 
-      error: error.response?.data?.message || error.message 
-    });
-  }
-});
-
 router.post('/update-matches', async (req, res) => {
   try {
     console.log('🚀 Manual match update triggered...');
