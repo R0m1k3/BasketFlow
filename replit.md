@@ -23,9 +23,11 @@ A web application that displays basketball games broadcast in France, featuring 
    - ~380 matches via XML parsing
    - **Timezone correction**: -2 hours applied to match times
    
-4. **Betclic Elite** - TheSportsDB API (thesportsdb.com)
-   - ExternalId prefix: `betclic-{eventId}`
-   - ~15 matches (free tier with key "3")
+4. **Betclic Elite** - Gemini HTML Extraction (thesportsdb.com)
+   - ExternalId prefix: `betclic-{homeTeam-vs-awayTeam-date}`
+   - ~20 matches extracted from TheSportsDB web page
+   - **Gemini-powered scraping**: Intelligent HTML parsing to extract authentic match data
+   - Includes both upcoming matches and recent results with scores
 
 **Broadcaster Enrichment (Optional)**:
 - **Gemini AI** - Analyzes authentic matches to identify French broadcasters
@@ -36,12 +38,18 @@ A web application that displays basketball games broadcast in France, featuring 
 **Services**:
 - `nbaConnector.js` - NBA/WNBA official APIs
 - `euroleagueConnector.js` - Euroleague XML API (timezone corrected)
-- `betclicEliteConnector.js` - TheSportsDB API
+- `betclicEliteConnector.js` - Gemini-powered HTML extraction from TheSportsDB
 - `geminiEnrichment.js` - Broadcaster intelligence via AI
 - `updateService.js` - Orchestrates all connectors
 
-**Total Coverage**: ~529 matches across 4 leagues (100% free base + AI enrichment)
+**Total Coverage**: ~534 matches across 4 leagues (100% free + AI-powered extraction)
 **Excluded**: BCL (no free API), EuroCup (duplicate of Euroleague)
+
+**Betclic Elite Solution**:
+- TheSportsDB API endpoint returns wrong data (English football instead of French basketball)
+- **Workaround**: Gemini extracts authentic matches from TheSportsDB web page HTML
+- Strict prompt ensures zero hallucination - extraction only, no generation
+- Successfully retrieves ~20 matches including upcoming games and recent results
 
 **Removed Dependencies**:
 - ❌ RapidAPI Basketball (paid)
