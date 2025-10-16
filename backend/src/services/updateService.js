@@ -1,82 +1,56 @@
 const { PrismaClient } = require('@prisma/client');
 const nbaConnector = require('./nbaConnector');
-const rapidApiBasketball = require('./rapidApiBasketballConnector');
-const browserlessScraper = require('./browserlessScraper');
+const euroleagueConnector = require('./euroleagueConnector');
+const betclicEliteConnector = require('./betclicEliteConnector');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
   try {
-    console.log('🏀 Starting match update with Basketball APIs...\n');
+    console.log('🏀 Starting match update with Free Basketball APIs...\n');
 
     await cleanOldMatches();
     
     let totalMatches = 0;
 
-    // Check for RapidAPI Basketball key
-    const rapidApiConfig = await prisma.config.findUnique({
-      where: { key: 'RAPIDAPI_BASKETBALL_KEY' }
-    });
-
-    if (rapidApiConfig?.value) {
-      // Use RapidAPI Basketball for ALL leagues (NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL)
-      console.log('📡 RapidAPI Basketball - Fetching all leagues');
-      console.log('   (NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL)\n');
-      
-      try {
-        const rapidApiMatches = await rapidApiBasketball.fetchRapidApiGames(rapidApiConfig.value);
-        totalMatches += rapidApiMatches;
-      } catch (error) {
-        console.error('  ❌ RapidAPI Basketball failed:', error.message);
-      }
-    } else {
-      // Fallback to NBA official API only
-      console.log('⚠️  No RapidAPI Basketball key configured');
-      console.log('📡 Fallback: Using NBA Official API only\n');
-      
-      try {
-        const nbaMatches = await nbaConnector.fetchNBASchedule();
-        totalMatches += nbaMatches;
-      } catch (error) {
-        console.error('  ❌ NBA API failed:', error.message);
-      }
-    }
-
-    // Scrape European leagues with Browserless
-    console.log('\n🕷️  Scraping European leagues with Browserless...');
+    console.log('📡 Using 100% Free APIs for all leagues\n');
     
     try {
-      const euroleagueMatches = await browserlessScraper.scrapeEuroleague();
+      console.log('1️⃣  NBA/WNBA - Official NBA API');
+      const nbaMatches = await nbaConnector.fetchNBASchedule();
+      totalMatches += nbaMatches;
+    } catch (error) {
+      console.error('  ❌ NBA API failed:', error.message);
+    }
+
+    try {
+      console.log('\n2️⃣  Euroleague - Official XML API');
+      const euroleagueMatches = await euroleagueConnector.fetchEuroleagueSchedule();
       totalMatches += euroleagueMatches;
     } catch (error) {
-      console.error('  ❌ Euroleague scraping failed:', error.message);
+      console.error('  ❌ Euroleague API failed:', error.message);
     }
     
     try {
-      const eurocupMatches = await browserlessScraper.scrapeEurocup();
+      console.log('\n3️⃣  EuroCup - Official XML API');
+      const eurocupMatches = await euroleagueConnector.fetchEurocupSchedule();
       totalMatches += eurocupMatches;
     } catch (error) {
-      console.error('  ❌ EuroCup scraping failed:', error.message);
+      console.error('  ❌ EuroCup API failed:', error.message);
     }
     
     try {
-      const betclicMatches = await browserlessScraper.scrapeBetclicElite();
+      console.log('\n4️⃣  Betclic Elite - TheSportsDB API');
+      const betclicMatches = await betclicEliteConnector.fetchBetclicEliteSchedule();
       totalMatches += betclicMatches;
     } catch (error) {
-      console.error('  ❌ Betclic Elite scraping failed:', error.message);
-    }
-    
-    try {
-      const bclMatches = await browserlessScraper.scrapeBCL();
-      totalMatches += bclMatches;
-    } catch (error) {
-      console.error('  ❌ BCL scraping failed:', error.message);
+      console.error('  ❌ Betclic Elite API failed:', error.message);
     }
 
     if (totalMatches === 0) {
       console.log('\n⚠️  No matches found from any source');
-      console.log('💡 Add RAPIDAPI_BASKETBALL_KEY in admin panel for full coverage');
     } else {
-      console.log(`\n✅ Match update completed: ${totalMatches} matches from all sources`);
+      console.log(`\n✅ Match update completed: ${totalMatches} total matches`);
+      console.log('   📊 Coverage: NBA, WNBA, Euroleague, EuroCup, Betclic Elite');
     }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
