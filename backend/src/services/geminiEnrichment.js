@@ -5,8 +5,7 @@ const prisma = new PrismaClient();
 const BROADCASTER_MAPPING = {
   NBA: ['beIN Sports', 'Prime Video', 'NBA League Pass'],
   WNBA: ['NBA League Pass', 'beIN Sports'],
-  Euroleague: ['SKWEEK', 'La Chaîne L\'Équipe', 'EuroLeague TV'],
-  EuroCup: ['SKWEEK', 'EuroLeague TV'],
+  Euroleague: [],  // Will be determined by Gemini only
   'Betclic Elite': ['beIN Sports', 'La Chaîne L\'Équipe', 'DAZN']
 };
 

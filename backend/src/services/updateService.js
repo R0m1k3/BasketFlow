@@ -40,15 +40,7 @@ async function updateMatches() {
     }
     
     try {
-      console.log('\n4️⃣  EuroCup - Official XML API');
-      const eurocupMatches = await euroleagueConnector.fetchEurocupSchedule();
-      totalMatches += eurocupMatches;
-    } catch (error) {
-      console.error('  ❌ EuroCup API failed:', error.message);
-    }
-    
-    try {
-      console.log('\n5️⃣  Betclic Elite - TheSportsDB API');
+      console.log('\n4️⃣  Betclic Elite - TheSportsDB API');
       const betclicMatches = await betclicEliteConnector.fetchBetclicEliteSchedule();
       totalMatches += betclicMatches;
     } catch (error) {
@@ -59,7 +51,7 @@ async function updateMatches() {
       console.log('\n⚠️  No matches found from any source');
     } else {
       console.log(`\n✅ Match update completed: ${totalMatches} total matches`);
-      console.log('   📊 Coverage: NBA, WNBA, Euroleague, EuroCup, Betclic Elite');
+      console.log('   📊 Coverage: NBA, WNBA, Euroleague, Betclic Elite');
     }
 
     // Enrich matches with broadcasters using Gemini

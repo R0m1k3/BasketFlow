@@ -21,12 +21,9 @@ A web application that displays basketball games broadcast in France, featuring 
 3. **Euroleague** - Official XML API (api-live.euroleague.net)
    - ExternalId prefix: `euroleague-{gameId}`
    - ~380 matches via XML parsing
+   - **Timezone correction**: -2 hours applied to match times
    
-4. **EuroCup** - Official XML API (api-live.euroleague.net)
-   - ExternalId prefix: `eurocup-{gameId}`
-   - ~380 matches via XML parsing
-   
-5. **Betclic Elite** - TheSportsDB API (thesportsdb.com)
+4. **Betclic Elite** - TheSportsDB API (thesportsdb.com)
    - ExternalId prefix: `betclic-{eventId}`
    - ~15 matches (free tier with key "3")
 
@@ -38,13 +35,13 @@ A web application that displays basketball games broadcast in France, featuring 
 
 **Services**:
 - `nbaConnector.js` - NBA/WNBA official APIs
-- `euroleagueConnector.js` - Euroleague/EuroCup XML APIs
+- `euroleagueConnector.js` - Euroleague XML API (timezone corrected)
 - `betclicEliteConnector.js` - TheSportsDB API
-- `geminiEnrichment.js` - Broadcaster intelligence (optional)
+- `geminiEnrichment.js` - Broadcaster intelligence via AI
 - `updateService.js` - Orchestrates all connectors
 
-**Total Coverage**: ~909 matches across 5 leagues (100% free base + optional AI)
-**BCL excluded**: No free API available
+**Total Coverage**: ~529 matches across 4 leagues (100% free base + AI enrichment)
+**Excluded**: BCL (no free API), EuroCup (duplicate of Euroleague)
 
 **Removed Dependencies**:
 - ❌ RapidAPI Basketball (paid)
