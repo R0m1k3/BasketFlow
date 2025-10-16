@@ -48,10 +48,13 @@ A web application that displays basketball games broadcast in France, featuring 
 **Betclic Elite Solution** ✅:
 - TheSportsDB API endpoint returns wrong data (English football instead of French basketball)
 - **Workaround**: Gemini extracts authentic matches from TheSportsDB web page HTML
-- **Targets "Upcoming" section** specifically to get future matches (17-25 Oct 2025)
+- **Dual extraction** from two sections:
+  - "Results" section → past matches WITH SCORES (e.g., Graveline 81-87 Strasbour)
+  - "Upcoming" section → future matches without scores
 - **Smart year detection**: Uses current year (2025), handles year rollover for early-year matches
+- **Structured JSON response**: Gemini returns {results: [], upcoming: []} to prevent confusion
 - Strict prompt ensures zero hallucination - extraction only, no generation
-- Successfully retrieves 10 upcoming matches from French basketball teams
+- Successfully retrieves ~20 matches (10 results + 10 upcoming) with authentic data
 
 **Removed Dependencies**:
 - ❌ RapidAPI Basketball (paid)

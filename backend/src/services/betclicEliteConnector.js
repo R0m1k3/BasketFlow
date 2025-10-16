@@ -48,41 +48,54 @@ Voici le code HTML de la page TheSportsDB pour la ligue Betclic Elite (LNB Pro A
 
 ${html}
 
-TÂCHE : Extraire les matchs de basketball Betclic Elite depuis DEUX sections :
-1. "Recent Results" ou "Last Results" (résultats passés AVEC SCORES)
-2. "Upcoming" (matchs à venir SANS scores)
+TÂCHE : Extraire les matchs depuis DEUX sections DISTINCTES et les retourner dans un objet JSON avec 2 arrays séparés :
+1. Section "Results" → résultats passés AVEC SCORES OBLIGATOIRES
+2. Section "Upcoming" → matchs à venir SANS scores (null)
 
-INSTRUCTIONS CRITIQUES :
-- N'INVENTE AUCUNE donnée, extrais SEULEMENT ce qui est présent dans le HTML
-- Pour les RÉSULTATS PASSÉS : extrais équipes, date, heure, ET LES SCORES
-- Pour les MATCHS À VENIR : extrais équipes, date, heure (scores = null)
-- Format de date : YYYY-MM-DD
-- ANNÉE : Si l'année n'est pas affichée, utilise ${currentYear}. Si le mois affiché est < ${currentMonth}, utilise ${currentYear + 1}
-- L'équipe à GAUCHE est homeTeam, l'équipe à DROITE est awayTeam
+INSTRUCTIONS CRITIQUES - SECTION "Results" :
+- Cherche la section HTML intitulée "Results" (en dessous de "Upcoming")
+- Extrais TOUS les matchs avec leurs SCORES RÉELS (exemple: "Paris Bas 94 - 99 AS Monaco")
+- Format: homeTeam, awayTeam, date, SCORES (homeScore et awayScore OBLIGATOIRES), status: "finished"
+- L'équipe à GAUCHE (premier score) est homeTeam, l'équipe à DROITE (second score) est awayTeam
 
-Réponds UNIQUEMENT avec un JSON array valide, sans texte avant ou après :
-[
-  {
-    "homeTeam": "nom équipe domicile",
-    "awayTeam": "nom équipe extérieure", 
-    "date": "YYYY-MM-DD",
-    "time": "HH:MM",
-    "homeScore": 85,
-    "awayScore": 78,
-    "status": "finished"
-  },
-  {
-    "homeTeam": "équipe 2",
-    "awayTeam": "équipe 3", 
-    "date": "YYYY-MM-DD",
-    "time": "HH:MM",
-    "homeScore": null,
-    "awayScore": null,
-    "status": "scheduled"
-  }
-]
+INSTRUCTIONS CRITIQUES - SECTION "Upcoming" :
+- Cherche la section HTML intitulée "Upcoming" (en haut de page)
+- Extrais les matchs à venir SANS scores
+- homeScore: null, awayScore: null, status: "scheduled"
 
-Si aucun match n'est trouvé, réponds avec : []`;
+FORMAT DE RÉPONSE (JSON OBLIGATOIRE) :
+{
+  "results": [
+    {
+      "homeTeam": "Paris Bas",
+      "awayTeam": "AS Monaco",
+      "date": "2025-10-12",
+      "time": "20:00",
+      "homeScore": 94,
+      "awayScore": 99,
+      "status": "finished"
+    }
+  ],
+  "upcoming": [
+    {
+      "homeTeam": "Saint-Que",
+      "awayTeam": "Graveline",
+      "date": "2025-10-17",
+      "time": "18:30",
+      "homeScore": null,
+      "awayScore": null,
+      "status": "scheduled"
+    }
+  ]
+}
+
+RÈGLES :
+- ANNÉE : Si non affichée, utilise ${currentYear}. Si mois < ${currentMonth}, utilise ${currentYear + 1}
+- SI TU NE TROUVES PAS la section Results → renvoie results: []
+- SI TU NE TROUVES PAS la section Upcoming → renvoie upcoming: []
+- N'INVENTE RIEN, extrais UNIQUEMENT les données visibles dans le HTML
+
+Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
 
     const result = await model.generateContent(prompt);
     const geminiResponse = result.response.text();
@@ -96,10 +109,14 @@ Si aucun match n'est trouvé, réponds avec : []`;
     }
     jsonText = jsonText.trim();
 
-    const extractedMatches = JSON.parse(jsonText);
-    console.log(`  ✨ Gemini extracted ${extractedMatches.length} Betclic Elite matches`);
+    const extractedData = JSON.parse(jsonText);
+    const results = extractedData.results || [];
+    const upcoming = extractedData.upcoming || [];
+    const allMatches = [...results, ...upcoming];
+    
+    console.log(`  ✨ Gemini extracted ${results.length} past results + ${upcoming.length} upcoming = ${allMatches.length} total matches`);
 
-    if (extractedMatches.length === 0) {
+    if (allMatches.length === 0) {
       console.log('  ℹ️  No matches found on page');
       return 0;
     }
@@ -129,7 +146,7 @@ Si aucun match n'est trouvé, réponds avec : []`;
 
     let savedCount = 0;
 
-    for (const matchData of extractedMatches) {
+    for (const matchData of allMatches) {
       try {
         if (!matchData.homeTeam || !matchData.awayTeam || !matchData.date) {
           console.log(`     ⚠️  Skipping invalid match data`);
