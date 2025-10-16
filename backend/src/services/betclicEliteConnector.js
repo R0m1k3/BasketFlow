@@ -1,25 +1,9 @@
+const axios = require('axios');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// Vraies équipes de Betclic Elite (LNB Pro A) saison 2024-2025
-const BETCLIC_TEAMS = [
-  { name: 'AS Monaco', city: 'Monaco' },
-  { name: 'LDLC ASVEL', city: 'Lyon-Villeurbanne' },
-  { name: 'Paris Basketball', city: 'Paris' },
-  { name: 'JDA Dijon', city: 'Dijon' },
-  { name: 'Le Mans Sarthe Basket', city: 'Le Mans' },
-  { name: 'Metropolitans 92', city: 'Boulogne-Levallois' },
-  { name: 'SLUC Nancy', city: 'Nancy' },
-  { name: 'Limoges CSP', city: 'Limoges' },
-  { name: 'Cholet Basket', city: 'Cholet' },
-  { name: 'SIG Strasbourg', city: 'Strasbourg' },
-  { name: 'Nanterre 92', city: 'Nanterre' },
-  { name: 'Élan Béarnais', city: 'Pau-Orthez' },
-  { name: 'BCM Gravelines-Dunkerque', city: 'Gravelines' },
-  { name: 'Saint-Quentin Basket-Ball', city: 'Saint-Quentin' },
-  { name: 'ESSM Le Portel', city: 'Le Portel' },
-  { name: 'Fos Provence Basket', city: 'Fos-sur-Mer' }
-];
+const THESPORTSDB_PAGE = 'https://www.thesportsdb.com/league/4423-french-lnb';
 
 const BROADCASTERS = [
   { name: 'beIN Sports', type: 'cable', isFree: false },
@@ -27,43 +11,82 @@ const BROADCASTERS = [
   { name: 'DAZN', type: 'streaming', isFree: false }
 ];
 
-// Génère des matchs réalistes pour la semaine prochaine (calendrier type LNB)
-function generateWeeklyMatches() {
-  const matches = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+async function fetchBetclicEliteSchedule(geminiApiKey) {
+  console.log('  🏀 Fetching Betclic Elite schedule via Gemini HTML extraction...');
   
-  // Vendredi - 4 matchs à 20h30
-  const friday = new Date(today);
-  friday.setDate(today.getDate() + ((5 - today.getDay() + 7) % 7 || 7)); // Prochain vendredi
-  friday.setHours(20, 30, 0, 0);
-  
-  matches.push(
-    { home: 'AS Monaco', away: 'Paris Basketball', date: new Date(friday) },
-    { home: 'LDLC ASVEL', away: 'JDA Dijon', date: new Date(friday) },
-    { home: 'Metropolitans 92', away: 'Le Mans Sarthe Basket', date: new Date(friday) },
-    { home: 'SLUC Nancy', away: 'Limoges CSP', date: new Date(friday) }
-  );
-  
-  // Samedi - 4 matchs à 19h
-  const saturday = new Date(friday);
-  saturday.setDate(friday.getDate() + 1);
-  saturday.setHours(19, 0, 0, 0);
-  
-  matches.push(
-    { home: 'Cholet Basket', away: 'SIG Strasbourg', date: new Date(saturday) },
-    { home: 'Nanterre 92', away: 'Élan Béarnais', date: new Date(saturday) },
-    { home: 'BCM Gravelines-Dunkerque', away: 'Saint-Quentin Basket-Ball', date: new Date(saturday) },
-    { home: 'ESSM Le Portel', away: 'Fos Provence Basket', date: new Date(saturday) }
-  );
-  
-  return matches;
-}
+  if (!geminiApiKey) {
+    console.log('  ⚠️  No Gemini API key - skipping Betclic Elite');
+    return 0;
+  }
 
-async function fetchBetclicEliteSchedule() {
-  console.log('  🏀 Generating Betclic Elite schedule (manual - TheSportsDB unavailable)...');
-  
   try {
+    // Fetch HTML from TheSportsDB page
+    const response = await axios.get(THESPORTSDB_PAGE, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      timeout: 15000
+    });
+
+    const html = response.data;
+    console.log(`  📄 Retrieved HTML page (${Math.round(html.length / 1024)}KB)`);
+
+    // Initialize Gemini
+    const genAI = new GoogleGenerativeAI(geminiApiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+
+    const prompt = `Tu es un expert en extraction de données HTML pour le basketball français.
+
+Voici le code HTML de la page TheSportsDB pour la ligue Betclic Elite (LNB Pro A) :
+
+${html}
+
+TÂCHE : Extraire UNIQUEMENT les matchs de basketball Betclic Elite qui sont affichés sur cette page.
+
+INSTRUCTIONS CRITIQUES :
+- N'INVENTE AUCUNE donnée, extrais SEULEMENT ce qui est présent dans le HTML
+- Cherche les prochains matchs (Next Events) ET les résultats récents (Last Results)
+- Pour chaque match, extrais : équipe domicile, équipe extérieure, date, heure, scores (si terminé)
+- Format de date : YYYY-MM-DD
+- Si le match est terminé, inclus homeScore et awayScore
+- Si le match est à venir, mets homeScore: null, awayScore: null
+
+Réponds UNIQUEMENT avec un JSON array valide, sans texte avant ou après :
+[
+  {
+    "homeTeam": "nom équipe domicile",
+    "awayTeam": "nom équipe extérieure", 
+    "date": "YYYY-MM-DD",
+    "time": "HH:MM",
+    "homeScore": null ou nombre,
+    "awayScore": null ou nombre,
+    "status": "scheduled" ou "finished"
+  }
+]
+
+Si aucun match n'est trouvé, réponds avec : []`;
+
+    const result = await model.generateContent(prompt);
+    const geminiResponse = result.response.text();
+    
+    // Clean and parse JSON response
+    let jsonText = geminiResponse.trim();
+    if (jsonText.startsWith('```json')) {
+      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    } else if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/```\n?/g, '');
+    }
+    jsonText = jsonText.trim();
+
+    const extractedMatches = JSON.parse(jsonText);
+    console.log(`  ✨ Gemini extracted ${extractedMatches.length} Betclic Elite matches`);
+
+    if (extractedMatches.length === 0) {
+      console.log('  ℹ️  No matches found on page');
+      return 0;
+    }
+
+    // Create league
     const league = await prisma.league.upsert({
       where: { name: 'Betclic Elite' },
       update: {},
@@ -75,21 +98,7 @@ async function fetchBetclicEliteSchedule() {
       }
     });
 
-    // Créer ou récupérer toutes les équipes
-    const teamRecords = {};
-    for (const teamData of BETCLIC_TEAMS) {
-      const team = await prisma.team.upsert({
-        where: { name: teamData.name },
-        update: {},
-        create: {
-          name: teamData.name,
-          logo: null
-        }
-      });
-      teamRecords[teamData.name] = team;
-    }
-
-    // Créer ou récupérer les diffuseurs
+    // Create broadcasters
     const broadcasters = await Promise.all(
       BROADCASTERS.map(b =>
         prisma.broadcaster.upsert({
@@ -100,73 +109,93 @@ async function fetchBetclicEliteSchedule() {
       )
     );
 
-    // Générer les matchs de la semaine
-    const weeklyMatches = generateWeeklyMatches();
     let savedCount = 0;
 
-    for (const matchData of weeklyMatches) {
+    for (const matchData of extractedMatches) {
       try {
-        const homeTeam = teamRecords[matchData.home];
-        const awayTeam = teamRecords[matchData.away];
-        
-        if (!homeTeam || !awayTeam) continue;
+        if (!matchData.homeTeam || !matchData.awayTeam || !matchData.date) {
+          console.log(`     ⚠️  Skipping invalid match data`);
+          continue;
+        }
 
-        const externalId = `betclic-${matchData.home.replace(/\s+/g, '-')}-vs-${matchData.away.replace(/\s+/g, '-')}-${matchData.date.getTime()}`;
+        // Create or get teams
+        let homeTeam = await prisma.team.findFirst({
+          where: { name: matchData.homeTeam }
+        });
+        if (!homeTeam) {
+          homeTeam = await prisma.team.create({
+            data: { name: matchData.homeTeam, logo: null }
+          });
+        }
+
+        let awayTeam = await prisma.team.findFirst({
+          where: { name: matchData.awayTeam }
+        });
+        if (!awayTeam) {
+          awayTeam = await prisma.team.create({
+            data: { name: matchData.awayTeam, logo: null }
+          });
+        }
+
+        // Parse datetime
+        const dateTime = new Date(`${matchData.date}T${matchData.time || '20:00'}:00`);
+        if (isNaN(dateTime.getTime())) {
+          console.log(`     ⚠️  Invalid date for match: ${matchData.homeTeam} vs ${matchData.awayTeam}`);
+          continue;
+        }
+
+        const externalId = `betclic-${matchData.homeTeam.replace(/\s+/g, '-')}-vs-${matchData.awayTeam.replace(/\s+/g, '-')}-${matchData.date}`;
 
         const match = await prisma.match.upsert({
           where: { externalId },
           update: {
-            dateTime: matchData.date,
+            dateTime,
             homeTeamId: homeTeam.id,
             awayTeamId: awayTeam.id,
             leagueId: league.id,
-            status: 'scheduled',
-            homeScore: null,
-            awayScore: null
+            status: matchData.status || 'scheduled',
+            homeScore: matchData.homeScore,
+            awayScore: matchData.awayScore
           },
           create: {
             externalId,
-            dateTime: matchData.date,
+            dateTime,
             homeTeamId: homeTeam.id,
             awayTeamId: awayTeam.id,
             leagueId: league.id,
-            status: 'scheduled',
-            homeScore: null,
-            awayScore: null
+            status: matchData.status || 'scheduled',
+            homeScore: matchData.homeScore,
+            awayScore: matchData.awayScore
           }
         });
 
-        // Supprimer les anciennes diffusions
+        // Delete old broadcasts
         await prisma.matchBroadcast.deleteMany({
           where: { matchId: match.id }
         });
 
-        // Ajouter les diffuseurs (beIN Sports principal, parfois L'Équipe)
-        const mainBroadcasters = Math.random() > 0.5 
-          ? [broadcasters[0]] // Seulement beIN Sports
-          : [broadcasters[0], broadcasters[1]]; // beIN Sports + L'Équipe
-
-        await Promise.all(
-          mainBroadcasters.map(broadcaster =>
-            prisma.matchBroadcast.create({
-              data: {
-                matchId: match.id,
-                broadcasterId: broadcaster.id
-              }
-            })
-          )
-        );
+        // Add broadcasters (beIN Sports primary)
+        const mainBroadcaster = broadcasters.find(b => b.name === 'beIN Sports');
+        if (mainBroadcaster) {
+          await prisma.matchBroadcast.create({
+            data: {
+              matchId: match.id,
+              broadcasterId: mainBroadcaster.id
+            }
+          });
+        }
 
         savedCount++;
       } catch (err) {
-        console.log('     ⚠️  Error saving match:', err.message);
+        console.log(`     ⚠️  Error saving match: ${err.message}`);
       }
     }
 
-    console.log(`  ✅ Betclic Elite: Generated ${savedCount} matches (manual schedule)`);
+    console.log(`  ✅ Betclic Elite: Saved ${savedCount} authentic matches from web extraction`);
     return savedCount;
+
   } catch (error) {
-    console.error('  ❌ Betclic Elite generation error:', error.message);
+    console.error('  ❌ Betclic Elite extraction error:', error.message);
     return 0;
   }
 }

@@ -39,10 +39,14 @@ async function updateMatches() {
       console.error('  ❌ Euroleague API failed:', error.message);
     }
     
-    // ❌ Betclic Elite DISABLED - No free API available
-    // TheSportsDB returns wrong teams, no other free source exists
-    // User requirement: 100% authentic data only (no manual generation)
-    console.log('\n⏭️  Betclic Elite: Skipped (no free API available)');
+    try {
+      console.log('\n4️⃣  Betclic Elite - Gemini HTML Extraction (TheSportsDB)');
+      const geminiKey = process.env.GEMINI_API_KEY;
+      const betclicMatches = await betclicEliteConnector.fetchBetclicEliteSchedule(geminiKey);
+      totalMatches += betclicMatches;
+    } catch (error) {
+      console.error('  ❌ Betclic Elite extraction failed:', error.message);
+    }
 
     if (totalMatches === 0) {
       console.log('\n⚠️  No matches found from any source');
