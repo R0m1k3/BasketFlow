@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const nbaConnector = require('./nbaConnector');
 const euroleagueConnector = require('./euroleagueConnector');
 const betclicEliteConnector = require('./betclicEliteConnector');
+const geminiEnrichment = require('./geminiEnrichment');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
@@ -60,6 +61,20 @@ async function updateMatches() {
       console.log(`\n✅ Match update completed: ${totalMatches} total matches`);
       console.log('   📊 Coverage: NBA, WNBA, Euroleague, EuroCup, Betclic Elite');
     }
+
+    // Enrich matches with broadcasters using Gemini
+    try {
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (geminiKey) {
+        const enrichedCount = await geminiEnrichment.enrichMatchesWithBroadcasters(geminiKey);
+        console.log(`\n🤖 Gemini: ${enrichedCount} matches enriched with broadcasters`);
+      } else {
+        console.log('\n⚠️  GEMINI_API_KEY not configured, using default broadcasters');
+      }
+    } catch (error) {
+      console.error('  ❌ Gemini enrichment failed:', error.message);
+    }
+
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
   }
