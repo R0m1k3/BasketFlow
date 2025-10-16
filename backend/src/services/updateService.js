@@ -1,13 +1,14 @@
 const { PrismaClient } = require('@prisma/client');
 const nbaConnector = require('./nbaConnector');
 const wnbaConnector = require('./wnbaConnector');
-const euroleagueConnector = require('./euroleagueOfficialConnector');
-const lnbConnector = require('./lnbConnector');
+const euroleagueScraper = require('./euroleagueScraper');
+const lnbScraper = require('./lnbScraper');
+const bclScraper = require('./bclScraper');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
   try {
-    console.log('🏀 Starting match update with Official APIs...\n');
+    console.log('🏀 Starting match update with APIs & Web Scraping...\n');
 
     await cleanOldMatches();
     
@@ -31,39 +32,46 @@ async function updateMatches() {
       console.error('  ❌ WNBA API failed:', error.message);
     }
 
-    // Source 3: Euroleague Official API
-    console.log('\n📡 Source 3: Euroleague Official API (live.euroleague.net)');
+    // Source 3: Euroleague Web Scraping
+    console.log('\n🕷️  Source 3: Euroleague Web Scraping (euroleaguebasketball.net)');
     try {
-      const elMatches = await euroleagueConnector.fetchEuroleagueSchedule();
+      const elMatches = await euroleagueScraper.scrapeEuroleagueSchedule();
       totalMatches += elMatches;
     } catch (error) {
-      console.error('  ❌ Euroleague API failed:', error.message);
+      console.error('  ❌ Euroleague scraping failed:', error.message);
     }
 
-    // Source 4: EuroCup Official API
-    console.log('\n📡 Source 4: EuroCup Official API (live.euroleague.net)');
+    // Source 4: EuroCup Web Scraping
+    console.log('\n🕷️  Source 4: EuroCup Web Scraping (eurocupbasketball.com)');
     try {
-      const ecMatches = await euroleagueConnector.fetchEurocupSchedule();
+      const ecMatches = await euroleagueScraper.scrapeEurocupSchedule();
       totalMatches += ecMatches;
     } catch (error) {
-      console.error('  ❌ EuroCup API failed:', error.message);
+      console.error('  ❌ EuroCup scraping failed:', error.message);
     }
 
-    // Source 5: Betclic Elite (LNB) Official API
-    console.log('\n📡 Source 5: Betclic Elite Official API (lnb.fr)');
+    // Source 5: Betclic Elite Web Scraping
+    console.log('\n🕷️  Source 5: Betclic Elite Web Scraping (lnb.fr)');
     try {
-      const beMatches = await lnbConnector.fetchBetclicEliteSchedule();
+      const beMatches = await lnbScraper.scrapeBetclicEliteSchedule();
       totalMatches += beMatches;
     } catch (error) {
-      console.error('  ❌ Betclic Elite API failed:', error.message);
+      console.error('  ❌ Betclic Elite scraping failed:', error.message);
     }
 
-    // Note: BCL (Basketball Champions League) requires FIBA API key - can be added later
+    // Source 6: BCL Web Scraping
+    console.log('\n🕷️  Source 6: BCL Web Scraping (championsleague.basketball)');
+    try {
+      const bclMatches = await bclScraper.scrapeBCLSchedule();
+      totalMatches += bclMatches;
+    } catch (error) {
+      console.error('  ❌ BCL scraping failed:', error.message);
+    }
 
     if (totalMatches === 0) {
       console.log('\n⚠️  No matches found from any source');
     } else {
-      console.log(`\n✅ Match update completed: ${totalMatches} matches from official APIs`);
+      console.log(`\n✅ Match update completed: ${totalMatches} matches from APIs & Web Scraping`);
     }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
