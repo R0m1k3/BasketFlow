@@ -74,12 +74,25 @@ A web application that displays basketball games broadcast in France, featuring 
   - Broadcasters: Text with emoji indicators (📺 free, 💰 paid)
   - Auto-detection: onError handlers switch to fallback when image fails
 - **Logo Management**:
-  - `backend/src/utils/logoMapping.js`: 70+ team logos (NBA 30, WNBA 12, Euroleague 18, Betclic Elite 15) + broadcaster logos
+  - `backend/src/utils/logoMapping.js`: 80+ team logos (NBA 30, WNBA 12, Euroleague 20, Betclic Elite 15) + broadcaster logos
   - `backend/src/scripts/fixLogos.js`: Script to update DB with verified URLs
   - `backend/src/scripts/extractBetclicLogos.js`: Gemini-powered logo extraction from TheSportsDB
-  - Logo sources: Wikimedia (NBA/WNBA/Euroleague), TheSportsDB (Betclic Elite)
-  - **97% coverage**: 38/39 weekly matches display team logos (NBA 100%, Betclic Elite 100%, Euroleague 95%)
+  - `backend/src/scripts/extractEuroleagueLogos.js`: Gemini-powered logo extraction from TheSportsDB
+  - Logo sources: TheSportsDB (all leagues - 100% reliable)
+  - **100% coverage**: ALL weekly matches display team logos (NBA 100%, Betclic Elite 100%, Euroleague 100%)
 - **Frontend integration**: All logos in WeeklyMatches & MonthlyCalendar use proxy + fallbacks
+
+### 🏀 Match Scores & Results ✅
+**Automated Score Retrieval**:
+- **NBA/WNBA**: Official API provides homeScore, awayScore, status (scheduled/live/finished)
+- **Euroleague**: Gemini extracts results from TheSportsDB "Results" section with fuzzy team matching
+- **Betclic Elite**: Gemini extracts from "Results" (past with scores) + "Upcoming" (future without scores)
+- **Frontend**: Displays scores automatically when available (X - Y format with LIVE indicator)
+- **Score Services**:
+  - `backend/src/services/nbaConnector.js`: Retrieves NBA/WNBA scores from official APIs
+  - `backend/src/services/euroleagueResultsConnector.js`: Gemini-powered score extraction for Euroleague
+  - `backend/src/services/betclicEliteConnector.js`: Dual extraction (results + upcoming) with scores
+- **Coverage**: 5+ finished matches per week with authentic scores displayed
 
 ### Authentication & Security System ✅
 - Implemented JWT-based authentication with user/admin roles

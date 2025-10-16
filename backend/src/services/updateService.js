@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const nbaConnector = require('./nbaConnector');
 const euroleagueConnector = require('./euroleagueConnector');
+const euroleagueResultsConnector = require('./euroleagueResultsConnector');
 const betclicEliteConnector = require('./betclicEliteConnector');
 const geminiEnrichment = require('./geminiEnrichment');
 const prisma = new PrismaClient();
@@ -35,6 +36,10 @@ async function updateMatches() {
       console.log('\n3️⃣  Euroleague - Official XML API');
       const euroleagueMatches = await euroleagueConnector.fetchEuroleagueSchedule();
       totalMatches += euroleagueMatches;
+      
+      console.log('\n   📊 Euroleague Results - TheSportsDB via Gemini');
+      const geminiKey = process.env.GEMINI_API_KEY;
+      await euroleagueResultsConnector.fetchEuroleagueResults(geminiKey);
     } catch (error) {
       console.error('  ❌ Euroleague API failed:', error.message);
     }
