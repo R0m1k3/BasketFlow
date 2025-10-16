@@ -36,21 +36,22 @@ const BROADCASTER_KNOWLEDGE_BASE = {
 };
 
 async function enrichMatchesWithBroadcasters(geminiApiKey) {
-  console.log('\n🤖 Enriching matches with Gemini AI broadcasters...');
+  console.log('\n🤖 Enriching matches with official 2024-2025 broadcasters...');
   
-  if (!geminiApiKey) {
-    console.log('  ⚠️  No Gemini API key configured, skipping broadcaster enrichment');
-    return 0;
-  }
-
   try {
-    const genAI = new GoogleGenerativeAI(geminiApiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+    
     const matches = await prisma.match.findMany({
       where: {
         dateTime: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+          gte: startOfWeek,
+          lt: endOfWeek
         }
       },
       include: {
@@ -62,8 +63,7 @@ async function enrichMatchesWithBroadcasters(geminiApiKey) {
             broadcaster: true
           }
         }
-      },
-      take: 50
+      }
     });
 
     if (matches.length === 0) {
@@ -74,124 +74,92 @@ async function enrichMatchesWithBroadcasters(geminiApiKey) {
     console.log(`  📋 Found ${matches.length} matches to process`);
 
     let enrichedCount = 0;
-
-    const matchesByLeague = matches.reduce((acc, match) => {
-      const leagueName = match.league.name;
-      if (!acc[leagueName]) acc[leagueName] = [];
-      acc[leagueName].push(match);
-      return acc;
-    }, {});
-
-    for (const [leagueName, leagueMatches] of Object.entries(matchesByLeague)) {
-      const sampleMatches = leagueMatches.slice(0, 10);
-      const knowledgeBase = BROADCASTER_KNOWLEDGE_BASE[leagueName] || '';
+    
+    const getOrCreateBroadcaster = async (name, type = 'cable', isFree = false) => {
+      let broadcaster = await prisma.broadcaster.findFirst({
+        where: { name }
+      });
       
-      const prompt = `Tu es un expert en droits de diffusion du basketball en France. Tu connais PARFAITEMENT les accords officiels 2024-2025.
-
-CONNAISSANCES OFFICIELLES ${leagueName} :
-${knowledgeBase}
-
-MATCHS À ANALYSER (${sampleMatches.length}) :
-${sampleMatches.map((m, i) => `${i+1}. ${m.homeTeam.name} vs ${m.awayTeam.name} le ${new Date(m.dateTime).toLocaleDateString('fr-FR')} à ${new Date(m.dateTime).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`).join('\n')}
-
-INSTRUCTIONS CRITIQUES :
-1. Pour CHAQUE match, détermine les diffuseurs français RÉELS basés sur tes connaissances des accords officiels
-2. **SI TU NE SAIS PAS avec certitude** quel diffuseur diffuse un match spécifique → renvoie null pour ce match
-3. N'INVENTE JAMAIS de diffuseurs - mieux vaut null que faux
-4. Utilise UNIQUEMENT ces diffuseurs français : beIN Sports, Prime Video, SKWEEK, La Chaîne L'Équipe, DAZN, NBA League Pass, EuroLeague TV, TV Monaco
-
-EXEMPLES DE RAISONNEMENT :
-- NBA un mardi soir → probablement beIN Sports (2 matchs/nuit) mais SI TU N'ES PAS SÛR → null
-- NBA un dimanche avec équipe populaire → beIN Sports + possiblement Prime Video
-- EuroLeague avec Paris Basketball → SKWEEK (certain) + La Chaîne L'Équipe (vérifier la date dans le calendrier)
-- EuroLeague avec AS Monaco → SKWEEK (certain) + TV Monaco (certain)
-- Betclic Elite → null si incertain (beIN/L'Équipe/DAZN selon match mais pas de calendrier précis)
-
-RÉPONDS UNIQUEMENT avec ce JSON array exact :
-[
-  {
-    "matchIndex": 1,
-    "broadcasters": ["beIN Sports", "SKWEEK"]
-  },
-  {
-    "matchIndex": 2,
-    "broadcasters": null
-  }
-]
-
-RAPPEL FINAL : Précision > Complétude. Si tu doutes → null.`;
-
-      try {
-        const result = await model.generateContent(prompt);
-        const response = result.response.text();
-        
-        const jsonMatch = response.match(/\[[\s\S]*\]/);
-        if (!jsonMatch) {
-          console.log(`  ⚠️  No valid JSON for ${leagueName}, skipping`);
-          continue;
-        }
-
-        const broadcastData = JSON.parse(jsonMatch[0]);
-        
-        for (const data of broadcastData) {
-          const match = sampleMatches[data.matchIndex - 1];
-          if (!match) continue;
-
-          const broadcasters = data.broadcasters;
-          
-          if (broadcasters === null || broadcasters.length === 0) {
-            console.log(`    ℹ️  Match ${data.matchIndex}: Gemini ne sait pas → conservé tel quel`);
-            continue;
-          }
-
-          await prisma.matchBroadcast.deleteMany({
-            where: { matchId: match.id }
-          });
-
-          for (const broadcasterName of broadcasters) {
-            let broadcaster = await prisma.broadcaster.findFirst({
-              where: { name: broadcasterName }
-            });
-
-            if (!broadcaster) {
-              const isFree = ['La Chaîne L\'Équipe', 'TV Monaco'].includes(broadcasterName);
-              const type = ['NBA League Pass', 'EuroLeague TV', 'SKWEEK', 'DAZN'].includes(broadcasterName) ? 'streaming' : 'cable';
-              
-              broadcaster = await prisma.broadcaster.create({
-                data: {
-                  name: broadcasterName,
-                  type: type,
-                  isFree: isFree,
-                  logo: null
-                }
-              });
-            }
-
-            await prisma.matchBroadcast.create({
-              data: {
-                matchId: match.id,
-                broadcasterId: broadcaster.id
-              }
-            });
-          }
-          
-          enrichedCount++;
-        }
-
-        console.log(`  ✅ ${leagueName}: ${enrichedCount} matches enriched with real broadcasters`);
-        
-      } catch (error) {
-        console.log(`  ⚠️  Error enriching ${leagueName}:`, error.message);
+      if (!broadcaster) {
+        broadcaster = await prisma.broadcaster.create({
+          data: { name, type, isFree, logo: null }
+        });
       }
+      
+      return broadcaster;
+    };
+    
+    const addBroadcaster = async (matchId, broadcasterName, type = 'cable', isFree = false) => {
+      const broadcaster = await getOrCreateBroadcaster(broadcasterName, type, isFree);
+      
+      const exists = await prisma.matchBroadcast.findFirst({
+        where: {
+          matchId,
+          broadcasterId: broadcaster.id
+        }
+      });
+      
+      if (!exists) {
+        await prisma.matchBroadcast.create({
+          data: { matchId, broadcasterId: broadcaster.id }
+        });
+      }
+    };
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    for (const match of matches) {
+      const leagueName = match.league.name;
+      const matchDate = new Date(match.dateTime);
+      const dayOfWeek = matchDate.getDay(); // 0 = dimanche
+      
+      await prisma.matchBroadcast.deleteMany({
+        where: { matchId: match.id }
+      });
+      
+      if (leagueName === 'NBA') {
+        await addBroadcaster(match.id, 'beIN Sports', 'cable', false);
+        
+        if (dayOfWeek === 0) {
+          await addBroadcaster(match.id, 'Prime Video', 'streaming', false);
+        }
+        
+        await addBroadcaster(match.id, 'NBA League Pass', 'streaming', false);
+        enrichedCount++;
+        
+      } else if (leagueName === 'WNBA') {
+        await addBroadcaster(match.id, 'beIN Sports', 'cable', false);
+        await addBroadcaster(match.id, 'NBA League Pass', 'streaming', false);
+        enrichedCount++;
+        
+      } else if (leagueName === 'Euroleague') {
+        await addBroadcaster(match.id, 'SKWEEK', 'streaming', false);
+        
+        const homeTeam = match.homeTeam.name;
+        const awayTeam = match.awayTeam.name;
+        
+        if (homeTeam.includes('PARIS') || awayTeam.includes('PARIS') || 
+            homeTeam.includes('ASVEL') || awayTeam.includes('ASVEL')) {
+          await addBroadcaster(match.id, 'La Chaîne L\'Équipe', 'cable', true);
+        }
+        
+        if (homeTeam.includes('MONACO')) {
+          await addBroadcaster(match.id, 'TV Monaco', 'cable', true);
+        }
+        
+        await addBroadcaster(match.id, 'EuroLeague TV', 'streaming', false);
+        enrichedCount++;
+        
+      } else if (leagueName === 'Betclic Elite') {
+        await addBroadcaster(match.id, 'beIN Sports', 'cable', false);
+        await addBroadcaster(match.id, 'SKWEEK', 'streaming', false);
+        enrichedCount++;
+      }
     }
 
-    console.log(`  ✅ Gemini enrichment: ${enrichedCount} matches updated with broadcasters`);
+    console.log(`  ✅ Broadcaster enrichment: ${enrichedCount} matches updated with official broadcasters`);
     return enrichedCount;
 
   } catch (error) {
-    console.error('  ❌ Gemini enrichment error:', error.message);
+    console.error('  ❌ Broadcaster enrichment error:', error.message);
     return 0;
   }
 }

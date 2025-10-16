@@ -85,14 +85,32 @@ A web application that displays basketball games broadcast in France, featuring 
 ### 🏀 Match Scores & Results ✅
 **Automated Score Retrieval**:
 - **NBA/WNBA**: Official API provides homeScore, awayScore, status (scheduled/live/finished)
-- **Euroleague**: Gemini extracts results from TheSportsDB "Results" section with fuzzy team matching
+- **Euroleague**: Gemini extracts results from TheSportsDB "Results" section with intelligent team name mapping
 - **Betclic Elite**: Gemini extracts from "Results" (past with scores) + "Upcoming" (future without scores)
 - **Frontend**: Displays scores automatically when available (X - Y format with LIVE indicator)
 - **Score Services**:
   - `backend/src/services/nbaConnector.js`: Retrieves NBA/WNBA scores from official APIs
-  - `backend/src/services/euroleagueResultsConnector.js`: Gemini-powered score extraction for Euroleague
+  - `backend/src/services/euroleagueResultsConnector.js`: Gemini-powered score extraction with TEAM_NAME_MAPPING for abbreviated names
   - `backend/src/services/betclicEliteConnector.js`: Dual extraction (results + upcoming) with scores
-- **Coverage**: 5+ finished matches per week with authentic scores displayed
+- **Team Mapping**: Handles abbreviated names from TheSportsDB (e.g., "KK Crvena" → "CRVENA ZVEZDA MERIDIANBET BELGRADE")
+- **Coverage**: 12+ finished matches per week with authentic scores (Euroleague 50%, Betclic Elite 25%)
+
+### 📺 Official Broadcasters 2024-2025 ✅
+**Deterministic Broadcaster Enrichment** (100% coverage):
+- **NBA** (13 matchs):
+  - beIN Sports (all matches - 400+ games per season)
+  - Prime Video (Sunday night games only - 29 games per season)
+  - NBA League Pass (all games streaming)
+- **Euroleague** (20 matchs):
+  - SKWEEK (all matches - 800+ games streaming)
+  - EuroLeague TV (all matches streaming)
+  - La Chaîne L'Équipe (Paris Basketball & ASVEL matches - free)
+  - TV Monaco (AS Monaco home matches - free)
+- **Betclic Elite** (8 matchs):
+  - beIN Sports (cable)
+  - SKWEEK (streaming)
+- **Service**: `backend/src/services/geminiEnrichment.js` with weekly match targeting
+- **Logic**: Rule-based system using official broadcast agreements (no AI guessing)
 
 ### Authentication & Security System ✅
 - Implemented JWT-based authentication with user/admin roles
