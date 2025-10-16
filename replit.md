@@ -63,7 +63,7 @@ A web application that displays basketball games broadcast in France, featuring 
 - **Backend proxy** (`/api/image-proxy`) resolves CORS/CSP issues with external logos in Replit iframe
 - **LRU Cache** with lastUsed-based eviction (100 entries, 24h TTL) for performance
 - **Security hardening**:
-  - Domain allowlist: Wikimedia, NBA/WNBA, Euroleague, team sites, logo CDNs
+  - Domain allowlist: Wikimedia, NBA/WNBA, Euroleague, TheSportsDB, team sites, logo CDNs
   - 5MB size limit prevents resource exhaustion
   - 403 blocks for unauthorized domains
 - **Smart fallbacks**:
@@ -71,9 +71,11 @@ A web application that displays basketball games broadcast in France, featuring 
   - Broadcasters: Text with emoji indicators (📺 free, 💰 paid)
   - Auto-detection: onError handlers switch to fallback when image fails
 - **Logo Management**:
-  - `backend/src/utils/logoMapping.js`: Curated URLs for major teams/broadcasters
+  - `backend/src/utils/logoMapping.js`: 70+ team logos (NBA 30, WNBA 12, Euroleague 18, Betclic Elite 15) + broadcaster logos
   - `backend/src/scripts/fixLogos.js`: Script to update DB with verified URLs
-  - Verified URLs from Wikimedia Commons (PNG format for reliability)
+  - `backend/src/scripts/extractBetclicLogos.js`: Gemini-powered logo extraction from TheSportsDB
+  - Logo sources: Wikimedia (NBA/WNBA/Euroleague), TheSportsDB (Betclic Elite)
+  - **97% coverage**: 38/39 weekly matches display team logos (NBA 100%, Betclic Elite 100%, Euroleague 95%)
 - **Frontend integration**: All logos in WeeklyMatches & MonthlyCalendar use proxy + fallbacks
 
 ### Authentication & Security System ✅

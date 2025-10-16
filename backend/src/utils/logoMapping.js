@@ -110,20 +110,21 @@ const TEAM_LOGOS = {
   'EA7 Milano': 'https://upload.wikimedia.org/wikipedia/en/b/bb/Olimpia_Milano_logo.svg',
   'EA7 EMPORIO ARMANI MILAN': 'https://upload.wikimedia.org/wikipedia/en/b/bb/Olimpia_Milano_logo.svg',
 
-  'Saint-Que': null,
-  'Strasbour': null,
-  'ESSM Le P': null,
-  'SLUC Nanc': null,
-  'Cholet': null,
-  'Élan Cha': null,
-  'Le Mans S': null,
-  'Bourg-en-': null,
-  'Lyon-Vill': null,
-  'Graveline': null,
-  'Nanterre': null,
-  'Boulazac': null,
-  'Limoges': null,
-  'Dijon': null
+  'Saint-Que': 'https://r2.thesportsdb.com/images/media/team/badge/x1jnik1697128652.png/preview',
+  'Strasbour': 'https://r2.thesportsdb.com/images/media/team/badge/1opi561726732886.png/preview',
+  'ESSM Le P': 'https://r2.thesportsdb.com/images/media/team/badge/yhwnwu1649168935.png/preview',
+  'SLUC Nanc': 'https://r2.thesportsdb.com/images/media/team/badge/6zbuwh1666897360.png/preview',
+  'Cholet': 'https://r2.thesportsdb.com/images/media/team/badge/rjb2631570976454.png/preview',
+  'Élan Cha': 'https://r2.thesportsdb.com/images/media/team/badge/f7jcdk1542825634.png/preview',
+  'Le Mans S': 'https://r2.thesportsdb.com/images/media/team/badge/iouj5l1757607112.png/preview',
+  'Bourg-en-': 'https://r2.thesportsdb.com/images/media/team/badge/643qz71523101349.png/preview',
+  'Lyon-Vill': 'https://r2.thesportsdb.com/images/media/team/badge/qbaoia1602706639.png/preview',
+  'Graveline': 'https://r2.thesportsdb.com/images/media/team/badge/1mft2j1757606561.png/preview',
+  'Nanterre': 'https://r2.thesportsdb.com/images/media/team/badge/hdqr5m1523101484.png/preview',
+  'Boulazac': 'https://r2.thesportsdb.com/images/media/team/badge/68tu9p1570976593.png/preview',
+  'Limoges': 'https://r2.thesportsdb.com/images/media/team/badge/rryxux1423605495.png/preview',
+  'Dijon': 'https://r2.thesportsdb.com/images/media/team/badge/06b1fd1666897191.png/preview',
+  'Paris Bas': 'https://r2.thesportsdb.com/images/media/team/badge/9q0d6x1726681476.png/preview'
 };
 
 const BROADCASTER_LOGOS = {

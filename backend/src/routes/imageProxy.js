@@ -40,7 +40,10 @@ const ALLOWED_DOMAINS = [
   'seeklogo.com',
   'brandslogos.com',
   'pngimg.com',
-  'freepnglogos.com'
+  'freepnglogos.com',
+  'r2.thesportsdb.com',
+  'thesportsdb.com',
+  'www.thesportsdb.com'
 ];
 
 function downloadImage(imageUrl) {
