@@ -5,6 +5,47 @@ const prisma = new PrismaClient();
 
 const THESPORTSDB_PAGE = 'https://www.thesportsdb.com/league/4546-euroleague-basketball';
 
+const TEAM_NAME_MAPPING = {
+  'Real Madr': 'REAL MADRID',
+  'Real Madrid': 'REAL MADRID',
+  'KK Partiz': 'PARTIZAN MOZZART BET BELGRADE',
+  'Partizan': 'PARTIZAN MOZZART BET BELGRADE',
+  'Paris Bas': 'PARIS BASKETBALL',
+  'Paris Basketball': 'PARIS BASKETBALL',
+  'Baskonia': 'BASKONIA VITORIA-GASTEIZ',
+  'Virtus Pa': 'VIRTUS BOLOGNA',
+  'Virtus Bologna': 'VIRTUS BOLOGNA',
+  'AS Monaco': 'AS MONACO',
+  'Valencia': 'VALENCIA BASKET',
+  'Valencia Basket': 'VALENCIA BASKET',
+  'Hapoel Te': 'HAPOEL IBI TEL AVIV',
+  'Hapoel Tel Aviv': 'HAPOEL IBI TEL AVIV',
+  'Panathina': 'PANATHINAIKOS AKTOR ATHENS',
+  'Panathinaikos': 'PANATHINAIKOS AKTOR ATHENS',
+  'Lyon-Vill': 'LDLC ASVEL VILLEURBANNE',
+  'ASVEL': 'LDLC ASVEL VILLEURBANNE',
+  'Bayern M': 'FC BAYERN MUNICH',
+  'Bayern Munich': 'FC BAYERN MUNICH',
+  'Olimpia M': 'EA7 EMPORIO ARMANI MILAN',
+  'Olimpia Milano': 'EA7 EMPORIO ARMANI MILAN',
+  'Olympiaco': 'OLYMPIACOS PIRAEUS',
+  'Olympiacos': 'OLYMPIACOS PIRAEUS',
+  'Anadolu E': 'ANADOLU EFES ISTANBUL',
+  'Anadolu Efes': 'ANADOLU EFES ISTANBUL',
+  'Maccabi T': 'MACCABI RAPYD TEL AVIV',
+  'Maccabi Tel Aviv': 'MACCABI RAPYD TEL AVIV',
+  'FC Barcel': 'FC BARCELONA',
+  'FC Barcelona': 'FC BARCELONA',
+  'KK Crvena': 'CRVENA ZVEZDA MERIDIANBET BELGRADE',
+  'Crvena Zvezda': 'CRVENA ZVEZDA MERIDIANBET BELGRADE',
+  'BC Žalgi': 'ZALGIRIS KAUNAS',
+  'Zalgiris': 'ZALGIRIS KAUNAS',
+  'Fenerbah': 'FENERBAHCE BEKO ISTANBUL',
+  'Fenerbahce': 'FENERBAHCE BEKO ISTANBUL',
+  'Dubai Bas': 'DUBAI BASKETBALL',
+  'Dubai Basketball': 'DUBAI BASKETBALL'
+};
+
 async function fetchEuroleagueResults(geminiApiKey) {
   console.log('  🏀 Fetching Euroleague results from TheSportsDB via Gemini...');
   
@@ -103,38 +144,18 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
           continue;
         }
 
-        const allTeams = await prisma.team.findMany();
-        
-        const findBestMatch = (searchName) => {
-          const normalized = searchName.toLowerCase().trim();
+        const findTeam = async (teamName) => {
+          const mappedName = TEAM_NAME_MAPPING[teamName] || teamName;
           
-          for (const team of allTeams) {
-            const teamNameLower = team.name.toLowerCase();
-            
-            if (teamNameLower.includes(normalized) || normalized.includes(teamNameLower)) {
-              return team;
-            }
-            
-            const teamWords = teamNameLower.split(/\s+/);
-            const searchWords = normalized.split(/\s+/);
-            
-            let matchCount = 0;
-            for (const word of searchWords) {
-              if (word.length > 2 && teamWords.some(tw => tw.includes(word) || word.includes(tw))) {
-                matchCount++;
-              }
-            }
-            
-            if (matchCount >= Math.min(2, searchWords.length)) {
-              return team;
-            }
-          }
+          const team = await prisma.team.findFirst({
+            where: { name: mappedName }
+          });
           
-          return null;
+          return team;
         };
         
-        const homeTeam = findBestMatch(matchData.homeTeam);
-        const awayTeam = findBestMatch(matchData.awayTeam);
+        const homeTeam = await findTeam(matchData.homeTeam);
+        const awayTeam = await findTeam(matchData.awayTeam);
 
         if (!homeTeam || !awayTeam) {
           console.log(`     ⚠️  Teams not found: ${matchData.homeTeam} vs ${matchData.awayTeam}`);
