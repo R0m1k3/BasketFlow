@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const nbaConnector = require('./nbaConnector');
 const rapidApiBasketball = require('./rapidApiBasketballConnector');
+const browserlessScraper = require('./browserlessScraper');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
@@ -40,11 +41,42 @@ async function updateMatches() {
       }
     }
 
+    // Scrape European leagues with Browserless
+    console.log('\n🕷️  Scraping European leagues with Browserless...');
+    
+    try {
+      const euroleagueMatches = await browserlessScraper.scrapeEuroleague();
+      totalMatches += euroleagueMatches;
+    } catch (error) {
+      console.error('  ❌ Euroleague scraping failed:', error.message);
+    }
+    
+    try {
+      const eurocupMatches = await browserlessScraper.scrapeEurocup();
+      totalMatches += eurocupMatches;
+    } catch (error) {
+      console.error('  ❌ EuroCup scraping failed:', error.message);
+    }
+    
+    try {
+      const betclicMatches = await browserlessScraper.scrapeBetclicElite();
+      totalMatches += betclicMatches;
+    } catch (error) {
+      console.error('  ❌ Betclic Elite scraping failed:', error.message);
+    }
+    
+    try {
+      const bclMatches = await browserlessScraper.scrapeBCL();
+      totalMatches += bclMatches;
+    } catch (error) {
+      console.error('  ❌ BCL scraping failed:', error.message);
+    }
+
     if (totalMatches === 0) {
       console.log('\n⚠️  No matches found from any source');
       console.log('💡 Add RAPIDAPI_BASKETBALL_KEY in admin panel for full coverage');
     } else {
-      console.log(`\n✅ Match update completed: ${totalMatches} matches`);
+      console.log(`\n✅ Match update completed: ${totalMatches} matches from all sources`);
     }
   } catch (error) {
     console.error('❌ Error in updateMatches:', error);
