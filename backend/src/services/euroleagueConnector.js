@@ -1,6 +1,7 @@
 const axios = require('axios');
 const xml2js = require('xml2js');
 const { PrismaClient } = require('@prisma/client');
+const { getTeamLogo } = require('../utils/logoMapping');
 const prisma = new PrismaClient();
 
 const EUROLEAGUE_API_BASE = 'https://api-live.euroleague.net/v1';
@@ -58,7 +59,7 @@ async function fetchEuroleagueSchedule() {
         });
         if (!homeTeam) {
           homeTeam = await prisma.team.create({
-            data: { name: homeTeamName, logo: null }
+            data: { name: homeTeamName, logo: getTeamLogo(homeTeamName) }
           });
         }
 
@@ -67,7 +68,7 @@ async function fetchEuroleagueSchedule() {
         });
         if (!awayTeam) {
           awayTeam = await prisma.team.create({
-            data: { name: awayTeamName, logo: null }
+            data: { name: awayTeamName, logo: getTeamLogo(awayTeamName) }
           });
         }
 

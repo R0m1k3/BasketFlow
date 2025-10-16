@@ -1,15 +1,18 @@
 const axios = require('axios');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { PrismaClient } = require('@prisma/client');
+const { getTeamLogo, getBroadcasterLogo } = require('../utils/logoMapping');
 const prisma = new PrismaClient();
 
 const THESPORTSDB_PAGE = 'https://www.thesportsdb.com/league/4423-french-lnb';
 
-const BROADCASTERS = [
-  { name: 'beIN Sports', type: 'cable', isFree: false },
-  { name: 'La Chaîne L\'Équipe', type: 'cable', isFree: true },
-  { name: 'DAZN', type: 'streaming', isFree: false }
-];
+function getBroadcasters() {
+  return [
+    { name: 'beIN Sports', type: 'cable', isFree: false, logo: getBroadcasterLogo('beIN Sports') },
+    { name: 'La Chaîne L\'Équipe', type: 'cable', isFree: true, logo: getBroadcasterLogo('La Chaîne L\'Équipe') },
+    { name: 'DAZN', type: 'streaming', isFree: false, logo: getBroadcasterLogo('DAZN') }
+  ];
+}
 
 async function fetchBetclicEliteSchedule(geminiApiKey) {
   console.log('  🏀 Fetching Betclic Elite schedule via Gemini HTML extraction...');
@@ -106,7 +109,7 @@ Si aucun match n'est trouvé, réponds avec : []`;
 
     // Create broadcasters
     const broadcasters = await Promise.all(
-      BROADCASTERS.map(b =>
+      getBroadcasters().map(b =>
         prisma.broadcaster.upsert({
           where: { name: b.name },
           update: {},
@@ -130,7 +133,7 @@ Si aucun match n'est trouvé, réponds avec : []`;
         });
         if (!homeTeam) {
           homeTeam = await prisma.team.create({
-            data: { name: matchData.homeTeam, logo: null }
+            data: { name: matchData.homeTeam, logo: getTeamLogo(matchData.homeTeam) }
           });
         }
 
@@ -139,7 +142,7 @@ Si aucun match n'est trouvé, réponds avec : []`;
         });
         if (!awayTeam) {
           awayTeam = await prisma.team.create({
-            data: { name: matchData.awayTeam, logo: null }
+            data: { name: matchData.awayTeam, logo: getTeamLogo(matchData.awayTeam) }
           });
         }
 

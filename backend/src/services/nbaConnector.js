@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { PrismaClient } = require('@prisma/client');
+const { getTeamLogo } = require('../utils/logoMapping');
 const prisma = new PrismaClient();
 
 const NBA_SCHEDULE_URL = 'https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json';
@@ -136,7 +137,7 @@ async function saveNBAMatch(game, leagueName = 'NBA') {
     homeTeam = await prisma.team.create({
       data: {
         name: homeTeamName,
-        logo: null
+        logo: getTeamLogo(homeTeamName)
       }
     });
   }
@@ -149,7 +150,7 @@ async function saveNBAMatch(game, leagueName = 'NBA') {
     awayTeam = await prisma.team.create({
       data: {
         name: awayTeamName,
-        logo: null
+        logo: getTeamLogo(awayTeamName)
       }
     });
   }
