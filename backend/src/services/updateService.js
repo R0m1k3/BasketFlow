@@ -39,13 +39,14 @@ async function updateMatches() {
       console.error('  ❌ Euroleague API failed:', error.message);
     }
     
-    try {
-      console.log('\n4️⃣  Betclic Elite - TheSportsDB API');
-      const betclicMatches = await betclicEliteConnector.fetchBetclicEliteSchedule();
-      totalMatches += betclicMatches;
-    } catch (error) {
-      console.error('  ❌ Betclic Elite API failed:', error.message);
-    }
+    // Betclic Elite temporarily disabled - TheSportsDB returns wrong teams
+    // try {
+    //   console.log('\n4️⃣  Betclic Elite - TheSportsDB API');
+    //   const betclicMatches = await betclicEliteConnector.fetchBetclicEliteSchedule();
+    //   totalMatches += betclicMatches;
+    // } catch (error) {
+    //   console.error('  ❌ Betclic Elite API failed:', error.message);
+    // }
 
     if (totalMatches === 0) {
       console.log('\n⚠️  No matches found from any source');
