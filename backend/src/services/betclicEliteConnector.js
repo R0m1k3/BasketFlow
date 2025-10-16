@@ -48,16 +48,16 @@ Voici le code HTML de la page TheSportsDB pour la ligue Betclic Elite (LNB Pro A
 
 ${html}
 
-TÂCHE : Extraire UNIQUEMENT les matchs de basketball Betclic Elite de la section "Upcoming" (matchs à venir).
+TÂCHE : Extraire les matchs de basketball Betclic Elite depuis DEUX sections :
+1. "Recent Results" ou "Last Results" (résultats passés AVEC SCORES)
+2. "Upcoming" (matchs à venir SANS scores)
 
 INSTRUCTIONS CRITIQUES :
-- PRIORITÉ ABSOLUE : Cherche la section "Upcoming" dans le HTML
-- N'INVENTE AUCUNE donnée, extrais SEULEMENT ce qui est présent dans la section Upcoming
-- Ignore les résultats passés (Last Results, Recent Results)
-- Pour chaque match à venir, extrais : équipe domicile, équipe extérieure, date, heure
+- N'INVENTE AUCUNE donnée, extrais SEULEMENT ce qui est présent dans le HTML
+- Pour les RÉSULTATS PASSÉS : extrais équipes, date, heure, ET LES SCORES
+- Pour les MATCHS À VENIR : extrais équipes, date, heure (scores = null)
 - Format de date : YYYY-MM-DD
 - ANNÉE : Si l'année n'est pas affichée, utilise ${currentYear}. Si le mois affiché est < ${currentMonth}, utilise ${currentYear + 1}
-- Tous les matchs à venir ont : homeScore: null, awayScore: null, status: "scheduled"
 - L'équipe à GAUCHE est homeTeam, l'équipe à DROITE est awayTeam
 
 Réponds UNIQUEMENT avec un JSON array valide, sans texte avant ou après :
@@ -65,6 +65,15 @@ Réponds UNIQUEMENT avec un JSON array valide, sans texte avant ou après :
   {
     "homeTeam": "nom équipe domicile",
     "awayTeam": "nom équipe extérieure", 
+    "date": "YYYY-MM-DD",
+    "time": "HH:MM",
+    "homeScore": 85,
+    "awayScore": 78,
+    "status": "finished"
+  },
+  {
+    "homeTeam": "équipe 2",
+    "awayTeam": "équipe 3", 
     "date": "YYYY-MM-DD",
     "time": "HH:MM",
     "homeScore": null,
