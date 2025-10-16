@@ -6,10 +6,10 @@ A web application that displays basketball games broadcast in France, featuring 
 
 ## Recent Changes (October 16, 2025)
 
-### 🆓 100% Free APIs Architecture ✅
-**Complete Transition to Free Basketball Data Sources**:
+### 🆓 100% Free APIs + Gemini Enrichment ✅
+**Hybrid Architecture: Official APIs + AI Intelligence**:
 
-**Data Sources (All FREE)**:
+**Match Data Sources (All FREE)**:
 1. **NBA** - Official NBA API (cdn.nba.com)
    - ExternalId prefix: `nba-{gameId}`
    - ~134 matches per 21-day window
@@ -30,18 +30,24 @@ A web application that displays basketball games broadcast in France, featuring 
    - ExternalId prefix: `betclic-{eventId}`
    - ~15 matches (free tier with key "3")
 
+**Broadcaster Enrichment (Optional)**:
+- **Gemini AI** - Analyzes authentic matches to identify French broadcasters
+- Uses match data (teams, league, date) to find correct TV channels
+- Fallback to league defaults if Gemini unavailable
+- Models: gemini-2.0-flash-exp (free tier)
+
 **Services**:
 - `nbaConnector.js` - NBA/WNBA official APIs
 - `euroleagueConnector.js` - Euroleague/EuroCup XML APIs
 - `betclicEliteConnector.js` - TheSportsDB API
-- `updateService.js` - Orchestrates all free connectors
+- `geminiEnrichment.js` - Broadcaster intelligence (optional)
+- `updateService.js` - Orchestrates all connectors
 
-**Total Coverage**: ~909 matches across 5 leagues (100% free)
+**Total Coverage**: ~909 matches across 5 leagues (100% free base + optional AI)
 **BCL excluded**: No free API available
 
 **Removed Dependencies**:
 - ❌ RapidAPI Basketball (paid)
-- ❌ Gemini AI (hallucinated data)
 - ❌ Browserless (persistent errors)
 - ❌ AllSportAPI (paid)
 

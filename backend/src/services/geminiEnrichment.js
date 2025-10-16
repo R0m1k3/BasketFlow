@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -20,7 +20,7 @@ async function enrichMatchesWithBroadcasters(geminiApiKey) {
 
   try {
     const genAI = new GoogleGenerativeAI(geminiApiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
     // Get matches without broadcasters from the last 30 days
     const matches = await prisma.match.findMany({
