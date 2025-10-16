@@ -45,11 +45,13 @@ A web application that displays basketball games broadcast in France, featuring 
 **Total Coverage**: ~534 matches across 4 leagues (100% free + AI-powered extraction)
 **Excluded**: BCL (no free API), EuroCup (duplicate of Euroleague)
 
-**Betclic Elite Solution**:
+**Betclic Elite Solution** ✅:
 - TheSportsDB API endpoint returns wrong data (English football instead of French basketball)
 - **Workaround**: Gemini extracts authentic matches from TheSportsDB web page HTML
+- **Targets "Upcoming" section** specifically to get future matches (17-25 Oct 2025)
+- **Smart year detection**: Uses current year (2025), handles year rollover for early-year matches
 - Strict prompt ensures zero hallucination - extraction only, no generation
-- Successfully retrieves ~20 matches including upcoming games and recent results
+- Successfully retrieves 10 upcoming matches from French basketball teams
 
 **Removed Dependencies**:
 - ❌ RapidAPI Basketball (paid)

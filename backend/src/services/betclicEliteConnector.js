@@ -35,21 +35,27 @@ async function fetchBetclicEliteSchedule(geminiApiKey) {
     const genAI = new GoogleGenerativeAI(geminiApiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
+    // Get current year for date parsing
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1; // 1-12
+    
     const prompt = `Tu es un expert en extraction de données HTML pour le basketball français.
 
 Voici le code HTML de la page TheSportsDB pour la ligue Betclic Elite (LNB Pro A) :
 
 ${html}
 
-TÂCHE : Extraire UNIQUEMENT les matchs de basketball Betclic Elite qui sont affichés sur cette page.
+TÂCHE : Extraire UNIQUEMENT les matchs de basketball Betclic Elite de la section "Upcoming" (matchs à venir).
 
 INSTRUCTIONS CRITIQUES :
-- N'INVENTE AUCUNE donnée, extrais SEULEMENT ce qui est présent dans le HTML
-- Cherche les prochains matchs (Next Events) ET les résultats récents (Last Results)
-- Pour chaque match, extrais : équipe domicile, équipe extérieure, date, heure, scores (si terminé)
+- PRIORITÉ ABSOLUE : Cherche la section "Upcoming" dans le HTML
+- N'INVENTE AUCUNE donnée, extrais SEULEMENT ce qui est présent dans la section Upcoming
+- Ignore les résultats passés (Last Results, Recent Results)
+- Pour chaque match à venir, extrais : équipe domicile, équipe extérieure, date, heure
 - Format de date : YYYY-MM-DD
-- Si le match est terminé, inclus homeScore et awayScore
-- Si le match est à venir, mets homeScore: null, awayScore: null
+- ANNÉE : Si l'année n'est pas affichée, utilise ${currentYear}. Si le mois affiché est < ${currentMonth}, utilise ${currentYear + 1}
+- Tous les matchs à venir ont : homeScore: null, awayScore: null, status: "scheduled"
+- L'équipe à GAUCHE est homeTeam, l'équipe à DROITE est awayTeam
 
 Réponds UNIQUEMENT avec un JSON array valide, sans texte avant ou après :
 [
@@ -58,9 +64,9 @@ Réponds UNIQUEMENT avec un JSON array valide, sans texte avant ou après :
     "awayTeam": "nom équipe extérieure", 
     "date": "YYYY-MM-DD",
     "time": "HH:MM",
-    "homeScore": null ou nombre,
-    "awayScore": null ou nombre,
-    "status": "scheduled" ou "finished"
+    "homeScore": null,
+    "awayScore": null,
+    "status": "scheduled"
   }
 ]
 
