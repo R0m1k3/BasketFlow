@@ -38,7 +38,7 @@ Le système associe automatiquement les matchs aux chaînes françaises :
 
 #### 1. Obtenir une clé API RapidAPI Basketball
 
-1. Allez sur : **https://rapidapi.com/fluis.lacasse/api/basketball-api1**
+1. Allez sur : **https://rapidapi.com/api-sports/api/api-basketball**
 2. Cliquez sur "Subscribe to Test"
 3. Choisissez un plan (plan gratuit disponible)
 4. Copiez votre clé API depuis le dashboard

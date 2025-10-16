@@ -13,7 +13,7 @@ async function test() {
   if (!apiKey) {
     console.log('❌ No RapidAPI Basketball key found.\n');
     console.log('To test RapidAPI Basketball:');
-    console.log('1. Get a FREE key from https://rapidapi.com/fluis.lacasse/api/basketball-api1');
+    console.log('1. Get a FREE key from https://rapidapi.com/api-sports/api/api-basketball');
     console.log('2. Add it to admin panel or run:');
     console.log('   RAPIDAPI_BASKETBALL_KEY=your_key node test-rapidapi.js\n');
     await prisma.$disconnect();

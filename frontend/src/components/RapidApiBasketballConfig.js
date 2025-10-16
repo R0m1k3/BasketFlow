@@ -100,7 +100,7 @@ function RapidApiBasketballConfig() {
 
   return (
     <div className="api-config-section">
-      <h3>🏀 RapidAPI Basketball (basketball-api1)</h3>
+      <h3>🏀 API-BASKETBALL (RapidAPI)</h3>
       <p className="api-description">
         <strong>All Leagues:</strong> NBA, WNBA, Euroleague, EuroCup, Betclic Elite, BCL
       </p>
@@ -108,7 +108,7 @@ function RapidApiBasketballConfig() {
       <div className="api-setup-steps">
         <h4>Setup Instructions:</h4>
         <ol>
-          <li>Go to <a href="https://rapidapi.com/fluis.lacasse/api/basketball-api1" target="_blank" rel="noopener noreferrer">RapidAPI Basketball API1</a></li>
+          <li>Go to <a href="https://rapidapi.com/api-sports/api/api-basketball" target="_blank" rel="noopener noreferrer">API-BASKETBALL on RapidAPI</a></li>
           <li>Subscribe to a plan (Free plan available)</li>
           <li>Copy your API key from the dashboard</li>
           <li>Paste it below and click Save</li>

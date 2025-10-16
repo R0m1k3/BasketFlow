@@ -2,8 +2,8 @@ const axios = require('axios');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const RAPIDAPI_HOST = 'basketball-api1.p.rapidapi.com';
-const RAPIDAPI_BASE_URL = `https://${RAPIDAPI_HOST}/api/basketball`;
+const RAPIDAPI_HOST = 'api-basketball.p.rapidapi.com';
+const RAPIDAPI_BASE_URL = `https://${RAPIDAPI_HOST}`;
 
 // Tournament IDs for Basketball API1
 const TOURNAMENT_IDS = {
@@ -55,9 +55,11 @@ async function fetchRapidApiGames(rapidApiKey) {
           const dateStr = formatDate(currentDate);
           
           try {
-            const response = await axios.get(`${RAPIDAPI_BASE_URL}/matches/date/${dateStr}`, {
+            const response = await axios.get(`${RAPIDAPI_BASE_URL}/games`, {
               params: {
-                tournament: tournamentId
+                league: tournamentId,
+                date: dateStr,
+                season: '2024-2025'
               },
               headers: {
                 'X-RapidAPI-Key': rapidApiKey,
@@ -66,13 +68,13 @@ async function fetchRapidApiGames(rapidApiKey) {
               timeout: 15000
             });
             
-            const events = response.data?.events || [];
+            const games = response.data?.response || [];
             
-            for (const event of events) {
-              const eventDate = new Date(event.startTimestamp * 1000);
-              // Only save events within the 21-day window
-              if (eventDate >= today && eventDate <= endDate) {
-                await saveRapidApiGame(event, leagueName);
+            for (const game of games) {
+              const gameDate = new Date(game.date);
+              // Only save games within the 21-day window
+              if (gameDate >= today && gameDate <= endDate) {
+                await saveRapidApiGame(game, leagueName);
                 totalMatches++;
               }
             }
@@ -99,14 +101,14 @@ async function fetchRapidApiGames(rapidApiKey) {
   }
 }
 
-async function saveRapidApiGame(event, leagueName) {
+async function saveRapidApiGame(game, leagueName) {
   try {
-    const externalId = `rapidapi-${event.id}`;
+    const externalId = `rapidapi-${game.id}`;
     
     const mappedLeague = mapLeagueName(leagueName);
-    const homeTeamName = event.homeTeam?.name || 'Unknown';
-    const awayTeamName = event.awayTeam?.name || 'Unknown';
-    const gameDateTime = new Date(event.startTimestamp * 1000);
+    const homeTeamName = game.teams?.home?.name || 'Unknown';
+    const awayTeamName = game.teams?.away?.name || 'Unknown';
+    const gameDateTime = new Date(game.date);
     
     // Create or get league
     const league = await prisma.league.upsert({
@@ -129,7 +131,7 @@ async function saveRapidApiGame(event, leagueName) {
       homeTeam = await prisma.team.create({
         data: {
           name: homeTeamName,
-          logo: event.homeTeam?.logo || null
+          logo: game.teams?.home?.logo || null
         }
       });
     }
@@ -143,7 +145,7 @@ async function saveRapidApiGame(event, leagueName) {
       awayTeam = await prisma.team.create({
         data: {
           name: awayTeamName,
-          logo: event.awayTeam?.logo || null
+          logo: game.teams?.away?.logo || null
         }
       });
     }
@@ -154,8 +156,8 @@ async function saveRapidApiGame(event, leagueName) {
     });
     
     // Determine status
-    const status = event.status?.type === 'finished' ? 'finished' : 
-                   event.status?.type === 'inprogress' ? 'live' : 'scheduled';
+    const status = game.status?.long === 'Finished' || game.status?.short === 'FT' ? 'finished' : 
+                   game.status?.long === 'In Play' || game.status?.short === 'LIVE' ? 'live' : 'scheduled';
     
     // Save or update match
     if (existingMatch) {
@@ -164,8 +166,8 @@ async function saveRapidApiGame(event, leagueName) {
         data: {
           dateTime: gameDateTime,
           status,
-          homeScore: event.homeScore?.current || null,
-          awayScore: event.awayScore?.current || null
+          homeScore: game.scores?.home?.total || null,
+          awayScore: game.scores?.away?.total || null
         }
       });
     } else {
@@ -177,8 +179,8 @@ async function saveRapidApiGame(event, leagueName) {
           awayTeamId: awayTeam.id,
           leagueId: league.id,
           status,
-          homeScore: event.homeScore?.current || null,
-          awayScore: event.awayScore?.current || null
+          homeScore: game.scores?.home?.total || null,
+          awayScore: game.scores?.away?.total || null
         }
       });
       
