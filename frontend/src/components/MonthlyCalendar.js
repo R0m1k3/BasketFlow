@@ -25,7 +25,8 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
       const month = currentDate.getMonth() + 1;
       const response = await axios.get(`/api/matches/month/${year}/${month}`);
       
-      let matches = response.data;
+      // Ensure response.data is an array
+      let matches = Array.isArray(response.data) ? response.data : [];
 
       if (selectedLeague !== 'all') {
         matches = matches.filter(m => m.leagueId === selectedLeague);
@@ -33,6 +34,7 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
 
       if (selectedBroadcaster !== 'all') {
         matches = matches.filter(m => 
+          m.broadcasts && Array.isArray(m.broadcasts) && 
           m.broadcasts.some(b => b.broadcasterId === selectedBroadcaster)
         );
       }
@@ -60,10 +62,10 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
             awayScore: match.awayScore,
             homeTeamLogo: match.homeTeam.logo,
             awayTeamLogo: match.awayTeam.logo,
-            broadcasters: match.broadcasts.map(b => ({
+            broadcasters: match.broadcasts && Array.isArray(match.broadcasts) ? match.broadcasts.map(b => ({
               name: b.broadcaster.name,
               logo: b.broadcaster.logo
-            }))
+            })) : []
           }
         };
       });
@@ -71,6 +73,7 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
       setEvents(calendarEvents);
     } catch (error) {
       console.error('Error fetching month matches:', error);
+      setEvents([]); // Set empty array on error
     }
   }, [currentDate, selectedLeague, selectedBroadcaster]);
 

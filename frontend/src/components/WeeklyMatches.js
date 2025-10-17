@@ -20,7 +20,9 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
     try {
       setLoading(true);
       const response = await axios.get('/api/matches/week');
-      let filteredMatches = response.data;
+      
+      // Ensure response.data is an array
+      let filteredMatches = Array.isArray(response.data) ? response.data : [];
 
       if (selectedLeague !== 'all') {
         filteredMatches = filteredMatches.filter(m => m.leagueId === selectedLeague);
@@ -28,6 +30,7 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
 
       if (selectedBroadcaster !== 'all') {
         filteredMatches = filteredMatches.filter(m => 
+          m.broadcasts && Array.isArray(m.broadcasts) && 
           m.broadcasts.some(b => b.broadcasterId === selectedBroadcaster)
         );
       }
@@ -35,6 +38,7 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
       setMatches(filteredMatches);
     } catch (error) {
       console.error('Error fetching matches:', error);
+      setMatches([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
