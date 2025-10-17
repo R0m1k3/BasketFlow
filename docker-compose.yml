@@ -50,6 +50,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: basket_frontend
+    environment:
+      PORT: 4000
+      BACKEND_URL: http://basket_backend:3888
     networks:
       - nginx_default
     ports:
