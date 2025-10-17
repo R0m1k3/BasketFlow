@@ -96,22 +96,31 @@ A web application that displays basketball games broadcast in France, featuring 
 - **Coverage**: 12+ finished matches per week with authentic scores (Euroleague 50%, Betclic Elite 25%)
 
 ### 📺 Broadcaster Management 2025-2026 ✅
-**Prime Video Calendar Integration** (Automated):
-- **NBA Prime Video** (82 matchs saison 2025-2026):
-  - Calendrier officiel intégré: 25 octobre 2025 → 11 avril 2026
-  - Enrichissement automatique via `backend/src/services/primeVideoParser.js`
-  - Parsing du fichier calendrier avec normalisation des noms d'équipes
-  - Synchronisation quotidienne à 6h00 du matin
-  - Système d'années intelligent (Oct-Déc 2025, Jan-Avr 2026)
+**Système Automatique Multi-Sources**:
+
+1. **Prime Video NBA** (82 matchs saison 2025-2026):
+   - Calendrier officiel intégré: 25 octobre 2025 → 11 avril 2026
+   - Service: `backend/src/services/primeVideoParser.js`
+   - Normalisation intelligente des noms d'équipes
+   - Années correctes (Oct-Déc 2025, Jan-Avr 2026)
+
+2. **EPG TV API** (beIN Sports, La Chaîne L'Équipe):
+   - Source: EPG.PW (gratuit, sans clé API)
+   - Service: `backend/src/services/epgTvService.js`
+   - Chaînes: beIN Sports 1/2/3 (IDs: 55773/55774/55775), La Chaîne L'Équipe (ID: 55938)
+   - Matching automatique par mots-clés basket + équipes
+   - Fenêtre de matching: ±2 heures autour du programme TV
 
 **Service de Mise à Jour** (`backend/src/services/updateService.js`):
-- ✅ Récupération automatique des matchs (NBA, WNBA, Euroleague, Betclic Elite)
-- ✅ Enrichissement Prime Video automatique pour NBA
+- ✅ Récupération matchs (NBA, WNBA, Euroleague, Betclic Elite)
+- ✅ Enrichissement Prime Video (calendrier officiel)
+- ✅ Enrichissement EPG TV (programmes en temps réel)
 - 🔄 Exécution quotidienne programmée (6h00 AM)
 
-**Autres Diffuseurs** (2025-2026):
-- ❌ Temporairement retirés - informations saison 2025-2026 non disponibles sans API payante
-- Options futures: Interface admin pour saisie manuelle ou calendriers officiels
+**Fonctionnement**:
+- Prime Video: Actif dès que l'API NBA récupérera les matchs du 25 octobre
+- EPG TV: Actif dès que programmes basket diffusés sur beIN/L'Équipe
+- Matching intelligent avec normalisation des noms d'équipes
 
 ### Authentication & Security System ✅
 - Implemented JWT-based authentication with user/admin roles

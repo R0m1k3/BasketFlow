@@ -6,6 +6,7 @@ const betclicEliteConnector = require('./betclicEliteConnector');
 const geminiEnrichment = require('./geminiEnrichment');
 const broadcasterCalendars = require('./broadcasterCalendars');
 const primeVideoParser = require('./primeVideoParser');
+const epgTvService = require('./epgTvService');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
@@ -79,6 +80,16 @@ async function updateMatches() {
       }
     } catch (error) {
       console.error('  ❌ Prime Video enrichment failed:', error.message);
+    }
+
+    // Enrich all matches with EPG TV data (beIN Sports, L'Équipe, etc.)
+    try {
+      const epgCount = await epgTvService.enrichWithEPGData();
+      if (epgCount > 0) {
+        console.log(`\n📺 EPG TV: ${epgCount} matches enriched from TV programs`);
+      }
+    } catch (error) {
+      console.error('  ❌ EPG TV enrichment failed:', error.message);
     }
 
   } catch (error) {
