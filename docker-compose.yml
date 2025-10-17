@@ -10,9 +10,9 @@ services:
       POSTGRES_DB: basketdb
       PGPORT: 4532
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - basket_postgres_data:/var/lib/postgresql/data
     networks:
-      - nginx_default
+      - basket_network
     ports:
       - "4532:4532"
     restart: unless-stopped
@@ -27,15 +27,14 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: basket_backend
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://basketuser:basketpass@postgres:4532/basketdb
+      DATABASE_URL: postgresql://basketuser:basketpass@basket_postgres:4532/basketdb
       NODE_ENV: production
       PORT: 3888
-      API_BASKETBALL_KEY: ${API_BASKETBALL_KEY}
-      JWT_SECRET: ${JWT_SECRET}
-      SESSION_SECRET: ${SESSION_SECRET}
     networks:
-      - nginx_default
+      - basket_network
     ports:
       - "3888:3888"
     depends_on:
@@ -50,7 +49,7 @@ services:
       dockerfile: Dockerfile
     container_name: basket_frontend
     networks:
-      - nginx_default
+      - basket_network
     ports:
       - "4000:4000"
     depends_on:
@@ -58,9 +57,10 @@ services:
     restart: unless-stopped
 
 networks:
-  nginx_default:
-    external: true
+  basket_network:
+    driver: bridge
+    name: basket_network
 
 volumes:
-  postgres_data:
+  basket_postgres_data:
     driver: local
