@@ -27,12 +27,13 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: basket_backend
-    env_file:
-      - .env
     environment:
       DATABASE_URL: postgresql://basketuser:basketpass@basket_postgres:4532/basketdb
       NODE_ENV: production
       PORT: 3888
+      JWT_SECRET: 9e4460d833531cb04286f0ba350e989d5afb8affb31513e8e779d44c35ad9548
+      SESSION_SECRET: 6073693be610363a5862503445a4cf38fb391efbe502526fa9036902759a4819
+      API_BASKETBALL_KEY: ${API_BASKETBALL_KEY:-}
     networks:
       - basket_network
     ports:
