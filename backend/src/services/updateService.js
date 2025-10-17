@@ -4,6 +4,7 @@ const euroleagueConnector = require('./euroleagueConnector');
 const euroleagueResultsConnector = require('./euroleagueResultsConnector');
 const betclicEliteConnector = require('./betclicEliteConnector');
 const geminiEnrichment = require('./geminiEnrichment');
+const broadcasterCalendars = require('./broadcasterCalendars');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
@@ -60,17 +61,13 @@ async function updateMatches() {
       console.log('   📊 Coverage: NBA, WNBA, Euroleague, Betclic Elite');
     }
 
-    // Enrich matches with broadcasters using Gemini
+    // Enrich matches with broadcasters based on official 2024-2025 agreements
     try {
       const geminiKey = process.env.GEMINI_API_KEY;
-      if (geminiKey) {
-        const enrichedCount = await geminiEnrichment.enrichMatchesWithBroadcasters(geminiKey);
-        console.log(`\n🤖 Gemini: ${enrichedCount} matches enriched with broadcasters`);
-      } else {
-        console.log('\n⚠️  GEMINI_API_KEY not configured, using default broadcasters');
-      }
+      const enrichedCount = await geminiEnrichment.enrichMatchesWithBroadcasters(geminiKey);
+      console.log(`\n📺 Broadcasters: ${enrichedCount} matches enriched with official agreements`);
     } catch (error) {
-      console.error('  ❌ Gemini enrichment failed:', error.message);
+      console.error('  ❌ Broadcaster enrichment failed:', error.message);
     }
 
   } catch (error) {
