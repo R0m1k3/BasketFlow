@@ -2,153 +2,7 @@
 
 ## Overview
 
-A web application that displays basketball games broadcast in France, featuring a weekly match table and monthly calendar. The app aggregates games from NBA, WNBA, Euroleague, EuroCup, and Betclic Elite, showing which French TV channels (beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK, etc.) are broadcasting each game. The system uses 100% free official APIs with automated daily updates at 6 AM.
-
-## Recent Changes (October 16, 2025)
-
-### 🆓 100% Free APIs + Gemini Enrichment ✅
-**Hybrid Architecture: Official APIs + AI Intelligence**:
-
-**Match Data Sources (All FREE)**:
-1. **NBA** - Official NBA API (cdn.nba.com)
-   - ExternalId prefix: `nba-{gameId}`
-   - ~134 matches per 21-day window
-   
-2. **WNBA** - Official WNBA API (cdn.wnba.com)
-   - ExternalId prefix: `wnba-{gameId}`
-   - Season: May-September (0 matches in offseason)
-   
-3. **Euroleague** - Official XML API (api-live.euroleague.net)
-   - ExternalId prefix: `euroleague-{gameId}`
-   - ~380 matches via XML parsing
-   - **Timezone correction**: -2 hours applied to match times
-   
-4. **Betclic Elite** - Gemini HTML Extraction (thesportsdb.com)
-   - ExternalId prefix: `betclic-{homeTeam-vs-awayTeam-date}`
-   - ~20 matches extracted from TheSportsDB web page
-   - **Gemini-powered scraping**: Intelligent HTML parsing to extract authentic match data
-   - Includes both upcoming matches and recent results with scores
-
-**Broadcaster Enrichment (Optional)**:
-- **Gemini AI** - Analyzes authentic matches to identify French broadcasters
-- Uses match data (teams, league, date) to find correct TV channels
-- Fallback to league defaults if Gemini unavailable
-- Models: gemini-2.0-flash-exp (free tier)
-
-**Services**:
-- `nbaConnector.js` - NBA/WNBA official APIs
-- `euroleagueConnector.js` - Euroleague XML API (timezone corrected)
-- `betclicEliteConnector.js` - Gemini-powered HTML extraction from TheSportsDB
-- `geminiEnrichment.js` - Broadcaster intelligence via AI
-- `updateService.js` - Orchestrates all connectors
-
-**Total Coverage**: ~534 matches across 4 leagues (100% free + AI-powered extraction)
-**Excluded**: BCL (no free API), EuroCup (duplicate of Euroleague)
-
-**Betclic Elite Solution** ✅:
-- TheSportsDB API endpoint returns wrong data (English football instead of French basketball)
-- **Workaround**: Gemini extracts authentic matches from TheSportsDB web page HTML
-- **Dual extraction** from two sections:
-  - "Results" section → past matches WITH SCORES (e.g., Graveline 81-87 Strasbour)
-  - "Upcoming" section → future matches without scores
-- **Smart year detection**: Uses current year (2025), handles year rollover for early-year matches
-- **Structured JSON response**: Gemini returns {results: [], upcoming: []} to prevent confusion
-- Strict prompt ensures zero hallucination - extraction only, no generation
-- Successfully retrieves ~20 matches (10 results + 10 upcoming) with authentic data
-
-**Removed Dependencies**:
-- ❌ RapidAPI Basketball (paid)
-- ❌ Browserless (persistent errors)
-- ❌ AllSportAPI (paid)
-
-### 🖼️ Robust Logo Display System ✅
-**Image Proxy with Security & Fallbacks**:
-- **Backend proxy** (`/api/image-proxy`) resolves CORS/CSP issues with external logos in Replit iframe
-- **LRU Cache** with lastUsed-based eviction (100 entries, 24h TTL) for performance
-- **Security hardening**:
-  - Domain allowlist: Wikimedia, NBA/WNBA, Euroleague, TheSportsDB, team sites, logo CDNs
-  - 5MB size limit prevents resource exhaustion
-  - 403 blocks for unauthorized domains
-- **Smart fallbacks**:
-  - Teams: Circular gradient placeholders with initials (e.g., "BO" for Boston)
-  - Broadcasters: Text with emoji indicators (📺 free, 💰 paid)
-  - Auto-detection: onError handlers switch to fallback when image fails
-- **Logo Management**:
-  - `backend/src/utils/logoMapping.js`: 80+ team logos (NBA 30, WNBA 12, Euroleague 20, Betclic Elite 15) + broadcaster logos
-  - `backend/src/scripts/fixLogos.js`: Script to update DB with verified URLs
-  - `backend/src/scripts/extractBetclicLogos.js`: Gemini-powered logo extraction from TheSportsDB
-  - `backend/src/scripts/extractEuroleagueLogos.js`: Gemini-powered logo extraction from TheSportsDB
-  - Logo sources: TheSportsDB (all leagues - 100% reliable)
-  - **100% coverage**: ALL weekly matches display team logos (NBA 100%, Betclic Elite 100%, Euroleague 100%)
-- **Frontend integration**: All logos in WeeklyMatches & MonthlyCalendar use proxy + fallbacks
-
-### 🏀 Match Scores & Results ✅
-**Automated Score Retrieval**:
-- **NBA/WNBA**: Official API provides homeScore, awayScore, status (scheduled/live/finished)
-- **Euroleague**: Gemini extracts results from TheSportsDB "Results" section with intelligent team name mapping
-- **Betclic Elite**: Gemini extracts from "Results" (past with scores) + "Upcoming" (future without scores)
-- **Frontend**: Displays scores automatically when available (X - Y format with LIVE indicator)
-- **Score Services**:
-  - `backend/src/services/nbaConnector.js`: Retrieves NBA/WNBA scores from official APIs
-  - `backend/src/services/euroleagueResultsConnector.js`: Gemini-powered score extraction with TEAM_NAME_MAPPING for abbreviated names
-  - `backend/src/services/betclicEliteConnector.js`: Dual extraction (results + upcoming) with scores
-- **Team Mapping**: Handles abbreviated names from TheSportsDB (e.g., "KK Crvena" → "CRVENA ZVEZDA MERIDIANBET BELGRADE")
-- **Coverage**: 12+ finished matches per week with authentic scores (Euroleague 50%, Betclic Elite 25%)
-
-### 📺 Broadcaster Management 2025-2026 ✅
-**Système Automatique Multi-Sources** (100% coverage):
-
-**Diffuseurs de Base** (Règles déterministes):
-- **NBA** → NBA League Pass (tous les matchs)
-- **WNBA** → NBA League Pass (tous les matchs)
-- **Euroleague** → SKWEEK (tous les matchs)
-- **Betclic Elite** → DAZN (tous les matchs)
-
-**Enrichissement Supplémentaire Automatique**:
-
-1. **Prime Video NBA** (82 matchs saison 2025-2026):
-   - Calendrier officiel intégré: 25 octobre 2025 → 11 avril 2026
-   - Service: `backend/src/services/primeVideoParser.js`
-   - Normalisation intelligente des noms d'équipes
-   - Années correctes (Oct-Déc 2025, Jan-Avr 2026)
-
-2. **EPG TV API** (beIN Sports, La Chaîne L'Équipe):
-   - Source: EPG.PW (gratuit, sans clé API)
-   - Service: `backend/src/services/epgTvService.js`
-   - Chaînes: beIN Sports 1/2/3 (IDs: 55773/55774/55775), La Chaîne L'Équipe (ID: 55938)
-   - Matching automatique par mots-clés basket + équipes
-   - Fenêtre de matching: ±2 heures autour du programme TV
-
-**Service de Mise à Jour** (`backend/src/services/updateService.js`):
-- ✅ Récupération matchs (NBA, WNBA, Euroleague, Betclic Elite)
-- ✅ Enrichissement diffuseurs de base (NBA League Pass, SKWEEK, DAZN)
-- ✅ Enrichissement Prime Video (calendrier officiel)
-- ✅ Enrichissement EPG TV (programmes en temps réel)
-- 🔄 Exécution quotidienne programmée (6h00 AM)
-
-### Authentication & Security System ✅
-- Implemented JWT-based authentication with user/admin roles
-- Created secure admin initialization with random password generation (crypto.randomBytes)
-- Enforced JWT_SECRET requirement - server refuses to start without it
-- Added security hardening with .env.example and comprehensive documentation
-- Created Login/Register components with AuthContext for state management
-- Built AdminPanel for API key configuration and user management
-- Added ProtectedRoute component for admin-only access control
-
-### Application Features ✅
-- Complete Docker configuration (docker-compose.yml, Dockerfiles for backend/frontend)
-- API-Basketball integration via RapidAPI for live match data
-- Idempotent updates using unique externalId constraint
-- Daily update service with node-cron (6:00 AM automatic sync)
-- PostgreSQL database with Prisma ORM
-- Frontend React components (WeeklyMatches, MonthlyCalendar, FilterBar)
-- Filtering by league and broadcaster
-- Sample data seeding with idempotent upserts
-
-### Documentation ✅
-- Created INSTALLATION.md with security-focused setup instructions
-- Updated README.md with security warnings and quick start guide
-- Added .env.example template without real secrets
+Basket Flow is a web application designed to display basketball games broadcast in France. It features a weekly match table and a monthly calendar, aggregating games from major leagues such as NBA, WNBA, Euroleague, EuroCup, and Betclic Elite. The application identifies which French TV channels (e.g., beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK) are broadcasting each game. A key feature is its reliance on 100% free, official APIs for match data, with automated daily updates, and AI-powered enrichment for broadcaster information and data extraction.
 
 ## User Preferences
 
@@ -156,105 +10,61 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
+### UI/UX Decisions
 
-**Technology Stack**: React with create-react-app
+The application provides two main views: a `WeeklyMatches` component for current week games presented in a card-based layout, and a `MonthlyCalendar` for an interactive calendar view of all matches in a selected month. A `FilterBar` allows users to filter matches by league and broadcaster. Broadcaster logos are displayed with an image proxy and intelligent fallbacks (circular gradient placeholders for teams, text with emoji for broadcasters) to ensure a robust visual experience.
 
-**Core Components**:
-- **WeeklyMatches**: Displays matches for the current week in a card-based layout with filtering
-- **MonthlyCalendar**: Interactive calendar view using FullCalendar library showing all matches for a selected month
-- **FilterBar**: Provides filtering controls for leagues and broadcasters
+### Technical Implementations
 
-**State Management**: Component-level useState hooks for local state, with parent App component managing shared filter state
+The frontend is built with **React** and uses Axios for API communication. Styling is managed with CSS modules and designed to be responsive. The backend is implemented with **Node.js** and **Express.js**. It uses **Prisma ORM** for database interactions, configured for PostgreSQL. `node-cron` schedules daily updates to fetch and process match data. JWT-based authentication with user/admin roles is implemented for secure access, particularly for administrative functions like logo management.
 
-**API Communication**: Axios for REST API calls to the backend, with proxy configuration to localhost:3000
+### Feature Specifications
 
-**Styling**: CSS modules per component with responsive design considerations
+- **Match Display**: Weekly and monthly views of basketball games.
+- **League Coverage**: NBA, WNBA, Euroleague, EuroCup, Betclic Elite.
+- **Broadcaster Information**: Identification of French TV channels broadcasting each game, with automated multi-source enrichment including official league pass providers (NBA League Pass, SKWEEK, DAZN), official schedules (Prime Video NBA), and EPG TV APIs (beIN Sports, La Chaîne L'Équipe).
+- **Match Scores**: Automated retrieval and display of scores for finished games from official APIs and Gemini-powered extraction.
+- **Logo Management**: Admin interface for managing team and broadcaster logos, including real-time updates and an image proxy for secure and efficient display.
+- **Data Updates**: Daily automated updates of match data and broadcaster information from various free API sources and AI-powered scraping.
+- **Filtering**: Ability to filter matches by league and broadcaster.
+- **Authentication**: JWT-based authentication with admin roles for secure management features.
 
-### Backend Architecture
+### System Design Choices
 
-**Technology Stack**: Node.js with Express.js framework
+- **Hybrid Architecture**: Combines official APIs for core match data with Gemini AI for intelligent HTML extraction (e.g., Betclic Elite from TheSportsDB) and broadcaster enrichment.
+- **Data Idempotency**: Ensures that daily updates are idempotent, preventing duplicate entries.
+- **Robust Logo System**: Utilizes a backend image proxy with an LRU cache, domain allowlisting, size limits, and smart fallbacks for secure and performant logo display.
+- **Timezone Correction**: Applied for Euroleague match times.
+- **Containerization**: Docker and `docker-compose` are used for environment setup and deployment, ensuring consistency across development and production.
 
-**Database**: Prisma ORM (configured for SQL databases, likely PostgreSQL based on dependencies)
+## External Dependencies
 
-**Core Services**:
-- **updateService**: Orchestrates all free basketball connectors (NBA, WNBA, Euroleague, EuroCup, Betclic Elite)
-- **nbaConnector**: Fetches NBA/WNBA schedules from official APIs (cdn.nba.com, cdn.wnba.com)
-- **euroleagueConnector**: Fetches Euroleague/EuroCup schedules from XML API (api-live.euroleague.net)
-- **betclicEliteConnector**: Fetches Betclic Elite schedule from TheSportsDB API
-- **Match Routes** (`/api/matches/week`, `/api/matches/month/:year/:month`): Retrieves filtered match data with related entities
-- **League Routes** (`/api/leagues`): Returns available basketball leagues
-- **Broadcaster Routes** (`/api/broadcasters`): Returns TV channels/streaming platforms
+### Basketball Data Sources (100% Free)
 
-**Data Model**:
-- Match entity with relations to League, HomeTeam, AwayTeam, and Broadcasts
-- Many-to-many relationship between Matches and Broadcasters through Broadcasts join table
-- Teams and Leagues as separate entities
+-   **NBA Official API**: `cdn.nba.com` for NBA match schedules.
+-   **WNBA Official API**: `cdn.wnba.com` for WNBA match schedules.
+-   **Euroleague XML API**: `api-live.euroleague.net` for Euroleague and EuroCup schedules.
+-   **TheSportsDB**: Used for Betclic Elite schedules and general team/broadcaster logo sources. Gemini AI is employed for robust HTML extraction from this site.
 
-**Scheduled Jobs**: Node-cron configured to run daily updates at 6:00 AM for automatic match synchronization
+### Broadcaster Data Sources
 
-**Data Strategy**: Uses only free, official APIs - no paid services required
+-   **NBA League Pass**: Default for NBA/WNBA.
+-   **SKWEEK**: Default for Euroleague/EuroCup.
+-   **DAZN**: Default for Betclic Elite.
+-   **Prime Video NBA Official Schedule**: Integrated for specific NBA games.
+-   **EPG.PW**: Free EPG TV API for real-time program matching on channels like beIN Sports and La Chaîne L'Équipe.
 
-### External Dependencies
+### Third-party Libraries
 
-**Basketball Data Sources (100% Free)**:
+-   **FullCalendar**: For interactive monthly calendar display.
+-   **Axios**: For HTTP client requests in the frontend and backend.
+-   **Prisma ORM**: For database abstraction with PostgreSQL.
+-   **node-cron**: For scheduling daily backend tasks.
+-   **xml2js**: For parsing XML data from Euroleague API.
 
-1. **NBA Official API** (cdn.nba.com)
-   - Provides NBA match schedules
-   - 21-day lookahead window
-   - No API key required
-   
-2. **WNBA Official API** (cdn.wnba.com)
-   - Provides WNBA match schedules
-   - Season: May-September (offseason Oct-Apr)
-   - No API key required
+### Infrastructure
 
-3. **Euroleague XML API** (api-live.euroleague.net)
-   - Provides Euroleague and EuroCup schedules
-   - XML format parsed with xml2js
-   - No API key required
-
-4. **TheSportsDB API** (thesportsdb.com)
-   - Provides Betclic Elite (French LNB) schedules
-   - Free tier (key: "3")
-   - League ID: 4423
-
-**Broadcaster Mapping** (Intelligence améliorée 2025):
-- **NBA**: beIN Sports (400+ matchs/saison), Prime Video (29 matchs dominicaux), NBA League Pass
-- **WNBA**: NBA League Pass, beIN Sports  
-- **Euroleague**: SKWEEK (tous), La Chaîne L'Équipe (matchs sélectionnés Paris/ASVEL), TV Monaco (AS Monaco), EuroLeague TV
-- **Betclic Elite**: beIN Sports, La Chaîne L'Équipe, DAZN
-- **EuroCup**: SKWEEK, EuroLeague TV
-- **BCL**: Courtside 1891
-
-**Third-party Libraries**:
-- FullCalendar for calendar visualization
-- Axios for HTTP requests
-- Prisma for database abstraction
-
-**Infrastructure**:
-- Docker containerization with docker-compose
-- Nginx reverse proxy (connects via nginx_default network)
-- Frontend on port 4000 (Docker) / port 5000 (Replit dev)
-- Backend on port 3001 (Docker) / port 3000 (Replit dev)
-- PostgreSQL on port 4532 (external) / 5432 (internal) - évite conflit avec Replit database
-
-**Environment Configuration** (All configured in backend/.env):
-- JWT_SECRET: **REQUIRED** - Cryptographic secret for JWT signing (must be generated randomly)
-- SESSION_SECRET: **REQUIRED** - Session secret for Express sessions
-- PORT: Configurable server port (defaults to 3000)
-- DATABASE_URL: PostgreSQL connection string (Replit Neon database or Docker PostgreSQL)
-
-**Note**: No API keys required - all basketball data sources are free and publicly accessible.
-
-**Security Notes**:
-- .env files must NEVER be committed to version control
-- .env.example provided as template without real secrets
-- JWT_SECRET enforced at server startup - application refuses to run without it
-- Admin password randomly generated on first initialization
-- All passwords hashed with bcrypt (10 salt rounds)
-
-**Development Mode**:
-- Backend runs on port 3000 with nodemon for hot reload
-- Uses Replit PostgreSQL database for development
-- Workflow "Backend" configured to run `cd backend && npm run dev`
+-   **PostgreSQL**: Primary database.
+-   **Docker**: Containerization for frontend, backend, and database.
+-   **Nginx**: Reverse proxy (implicit in Docker setup).
+-   **Google Gemini (gemini-2.0-flash-exp)**: Used for AI-powered HTML extraction and broadcaster enrichment.
