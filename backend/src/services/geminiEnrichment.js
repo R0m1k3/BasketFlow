@@ -123,20 +123,23 @@ async function enrichMatchesWithBroadcasters(geminiApiKey) {
       });
       
       if (leagueName === 'NBA') {
-        // Pas de diffuseur automatique - informations non fiables sans API
-        // Seul NBA League Pass est certain de diffuser tous les matchs
+        // NBA League Pass diffuse TOUS les matchs NBA
+        await addBroadcaster(match.id, 'NBA League Pass', 'streaming', false);
         enrichedCount++;
         
       } else if (leagueName === 'WNBA') {
-        // Pas de diffuseur automatique - informations non fiables
+        // NBA League Pass diffuse aussi la WNBA
+        await addBroadcaster(match.id, 'NBA League Pass', 'streaming', false);
         enrichedCount++;
         
       } else if (leagueName === 'Euroleague') {
-        // Pas de diffuseur automatique - informations non fiables sans calendrier officiel
+        // SKWEEK diffuse TOUS les matchs Euroleague
+        await addBroadcaster(match.id, 'SKWEEK', 'streaming', false);
         enrichedCount++;
         
       } else if (leagueName === 'Betclic Elite') {
-        // Pas de diffuseur automatique - informations 2025-2026 non disponibles
+        // DAZN diffuse TOUS les matchs Betclic Elite
+        await addBroadcaster(match.id, 'DAZN', 'streaming', false);
         enrichedCount++;
       }
     }

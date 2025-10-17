@@ -96,7 +96,15 @@ A web application that displays basketball games broadcast in France, featuring 
 - **Coverage**: 12+ finished matches per week with authentic scores (Euroleague 50%, Betclic Elite 25%)
 
 ### 📺 Broadcaster Management 2025-2026 ✅
-**Système Automatique Multi-Sources**:
+**Système Automatique Multi-Sources** (100% coverage):
+
+**Diffuseurs de Base** (Règles déterministes):
+- **NBA** → NBA League Pass (tous les matchs)
+- **WNBA** → NBA League Pass (tous les matchs)
+- **Euroleague** → SKWEEK (tous les matchs)
+- **Betclic Elite** → DAZN (tous les matchs)
+
+**Enrichissement Supplémentaire Automatique**:
 
 1. **Prime Video NBA** (82 matchs saison 2025-2026):
    - Calendrier officiel intégré: 25 octobre 2025 → 11 avril 2026
@@ -113,14 +121,10 @@ A web application that displays basketball games broadcast in France, featuring 
 
 **Service de Mise à Jour** (`backend/src/services/updateService.js`):
 - ✅ Récupération matchs (NBA, WNBA, Euroleague, Betclic Elite)
+- ✅ Enrichissement diffuseurs de base (NBA League Pass, SKWEEK, DAZN)
 - ✅ Enrichissement Prime Video (calendrier officiel)
 - ✅ Enrichissement EPG TV (programmes en temps réel)
 - 🔄 Exécution quotidienne programmée (6h00 AM)
-
-**Fonctionnement**:
-- Prime Video: Actif dès que l'API NBA récupérera les matchs du 25 octobre
-- EPG TV: Actif dès que programmes basket diffusés sur beIN/L'Équipe
-- Matching intelligent avec normalisation des noms d'équipes
 
 ### Authentication & Security System ✅
 - Implemented JWT-based authentication with user/admin roles
