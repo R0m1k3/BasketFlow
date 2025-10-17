@@ -49,7 +49,7 @@ docker-compose up -d
 
 4. **Accéder à l'application** :
 - Frontend : http://localhost:4000
-- Backend API : http://localhost:3001
+- Backend API : http://localhost:3888
 - PostgreSQL : Port 4532 (port interne et externe identiques pour éviter les conflits)
 
 **Note** : Le compte admin sera créé automatiquement au premier démarrage. Consultez les logs pour obtenir le mot de passe :
