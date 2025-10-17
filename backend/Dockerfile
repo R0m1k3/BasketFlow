@@ -8,8 +8,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (without --only=production to avoid issues)
+RUN npm install --production
 
 # Copy prisma schema first
 COPY prisma ./prisma
@@ -20,6 +20,6 @@ RUN npx prisma generate
 # Copy rest of the application
 COPY . .
 
-EXPOSE 3000
+EXPOSE 3888
 
 CMD ["npm", "start"]
