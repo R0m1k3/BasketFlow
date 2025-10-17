@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
+const { autoInit } = require('./autoInit');
 const matchRoutes = require('./routes/matches');
 const leagueRoutes = require('./routes/leagues');
 const broadcasterRoutes = require('./routes/broadcasters');
@@ -37,7 +38,12 @@ cron.schedule('0 6 * * *', async () => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🏀 Backend server running on port ${PORT}`);
-  console.log(`📅 Daily updates scheduled at 6:00 AM`);
-});
+// Auto-initialize database on startup and start server
+(async () => {
+  await autoInit();
+  
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🏀 Backend server running on port ${PORT}`);
+    console.log(`📅 Daily updates scheduled at 6:00 AM`);
+  });
+})();
