@@ -22,18 +22,20 @@ function Home() {
   const fetchLeagues = async () => {
     try {
       const response = await axios.get('/api/leagues');
-      setLeagues(response.data);
+      setLeagues(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching leagues:', error);
+      setLeagues([]);
     }
   };
 
   const fetchBroadcasters = async () => {
     try {
       const response = await axios.get('/api/broadcasters');
-      setBroadcasters(response.data);
+      setBroadcasters(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching broadcasters:', error);
+      setBroadcasters([]);
     }
   };
 

@@ -2,13 +2,17 @@ import React from 'react';
 import './FilterBar.css';
 
 function FilterBar({ leagues, broadcasters, selectedLeague, selectedBroadcaster, onLeagueChange, onBroadcasterChange }) {
+  // Ensure leagues and broadcasters are arrays
+  const leaguesList = Array.isArray(leagues) ? leagues : [];
+  const broadcastersList = Array.isArray(broadcasters) ? broadcasters : [];
+
   return (
     <div className="filter-bar">
       <div className="filter-group">
         <label>Ligue:</label>
         <select value={selectedLeague} onChange={(e) => onLeagueChange(e.target.value)}>
           <option value="all">Toutes les ligues</option>
-          {leagues.map(league => (
+          {leaguesList.map(league => (
             <option key={league.id} value={league.id}>{league.name}</option>
           ))}
         </select>
@@ -18,7 +22,7 @@ function FilterBar({ leagues, broadcasters, selectedLeague, selectedBroadcaster,
         <label>Chaîne:</label>
         <select value={selectedBroadcaster} onChange={(e) => onBroadcasterChange(e.target.value)}>
           <option value="all">Toutes les chaînes</option>
-          {broadcasters.map(broadcaster => (
+          {broadcastersList.map(broadcaster => (
             <option key={broadcaster.id} value={broadcaster.id}>
               {broadcaster.name} {broadcaster.isFree ? '📺' : '💰'}
             </option>
