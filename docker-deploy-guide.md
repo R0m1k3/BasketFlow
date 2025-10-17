@@ -163,7 +163,7 @@ docker network inspect nginx_default
 
 | Service | Port Interne Docker | Port Externe | Accès |
 |---------|---------------------|--------------|-------|
-| Frontend | 80 | **4000** | http://localhost:4000 |
+| Frontend | 4000 | **4000** | http://localhost:4000 |
 | Backend | 3888 | **3888** | http://localhost:3888 |
 | PostgreSQL | 4532 | **4532** | localhost:4532 |
 

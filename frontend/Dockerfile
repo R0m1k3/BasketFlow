@@ -18,7 +18,7 @@ COPY .env.docker .env.production
 # Build the React app (uses .env.production)
 RUN npm run build
 
-EXPOSE 80
+EXPOSE 4000
 
-# Serve the build folder on port 80 with proxying to backend
-CMD ["serve", "-s", "build", "-l", "80", "--cors"]
+# Serve the build folder on port 4000 with proxying to backend
+CMD ["serve", "-s", "build", "-l", "4000", "--cors"]

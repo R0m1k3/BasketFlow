@@ -52,7 +52,7 @@ services:
     networks:
       - nginx_default
     ports:
-      - "4000:80"
+      - "4000:4000"
     depends_on:
       - backend
     restart: unless-stopped
