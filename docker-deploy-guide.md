@@ -24,23 +24,11 @@
 docker network create nginx_default
 ```
 
-### 2. ✅ Les secrets sont déjà configurés
+### 2. ✅ Les secrets sont déjà configurés dans docker-compose.yml
 
-Le fichier `.env` avec JWT_SECRET et SESSION_SECRET a été **généré automatiquement** pour vous !
+JWT_SECRET et SESSION_SECRET sont **directement intégrés** dans docker-compose.yml pour éviter les problèmes de variables d'environnement.
 
-### 3. (Optionnel) Ajouter votre clé API OpenRouter
-
-Si vous voulez le scraping IA au lieu des données d'exemple :
-
-```bash
-# Éditer .env et ajouter :
-OPENROUTER_API_KEY=sk-or-v1-votre_cle_ici
-OPENROUTER_MODEL=google/gemini-2.5-flash:free
-```
-
-Obtenez votre clé sur [OpenRouter](https://openrouter.ai)
-
-### 4. Construire et lancer
+### 3. Construire et lancer
 
 ```bash
 # Construire les images
@@ -50,7 +38,7 @@ docker-compose build
 docker-compose up -d
 ```
 
-### 5. Vérifier la création de l'admin
+### 4. Vérifier la création de l'admin
 
 ```bash
 docker-compose logs backend | grep "Administrateur"
@@ -62,7 +50,7 @@ Vous verrez :
 🔑 Mot de passe: admin
 ```
 
-### 6. Accéder à l'application
+### 5. Accéder à l'application
 
 - **Frontend** : http://localhost:4000
 - **Backend API** : http://localhost:3888/api

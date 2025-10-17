@@ -1,0 +1,64 @@
+PostgreSQL Database directory appears to contain a database; Skipping initialization
+
+2025-10-17 10:45:54.670 UTC [1] LOG:  starting PostgreSQL 16.10 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+
+2025-10-17 10:45:54.670 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 4532
+
+2025-10-17 10:45:54.670 UTC [1] LOG:  listening on IPv6 address "::", port 4532
+
+2025-10-17 10:45:54.673 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.4532"
+
+2025-10-17 10:45:54.679 UTC [28] LOG:  database system was shut down at 2025-10-17 10:42:48 UTC
+
+2025-10-17 10:45:54.686 UTC [1] LOG:  database system is ready to accept connections
+
+2025-10-17 10:46:07.067 UTC [40] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:46:07.067 UTC [40] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:46:10.759 UTC [42] LOG:  could not receive data from client: Connection reset by peer
+
+2025-10-17 10:46:10.902 UTC [43] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:46:10.902 UTC [43] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:46:14.433 UTC [45] LOG:  could not receive data from client: Connection reset by peer
+
+2025-10-17 10:46:14.526 UTC [46] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:46:14.526 UTC [46] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:46:18.350 UTC [56] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:46:18.350 UTC [56] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:46:22.333 UTC [59] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:46:22.333 UTC [59] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:46:27.115 UTC [69] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:46:27.115 UTC [69] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:46:33.567 UTC [71] LOG:  could not receive data from client: Connection reset by peer
+
+2025-10-17 10:46:33.670 UTC [72] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:46:33.670 UTC [72] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:46:43.392 UTC [82] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:46:43.392 UTC [82] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:46:59.417 UTC [100] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:46:59.417 UTC [100] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:47:28.375 UTC [123] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:47:28.375 UTC [123] STATEMENT:  DROP TABLE _prisma_migrations
+
+2025-10-17 10:48:23.083 UTC [162] ERROR:  table "_prisma_migrations" does not exist
+
+2025-10-17 10:48:23.083 UTC [162] STATEMENT:  DROP TABLE _prisma_migrations
+
