@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import WeeklyMatches from '../components/WeeklyMatches';
 import MonthlyCalendar from '../components/MonthlyCalendar';
 import TodayMatches from '../components/TodayMatches';
+import DateMatches from '../components/DateMatches';
 import FilterBar from '../components/FilterBar';
 import axios from 'axios';
 import './Home.css';
@@ -57,6 +58,12 @@ function Home() {
           Cette semaine
         </button>
         <button 
+          className={view === 'date' ? 'active' : ''} 
+          onClick={() => setView('date')}
+        >
+          Par date
+        </button>
+        <button 
           className={view === 'month' ? 'active' : ''} 
           onClick={() => setView('month')}
         >
@@ -81,6 +88,11 @@ function Home() {
           />
         ) : view === 'week' ? (
           <WeeklyMatches 
+            selectedLeague={selectedLeague}
+            selectedBroadcaster={selectedBroadcaster}
+          />
+        ) : view === 'date' ? (
+          <DateMatches 
             selectedLeague={selectedLeague}
             selectedBroadcaster={selectedBroadcaster}
           />
