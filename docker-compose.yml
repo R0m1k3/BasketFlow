@@ -43,7 +43,7 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-    command: sh -c "sleep 10 && node /app/src/autoInit.js && npm start"
+    command: sh -c "sleep 10 && npm start"
 
   frontend:
     build:
