@@ -122,8 +122,8 @@ async function autoInit() {
       
       const hashedPassword = await bcrypt.hash('admin', 10);
       await client.query(`
-        INSERT INTO "User" (username, email, password, role)
-        VALUES ('admin', 'admin@basket-flow.com', $1, 'ADMIN')
+        INSERT INTO "User" (id, username, email, password, name, role, "createdAt", "updatedAt")
+        VALUES (gen_random_uuid(), 'admin', 'admin@basket-flow.com', $1, 'Administrator', 'admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `, [hashedPassword]);
 
       console.log('✅ Admin user created (username: admin, password: admin)');
@@ -131,42 +131,42 @@ async function autoInit() {
       console.log('✅ Admin user already exists');
     }
 
-    // Insert default leagues (using Prisma schema: id, name, shortName, country, logo, color)
+    // Insert default leagues (matching exact Prisma schema)
     const checkLeagues = await client.query(`SELECT COUNT(*) FROM "League"`);
     
     if (checkLeagues.rows[0].count === '0') {
       console.log('🏀 Creating default leagues...');
       
       await client.query(`
-        INSERT INTO "League" (id, name, "shortName", country, logo) VALUES
-        (gen_random_uuid(), 'NBA', 'NBA', 'USA', NULL),
-        (gen_random_uuid(), 'WNBA', 'WNBA', 'USA', NULL),
-        (gen_random_uuid(), 'Euroleague', 'EL', 'Europe', NULL),
-        (gen_random_uuid(), 'EuroCup', 'EC', 'Europe', NULL),
-        (gen_random_uuid(), 'Betclic Elite', 'LNB', 'France', NULL)
+        INSERT INTO "League" (id, name, "shortName", country, "createdAt", "updatedAt") VALUES
+        (gen_random_uuid(), 'NBA', 'NBA', 'USA', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'WNBA', 'WNBA', 'USA', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'Euroleague', 'EL', 'Europe', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'EuroCup', 'EC', 'Europe', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'Betclic Elite', 'LNB', 'France', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         ON CONFLICT (name) DO NOTHING
       `);
 
       console.log('✅ Default leagues created');
     }
 
-    // Insert default broadcasters
+    // Insert default broadcasters (matching exact Prisma schema)
     const checkBroadcasters = await client.query(`SELECT COUNT(*) FROM "Broadcaster"`);
     
     if (checkBroadcasters.rows[0].count === '0') {
       console.log('📺 Creating default broadcasters...');
       
       await client.query(`
-        INSERT INTO "Broadcaster" (name, type) VALUES
-        ('BeIN Sports', 'TV'),
-        ('Canal+', 'TV'),
-        ('DAZN', 'Streaming'),
-        ('Eurosport', 'TV'),
-        ('France TV', 'TV'),
-        ('RMC Sport', 'TV'),
-        ('SKWEEK', 'Streaming'),
-        ('NBA League Pass', 'Streaming'),
-        ('LNB TV', 'Streaming')
+        INSERT INTO "Broadcaster" (id, name, type, "isFree", "createdAt", "updatedAt") VALUES
+        (gen_random_uuid(), 'BeIN Sports', 'TV', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'Canal+', 'TV', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'DAZN', 'Streaming', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'Eurosport', 'TV', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'France TV', 'TV', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'RMC Sport', 'TV', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'SKWEEK', 'Streaming', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'NBA League Pass', 'Streaming', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), 'LNB TV', 'Streaming', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         ON CONFLICT (name) DO NOTHING
       `);
 

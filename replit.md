@@ -35,6 +35,7 @@ Preferred communication style: Simple, everyday language.
 - PostgreSQL database
 - JWT authentication with bcryptjs for password hashing
 - Node-cron for scheduled daily updates
+- Automatic database initialization with pg client
 
 **Key Design Decisions:**
 - RESTful API design with separate route handlers for matches, leagues, broadcasters, authentication, and admin operations
@@ -42,8 +43,9 @@ Preferred communication style: Simple, everyday language.
 - Service layer pattern separating business logic from route handlers
 - Scheduled jobs for automated daily data updates at 6:00 AM
 - Image proxy with LRU cache for efficient and secure logo serving
+- **Automatic database initialization** via `autoInit.js` that creates tables, admin user, leagues, and broadcasters on first startup
 
-**Rationale:** Express provides a lightweight, flexible framework for building APIs. Prisma offers type-safe database access and easy schema migrations. The service layer pattern keeps route handlers thin and makes the codebase testable.
+**Rationale:** Express provides a lightweight, flexible framework for building APIs. Prisma offers type-safe database access with TypeScript types. The service layer pattern keeps route handlers thin and makes the codebase testable. The automatic initialization system ensures zero-configuration deployment in Docker environments.
 
 ### Data Aggregation Strategy
 
