@@ -47,6 +47,7 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('fr-FR', {
+      timeZone: 'Europe/Paris',
       weekday: 'long',
       day: 'numeric',
       month: 'long',

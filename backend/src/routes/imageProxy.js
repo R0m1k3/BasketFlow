@@ -43,7 +43,11 @@ const ALLOWED_DOMAINS = [
   'freepnglogos.com',
   'r2.thesportsdb.com',
   'thesportsdb.com',
-  'www.thesportsdb.com'
+  'www.thesportsdb.com',
+  'cdn.worldvectorlogo.com',
+  'worldvectorlogo.com',
+  'app.skweek.tv',
+  'i0.wp.com'
 ];
 
 function downloadImage(imageUrl) {

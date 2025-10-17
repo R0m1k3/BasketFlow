@@ -43,7 +43,7 @@ Login: admin@basket.fr / mot-de-passe-généré
 
 - **4000** : Frontend React
 - **3001** : Backend API
-- **4532** : PostgreSQL (au lieu de 5432 pour éviter les conflits)
+- **4532** : PostgreSQL (port interne et externe identiques pour éviter les conflits)
 
 ## Commandes utiles
 

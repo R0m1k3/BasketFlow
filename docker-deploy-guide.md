@@ -165,7 +165,7 @@ docker network inspect nginx_default
 |---------|---------------------|--------------|-------|
 | Frontend | 80 | **4000** | http://localhost:4000 |
 | Backend | 3000 | **3001** | http://localhost:3001 |
-| PostgreSQL | 5432 | **4532** | localhost:4532 |
+| PostgreSQL | 4532 | **4532** | localhost:4532 |
 
 **Important** : Le frontend accède au backend via `http://localhost:3001` depuis le navigateur (car il est servi en statique)
 

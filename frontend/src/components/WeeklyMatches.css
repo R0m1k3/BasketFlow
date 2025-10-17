@@ -4,6 +4,43 @@
   font-size: 1.8rem;
 }
 
+.date-picker-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.date-picker {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  border: 2px solid #1D428A;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: white;
+  color: #333;
+}
+
+.date-picker:hover {
+  border-color: #0F2454;
+  box-shadow: 0 2px 8px rgba(29, 66, 138, 0.2);
+}
+
+.date-picker:focus {
+  outline: none;
+  border-color: #0F2454;
+  box-shadow: 0 0 0 3px rgba(29, 66, 138, 0.1);
+}
+
+.selected-date-display {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1D428A;
+  text-transform: capitalize;
+}
+
 .loading, .no-matches {
   text-align: center;
   padding: 3rem;

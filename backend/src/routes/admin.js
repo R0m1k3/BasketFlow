@@ -219,7 +219,7 @@ router.put('/teams/:id/logo', async (req, res) => {
     const { logo } = req.body;
 
     const updatedTeam = await prisma.team.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: { logo }
     });
 
@@ -248,7 +248,7 @@ router.put('/broadcasters/:id/logo', async (req, res) => {
     const { logo } = req.body;
 
     const updatedBroadcaster = await prisma.broadcaster.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: { logo }
     });
 
