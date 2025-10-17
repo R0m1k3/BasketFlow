@@ -123,57 +123,20 @@ async function enrichMatchesWithBroadcasters(geminiApiKey) {
       });
       
       if (leagueName === 'NBA') {
-        // Vérifier si le match est dans le calendrier beIN Sports
-        const matchDateStr = matchDate.toISOString().split('T')[0];
-        const isOnBein = beinNBAMatches.some(bm => {
-          const bmDate = new Date(bm.date).toISOString().split('T')[0];
-          const homeMatch = match.homeTeam.name.toLowerCase().includes(bm.homeTeam.toLowerCase()) ||
-                           bm.homeTeam.toLowerCase().includes(match.homeTeam.name.toLowerCase().split(' ')[0]);
-          const awayMatch = match.awayTeam.name.toLowerCase().includes(bm.awayTeam.toLowerCase()) ||
-                           bm.awayTeam.toLowerCase().includes(match.awayTeam.name.toLowerCase().split(' ')[0]);
-          return bmDate === matchDateStr && homeMatch && awayMatch;
-        });
-        
-        // beIN Sports seulement si confirmé dans le calendrier
-        if (isOnBein) {
-          await addBroadcaster(match.id, 'beIN Sports', 'cable', false);
-        }
-        
-        // Prime Video pour les dimanches (à vérifier aussi mais pas de calendrier disponible)
-        if (dayOfWeek === 0) {
-          await addBroadcaster(match.id, 'Prime Video', 'streaming', false);
-        }
-        
-        // NBA League Pass diffuse tous les matchs
-        await addBroadcaster(match.id, 'NBA League Pass', 'streaming', false);
+        // Pas de diffuseur automatique - informations non fiables sans API
+        // Seul NBA League Pass est certain de diffuser tous les matchs
         enrichedCount++;
         
       } else if (leagueName === 'WNBA') {
-        await addBroadcaster(match.id, 'beIN Sports', 'cable', false);
-        await addBroadcaster(match.id, 'NBA League Pass', 'streaming', false);
+        // Pas de diffuseur automatique - informations non fiables
         enrichedCount++;
         
       } else if (leagueName === 'Euroleague') {
-        await addBroadcaster(match.id, 'SKWEEK', 'streaming', false);
-        
-        const homeTeam = match.homeTeam.name;
-        const awayTeam = match.awayTeam.name;
-        
-        if (homeTeam.includes('PARIS') || awayTeam.includes('PARIS') || 
-            homeTeam.includes('ASVEL') || awayTeam.includes('ASVEL')) {
-          await addBroadcaster(match.id, 'La Chaîne L\'Équipe', 'cable', true);
-        }
-        
-        if (homeTeam.includes('MONACO')) {
-          await addBroadcaster(match.id, 'TV Monaco', 'cable', true);
-        }
-        
-        await addBroadcaster(match.id, 'EuroLeague TV', 'streaming', false);
+        // Pas de diffuseur automatique - informations non fiables sans calendrier officiel
         enrichedCount++;
         
       } else if (leagueName === 'Betclic Elite') {
-        await addBroadcaster(match.id, 'beIN Sports', 'cable', false);
-        await addBroadcaster(match.id, 'SKWEEK', 'streaming', false);
+        // Pas de diffuseur automatique - informations 2025-2026 non disponibles
         enrichedCount++;
       }
     }
