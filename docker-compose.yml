@@ -42,7 +42,7 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-    command: sh -c "npx prisma db push --force-reset && node src/initAdmin.js && npm start"
+    command: sh -c "sleep 10 && npx prisma db push --force-reset && node src/initAdmin.js && npm start"
 
   frontend:
     build:

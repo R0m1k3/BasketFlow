@@ -32,7 +32,9 @@ function DateMatches({ selectedLeague, selectedBroadcaster }) {
     try {
       setLoading(true);
       const response = await axios.get(`/api/matches/by-date?date=${selectedDate}`);
-      let filteredMatches = response.data;
+      
+      // Ensure response.data is an array
+      let filteredMatches = Array.isArray(response.data) ? response.data : [];
 
       if (selectedLeague !== 'all') {
         filteredMatches = filteredMatches.filter(m => m.leagueId === selectedLeague);
@@ -40,6 +42,7 @@ function DateMatches({ selectedLeague, selectedBroadcaster }) {
 
       if (selectedBroadcaster !== 'all') {
         filteredMatches = filteredMatches.filter(m => 
+          m.broadcasts && Array.isArray(m.broadcasts) && 
           m.broadcasts.some(b => b.broadcasterId === selectedBroadcaster)
         );
       }
@@ -47,6 +50,7 @@ function DateMatches({ selectedLeague, selectedBroadcaster }) {
       setMatches(filteredMatches);
     } catch (error) {
       console.error('Error fetching matches:', error);
+      setMatches([]);
     } finally {
       setLoading(false);
     }
