@@ -104,4 +104,48 @@ router.get('/league/:leagueId', async (req, res) => {
   }
 });
 
+router.get('/by-date', async (req, res) => {
+  try {
+    const { date } = req.query;
+    
+    if (!date) {
+      return res.status(400).json({ error: 'Date parameter required' });
+    }
+
+    const selectedDate = new Date(date);
+    const startOfDay = new Date(selectedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(selectedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const matches = await prisma.match.findMany({
+      where: {
+        dateTime: {
+          gte: startOfDay,
+          lte: endOfDay
+        }
+      },
+      include: {
+        league: true,
+        homeTeam: true,
+        awayTeam: true,
+        broadcasts: {
+          include: {
+            broadcaster: true
+          }
+        }
+      },
+      orderBy: {
+        dateTime: 'asc'
+      }
+    });
+
+    res.json(matches);
+  } catch (error) {
+    console.error('Error fetching matches by date:', error);
+    res.status(500).json({ error: 'Failed to fetch matches' });
+  }
+});
+
 module.exports = router;
