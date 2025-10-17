@@ -1,5 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { PrismaClient } = require('@prisma/client');
+const { fetchBeinSportsNBACalendar } = require('./beinSportsCalendar');
 const prisma = new PrismaClient();
 
 const BROADCASTER_KNOWLEDGE_BASE = {
@@ -73,6 +74,12 @@ async function enrichMatchesWithBroadcasters(geminiApiKey) {
 
     console.log(`  📋 Found ${matches.length} matches to process`);
 
+    // Récupérer le calendrier beIN Sports NBA réel
+    let beinNBAMatches = [];
+    if (geminiApiKey) {
+      beinNBAMatches = await fetchBeinSportsNBACalendar(geminiApiKey);
+    }
+
     let enrichedCount = 0;
     
     const getOrCreateBroadcaster = async (name, type = 'cable', isFree = false) => {
@@ -116,12 +123,28 @@ async function enrichMatchesWithBroadcasters(geminiApiKey) {
       });
       
       if (leagueName === 'NBA') {
-        await addBroadcaster(match.id, 'beIN Sports', 'cable', false);
+        // Vérifier si le match est dans le calendrier beIN Sports
+        const matchDateStr = matchDate.toISOString().split('T')[0];
+        const isOnBein = beinNBAMatches.some(bm => {
+          const bmDate = new Date(bm.date).toISOString().split('T')[0];
+          const homeMatch = match.homeTeam.name.toLowerCase().includes(bm.homeTeam.toLowerCase()) ||
+                           bm.homeTeam.toLowerCase().includes(match.homeTeam.name.toLowerCase().split(' ')[0]);
+          const awayMatch = match.awayTeam.name.toLowerCase().includes(bm.awayTeam.toLowerCase()) ||
+                           bm.awayTeam.toLowerCase().includes(match.awayTeam.name.toLowerCase().split(' ')[0]);
+          return bmDate === matchDateStr && homeMatch && awayMatch;
+        });
         
+        // beIN Sports seulement si confirmé dans le calendrier
+        if (isOnBein) {
+          await addBroadcaster(match.id, 'beIN Sports', 'cable', false);
+        }
+        
+        // Prime Video pour les dimanches (à vérifier aussi mais pas de calendrier disponible)
         if (dayOfWeek === 0) {
           await addBroadcaster(match.id, 'Prime Video', 'streaming', false);
         }
         
+        // NBA League Pass diffuse tous les matchs
         await addBroadcaster(match.id, 'NBA League Pass', 'streaming', false);
         enrichedCount++;
         
