@@ -201,4 +201,62 @@ router.post('/update-matches', async (req, res) => {
   }
 });
 
+router.get('/teams', async (req, res) => {
+  try {
+    const teams = await prisma.team.findMany({
+      orderBy: { name: 'asc' }
+    });
+    res.json(teams);
+  } catch (error) {
+    console.error('Error fetching teams:', error);
+    res.status(500).json({ error: 'Failed to fetch teams' });
+  }
+});
+
+router.put('/teams/:id/logo', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { logo } = req.body;
+
+    const updatedTeam = await prisma.team.update({
+      where: { id: parseInt(id) },
+      data: { logo }
+    });
+
+    res.json({ success: true, team: updatedTeam });
+  } catch (error) {
+    console.error('Error updating team logo:', error);
+    res.status(500).json({ error: 'Failed to update team logo' });
+  }
+});
+
+router.get('/broadcasters-list', async (req, res) => {
+  try {
+    const broadcasters = await prisma.broadcaster.findMany({
+      orderBy: { name: 'asc' }
+    });
+    res.json(broadcasters);
+  } catch (error) {
+    console.error('Error fetching broadcasters:', error);
+    res.status(500).json({ error: 'Failed to fetch broadcasters' });
+  }
+});
+
+router.put('/broadcasters/:id/logo', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { logo } = req.body;
+
+    const updatedBroadcaster = await prisma.broadcaster.update({
+      where: { id: parseInt(id) },
+      data: { logo }
+    });
+
+    res.json({ success: true, broadcaster: updatedBroadcaster });
+  } catch (error) {
+    console.error('Error updating broadcaster logo:', error);
+    res.status(500).json({ error: 'Failed to update broadcaster logo' });
+  }
+});
+
 module.exports = router;

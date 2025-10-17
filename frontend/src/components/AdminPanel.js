@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import ApiBasketballConfig from './ApiBasketballConfig';
 import RapidApiBasketballConfig from './RapidApiBasketballConfig';
+import LogoManager from './LogoManager';
 import './AdminPanel.css';
 
 function AdminPanel() {
@@ -66,6 +67,12 @@ function AdminPanel() {
           Configuration API
         </button>
         <button 
+          className={activeTab === 'logos' ? 'active' : ''} 
+          onClick={() => setActiveTab('logos')}
+        >
+          Logos
+        </button>
+        <button 
           className={activeTab === 'users' ? 'active' : ''} 
           onClick={() => setActiveTab('users')}
         >
@@ -78,6 +85,12 @@ function AdminPanel() {
           <RapidApiBasketballConfig />
           <div className="api-divider"></div>
           <ApiBasketballConfig />
+        </div>
+      )}
+
+      {activeTab === 'logos' && (
+        <div className="admin-content">
+          <LogoManager />
         </div>
       )}
 
