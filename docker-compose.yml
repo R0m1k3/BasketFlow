@@ -12,7 +12,7 @@ services:
     volumes:
       - basket_postgres_data:/var/lib/postgresql/data
     networks:
-      - basket_network
+      - nginx_default
     ports:
       - "4532:4532"
     restart: unless-stopped
@@ -35,7 +35,7 @@ services:
       SESSION_SECRET: 6073693be610363a5862503445a4cf38fb391efbe502526fa9036902759a4819
       API_BASKETBALL_KEY: ${API_BASKETBALL_KEY:-}
     networks:
-      - basket_network
+      - nginx_default
     ports:
       - "3888:3888"
     depends_on:
@@ -50,7 +50,7 @@ services:
       dockerfile: Dockerfile
     container_name: basket_frontend
     networks:
-      - basket_network
+      - nginx_default
     ports:
       - "4000:4000"
     depends_on:
@@ -58,9 +58,8 @@ services:
     restart: unless-stopped
 
 networks:
-  basket_network:
-    driver: bridge
-    name: basket_network
+  nginx_default:
+    external: true
 
 volumes:
   basket_postgres_data:
