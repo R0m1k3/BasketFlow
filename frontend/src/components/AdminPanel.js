@@ -1,25 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import ApiBasketballConfig from './ApiBasketballConfig';
+import RapidApiBasketballConfig from './RapidApiBasketballConfig';
+import LogoManager from './LogoManager';
 import './AdminPanel.css';
 
 function AdminPanel() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('config');
   const [users, setUsers] = useState([]);
-  const [apiKey, setApiKey] = useState('');
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-
-  const fetchConfig = useCallback(async () => {
-    try {
-      const response = await axios.get('/api/admin/config');
-      const apiConfig = response.data.find(c => c.key === 'API_BASKETBALL_KEY');
-      setApiKey(apiConfig?.value || '');
-    } catch (error) {
-      console.error('Error fetching config:', error);
-    }
-  }, []);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -31,29 +22,10 @@ function AdminPanel() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'config') {
-      fetchConfig();
-    } else if (activeTab === 'users') {
+    if (activeTab === 'users') {
       fetchUsers();
     }
-  }, [activeTab, fetchConfig, fetchUsers]);
-
-  const handleSaveApiKey = async () => {
-    setLoading(true);
-    setMessage('');
-    try {
-      await axios.put('/api/admin/config/API_BASKETBALL_KEY', {
-        value: apiKey,
-        description: 'Clé API pour API-Basketball (RapidAPI)'
-      });
-      setMessage('✅ Clé API sauvegardée avec succès');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      setMessage('❌ Erreur lors de la sauvegarde');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [activeTab, fetchUsers]);
 
   const handleChangeRole = async (userId, newRole) => {
     try {
@@ -95,6 +67,12 @@ function AdminPanel() {
           Configuration API
         </button>
         <button 
+          className={activeTab === 'logos' ? 'active' : ''} 
+          onClick={() => setActiveTab('logos')}
+        >
+          Logos
+        </button>
+        <button 
           className={activeTab === 'users' ? 'active' : ''} 
           onClick={() => setActiveTab('users')}
         >
@@ -103,33 +81,16 @@ function AdminPanel() {
       </div>
 
       {activeTab === 'config' && (
+        <div className="api-configs">
+          <RapidApiBasketballConfig />
+          <div className="api-divider"></div>
+          <ApiBasketballConfig />
+        </div>
+      )}
+
+      {activeTab === 'logos' && (
         <div className="admin-content">
-          <div className="config-section">
-            <h3>Clé API Basketball (RapidAPI)</h3>
-            <p className="config-description">
-              Configurez votre clé API pour récupérer les matchs en direct depuis API-Basketball.
-              <br />
-              <a href="https://rapidapi.com/api-sports/api/api-basketball" target="_blank" rel="noopener noreferrer">
-                Obtenir une clé API →
-              </a>
-            </p>
-            <div className="form-group">
-              <input
-                type="text"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Votre clé RapidAPI"
-                className="api-key-input"
-              />
-              <button 
-                onClick={handleSaveApiKey} 
-                disabled={loading}
-                className="btn-save"
-              >
-                {loading ? 'Sauvegarde...' : 'Sauvegarder'}
-              </button>
-            </div>
-          </div>
+          <LogoManager />
         </div>
       )}
 

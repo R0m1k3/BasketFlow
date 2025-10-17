@@ -1,0 +1,144 @@
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+Error: 
+
+⚠️ We found changes that cannot be executed:
+
+  • Added the required column `username` to the `User` table without a default value. There are 1 rows in this table, it is not possible to execute this step.
+
+Use the --force-reset flag to drop the database before push like prisma db push --force-reset
+
+All data will be lost.
+
+        
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+Error: 
+
+⚠️ We found changes that cannot be executed:
+
+  • Added the required column `username` to the `User` table without a default value. There are 1 rows in this table, it is not possible to execute this step.
+
+Use the --force-reset flag to drop the database before push like prisma db push --force-reset
+
+All data will be lost.
+
+        
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+Error: 
+
+⚠️ We found changes that cannot be executed:
+
+  • Added the required column `username` to the `User` table without a default value. There are 1 rows in this table, it is not possible to execute this step.
+
+Use the --force-reset flag to drop the database before push like prisma db push --force-reset
+
+All data will be lost.
+
+        
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+Error: 
+
+⚠️ We found changes that cannot be executed:
+
+  • Added the required column `username` to the `User` table without a default value. There are 1 rows in this table, it is not possible to execute this step.
+
+Use the --force-reset flag to drop the database before push like prisma db push --force-reset
+
+All data will be lost.
+
+        
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+Error: 
+
+⚠️ We found changes that cannot be executed:
+
+  • Added the required column `username` to the `User` table without a default value. There are 1 rows in this table, it is not possible to execute this step.
+
+Use the --force-reset flag to drop the database before push like prisma db push --force-reset
+
+All data will be lost.
+
+        
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+Error: 
+
+⚠️ We found changes that cannot be executed:
+
+  • Added the required column `username` to the `User` table without a default value. There are 1 rows in this table, it is not possible to execute this step.
+
+Use the --force-reset flag to drop the database before push like prisma db push --force-reset
+
+All data will be lost.
+
+        
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+Error: 
+
+⚠️ We found changes that cannot be executed:
+
+  • Added the required column `username` to the `User` table without a default value. There are 1 rows in this table, it is not possible to execute this step.
+
+Use the --force-reset flag to drop the database before push like prisma db push --force-reset
+
+All data will be lost.
+
+        
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+Error: 
+
+⚠️ We found changes that cannot be executed:
+
+  • Added the required column `username` to the `User` table without a default value. There are 1 rows in this table, it is not possible to execute this step.
+
+Use the --force-reset flag to drop the database before push like prisma db push --force-reset
+
+All data will be lost.
+
+        
+
+Prisma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "postgres:5432"
+
+Error: 
+
+⚠️ We found changes that cannot be executed:
+
+  • Added the required column `username` to the `User` table without a default value. There are 1 rows in this table, it is not possible to execute this step.
+
+Use the --force-reset flag to drop the database before push like prisma db push --force-reset
+
+All data will be lost.
+
+        
+

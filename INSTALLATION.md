@@ -1,4 +1,4 @@
-# 🏀 Installation - Application Matchs de Basket
+# 🏀 Installation - Basket Flow
 
 ## Prérequis
 
@@ -27,12 +27,15 @@ echo "JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toStri
 echo "SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")" >> .env
 ```
 
-### 3. (Optionnel) Ajouter votre clé API Basketball
+### 3. (Optionnel) Ajouter votre clé API OpenRouter
 
-Éditez `.env` et ajoutez votre clé RapidAPI :
+Éditez `.env` et ajoutez votre clé OpenRouter :
 ```
-API_BASKETBALL_KEY=votre_cle_ici
+OPENROUTER_API_KEY=sk-or-v1-votre_cle_ici
+OPENROUTER_MODEL=google/gemini-2.5-flash:free
 ```
+
+Obtenez votre clé sur [OpenRouter](https://openrouter.ai).
 
 Sans clé API, l'application utilisera des données d'exemple.
 

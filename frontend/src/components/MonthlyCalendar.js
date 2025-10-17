@@ -8,6 +8,16 @@ import './MonthlyCalendar.css';
 function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
   const [events, setEvents] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [failedImages, setFailedImages] = useState(new Set());
+
+  const getProxiedImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
+
+  const handleImageError = (imageUrl) => {
+    setFailedImages(prev => new Set(prev).add(imageUrl));
+  };
 
   const fetchMonthMatches = useCallback(async () => {
     try {
@@ -27,17 +37,36 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
         );
       }
 
-      const calendarEvents = matches.map(match => ({
-        id: match.id,
-        title: `${match.homeTeam.shortName || match.homeTeam.name} vs ${match.awayTeam.shortName || match.awayTeam.name}`,
-        start: match.dateTime,
-        backgroundColor: getLeagueColor(match.league.name),
-        borderColor: getLeagueColor(match.league.name),
-        extendedProps: {
-          league: match.league.name,
-          broadcasters: match.broadcasts.map(b => b.broadcaster.name).join(', ')
+      const calendarEvents = matches.map(match => {
+        // Create title with score if finished or live
+        let title = `${match.homeTeam.shortName || match.homeTeam.name}`;
+        if (match.status === 'finished' || match.status === 'live') {
+          title += ` ${match.homeScore}-${match.awayScore}`;
+        } else {
+          title += ' vs';
         }
-      }));
+        title += ` ${match.awayTeam.shortName || match.awayTeam.name}`;
+        
+        return {
+          id: match.id,
+          title: title,
+          start: match.dateTime,
+          backgroundColor: getLeagueColor(match.league.name),
+          borderColor: getLeagueColor(match.league.name),
+          extendedProps: {
+            league: match.league.name,
+            status: match.status || 'scheduled',
+            homeScore: match.homeScore,
+            awayScore: match.awayScore,
+            homeTeamLogo: match.homeTeam.logo,
+            awayTeamLogo: match.awayTeam.logo,
+            broadcasters: match.broadcasts.map(b => ({
+              name: b.broadcaster.name,
+              logo: b.broadcaster.logo
+            }))
+          }
+        };
+      });
 
       setEvents(calendarEvents);
     } catch (error) {
@@ -66,10 +95,51 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
   };
 
   const renderEventContent = (eventInfo) => {
+    const { homeTeamLogo, awayTeamLogo, broadcasters } = eventInfo.event.extendedProps;
+    
     return (
       <div className="event-content">
+        <div className="event-teams-logos">
+          {homeTeamLogo && !failedImages.has(homeTeamLogo) ? (
+            <img 
+              src={getProxiedImageUrl(homeTeamLogo)} 
+              alt="Home" 
+              className="event-team-logo"
+              onError={() => handleImageError(homeTeamLogo)}
+            />
+          ) : homeTeamLogo && (
+            <div className="event-team-placeholder">🏀</div>
+          )}
+          {awayTeamLogo && !failedImages.has(awayTeamLogo) ? (
+            <img 
+              src={getProxiedImageUrl(awayTeamLogo)} 
+              alt="Away" 
+              className="event-team-logo"
+              onError={() => handleImageError(awayTeamLogo)}
+            />
+          ) : awayTeamLogo && (
+            <div className="event-team-placeholder">🏀</div>
+          )}
+        </div>
         <div className="event-title">{eventInfo.event.title}</div>
-        <div className="event-league">{eventInfo.event.extendedProps.league}</div>
+        <div className="event-broadcasters">
+          {broadcasters && broadcasters.slice(0, 2).map((b, idx) => (
+            b.logo && !failedImages.has(b.logo) ? (
+              <img 
+                key={idx} 
+                src={getProxiedImageUrl(b.logo)} 
+                alt={b.name} 
+                className="event-broadcaster-logo" 
+                title={b.name}
+                onError={() => handleImageError(b.logo)}
+              />
+            ) : (
+              <span key={idx} className="event-broadcaster-text" title={b.name}>
+                {b.name.substring(0, 3)}
+              </span>
+            )
+          ))}
+        </div>
       </div>
     );
   };

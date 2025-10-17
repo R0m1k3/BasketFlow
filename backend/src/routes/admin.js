@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const updateService = require('../services/updateService');
 
 const prisma = new PrismaClient();
 
@@ -130,6 +131,131 @@ router.post('/users', async (req, res) => {
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({ error: 'Erreur lors de la création de l\'utilisateur' });
+  }
+});
+
+router.post('/update-now', async (req, res) => {
+  try {
+    console.log('🚀 Manual update triggered by admin...');
+    await updateService.updateMatches();
+    
+    const matchCount = await prisma.match.count();
+    
+    res.json({
+      success: true,
+      message: 'Mise à jour effectuée',
+      matchesUpdated: matchCount
+    });
+  } catch (error) {
+    console.error('Error updating matches:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de la mise à jour des matchs',
+      details: error.message
+    });
+  }
+});
+
+router.get('/config/:key', async (req, res) => {
+  try {
+    const { key } = req.params;
+    const config = await prisma.config.findUnique({
+      where: { key }
+    });
+    res.json(config || { key, value: null });
+  } catch (error) {
+    console.error('Error fetching config:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération de la configuration' });
+  }
+});
+
+router.post('/config', async (req, res) => {
+  try {
+    const { key, value, description } = req.body;
+    const config = await prisma.config.upsert({
+      where: { key },
+      update: { value, description },
+      create: { key, value, description: description || null }
+    });
+    res.json(config);
+  } catch (error) {
+    console.error('Error saving config:', error);
+    res.status(500).json({ error: 'Erreur lors de la sauvegarde de la configuration' });
+  }
+});
+
+router.post('/update-matches', async (req, res) => {
+  try {
+    console.log('🚀 Manual match update triggered...');
+    await updateService.updateMatches();
+    
+    const matchCount = await prisma.match.count();
+    
+    res.json({
+      success: true,
+      count: matchCount
+    });
+  } catch (error) {
+    console.error('Error updating matches:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/teams', async (req, res) => {
+  try {
+    const teams = await prisma.team.findMany({
+      orderBy: { name: 'asc' }
+    });
+    res.json(teams);
+  } catch (error) {
+    console.error('Error fetching teams:', error);
+    res.status(500).json({ error: 'Failed to fetch teams' });
+  }
+});
+
+router.put('/teams/:id/logo', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { logo } = req.body;
+
+    const updatedTeam = await prisma.team.update({
+      where: { id: parseInt(id) },
+      data: { logo }
+    });
+
+    res.json({ success: true, team: updatedTeam });
+  } catch (error) {
+    console.error('Error updating team logo:', error);
+    res.status(500).json({ error: 'Failed to update team logo' });
+  }
+});
+
+router.get('/broadcasters-list', async (req, res) => {
+  try {
+    const broadcasters = await prisma.broadcaster.findMany({
+      orderBy: { name: 'asc' }
+    });
+    res.json(broadcasters);
+  } catch (error) {
+    console.error('Error fetching broadcasters:', error);
+    res.status(500).json({ error: 'Failed to fetch broadcasters' });
+  }
+});
+
+router.put('/broadcasters/:id/logo', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { logo } = req.body;
+
+    const updatedBroadcaster = await prisma.broadcaster.update({
+      where: { id: parseInt(id) },
+      data: { logo }
+    });
+
+    res.json({ success: true, broadcaster: updatedBroadcaster });
+  } catch (error) {
+    console.error('Error updating broadcaster logo:', error);
+    res.status(500).json({ error: 'Failed to update broadcaster logo' });
   }
 });
 

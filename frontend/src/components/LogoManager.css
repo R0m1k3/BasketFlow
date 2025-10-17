@@ -1,0 +1,124 @@
+.logo-manager {
+  padding: 20px;
+}
+
+.logo-message {
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  text-align: center;
+}
+
+.logo-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.logo-tabs button {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.logo-tabs button.active {
+  background: #1D428A;
+  color: white;
+  border-color: #1D428A;
+}
+
+.logo-list table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logo-list th {
+  background: #f5f5f5;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.logo-list td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.logo-preview {
+  height: 40px;
+  width: auto;
+  max-width: 100px;
+  object-fit: contain;
+}
+
+.no-logo {
+  color: #999;
+  font-style: italic;
+}
+
+.logo-url {
+  font-size: 0.9em;
+  color: #666;
+  word-break: break-all;
+}
+
+.logo-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.btn-edit {
+  padding: 6px 16px;
+  background: #1D428A;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-edit:hover {
+  background: #163366;
+}
+
+.btn-save {
+  padding: 6px 16px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 8px;
+  transition: background 0.3s;
+}
+
+.btn-save:hover {
+  background: #45a049;
+}
+
+.btn-cancel {
+  padding: 6px 16px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-cancel:hover {
+  background: #da190b;
+}

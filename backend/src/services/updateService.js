@@ -1,187 +1,114 @@
 const { PrismaClient } = require('@prisma/client');
-const axios = require('axios');
+const nbaConnector = require('./nbaConnector');
+const euroleagueConnector = require('./euroleagueConnector');
+const euroleagueResultsConnector = require('./euroleagueResultsConnector');
+const betclicEliteConnector = require('./betclicEliteConnector');
+const geminiEnrichment = require('./geminiEnrichment');
+const broadcasterCalendars = require('./broadcasterCalendars');
+const primeVideoParser = require('./primeVideoParser');
+const epgTvService = require('./epgTvService');
 const prisma = new PrismaClient();
-
-const BROADCASTER_MAPPING = {
-  NBA: [
-    { name: 'Prime Video', isFree: false, season: '2025-26' },
-    { name: 'beIN Sports', isFree: false, season: '2024-25' }
-  ],
-  WNBA: [
-    { name: 'beIN Sports', isFree: false },
-    { name: 'NBA League Pass', isFree: false }
-  ],
-  Euroleague: [
-    { name: "La Chaîne L'Équipe", isFree: true },
-    { name: 'SKWEEK', isFree: false },
-    { name: 'EuroLeague TV', isFree: false }
-  ],
-  'Betclic Elite': [
-    { name: 'DAZN', isFree: false },
-    { name: "La Chaîne L'Équipe", isFree: true }
-  ],
-  EuroCup: [
-    { name: 'EuroLeague TV', isFree: false }
-  ],
-  BCL: [
-    { name: 'Courtside 1891', isFree: false }
-  ]
-};
 
 async function updateMatches() {
   try {
-    console.log('Starting match update...');
-    
-    const apiKey = process.env.API_BASKETBALL_KEY;
-    if (!apiKey || apiKey === 'your_api_key_here') {
-      console.log('⚠️  API key not configured, using sample data');
-      await seedSampleData();
-      return;
-    }
+    console.log('🏀 Starting match update with Free Basketball APIs...\n');
 
     await cleanOldMatches();
-    await fetchAndUpdateMatchesFromAPI(apiKey);
     
-    console.log('Match update completed');
-  } catch (error) {
-    console.error('Error in updateMatches:', error);
-    throw error;
-  }
-}
+    let totalMatches = 0;
 
-async function fetchAndUpdateMatchesFromAPI(apiKey) {
-  console.log('📡 Fetching matches from API...');
-
-  const LEAGUE_IDS = {
-    'NBA': 12,
-    'WNBA': 16,
-    'Euroleague': 120,
-    'Betclic Elite': 117
-  };
-
-  const today = new Date();
-  const nextWeek = new Date(today);
-  nextWeek.setDate(today.getDate() + 14);
-
-  for (const [leagueName, leagueId] of Object.entries(LEAGUE_IDS)) {
+    console.log('📡 Using 100% Free APIs for all leagues\n');
+    
     try {
-      const league = await prisma.league.upsert({
-        where: { name: leagueName },
-        update: {},
-        create: {
-          name: leagueName,
-          shortName: leagueName === 'Betclic Elite' ? 'LNB' : leagueName.substring(0, 3).toUpperCase(),
-          country: leagueName.includes('NBA') ? 'USA' : 'Europe',
-          color: getLeagueColor(leagueName)
-        }
-      });
+      console.log('1️⃣  NBA - Official NBA API');
+      const nbaMatches = await nbaConnector.fetchNBASchedule();
+      totalMatches += nbaMatches;
+    } catch (error) {
+      console.error('  ❌ NBA API failed:', error.message);
+    }
 
-      const response = await axios.get('https://api-basketball.p.rapidapi.com/games', {
-        params: {
-          league: leagueId,
-          season: '2024-2025',
-          from: today.toISOString().split('T')[0],
-          to: nextWeek.toISOString().split('T')[0]
-        },
-        headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': 'api-basketball.p.rapidapi.com'
-        },
-        timeout: 10000
-      });
+    try {
+      console.log('\n2️⃣  WNBA - Official WNBA API');
+      const wnbaMatches = await nbaConnector.fetchWNBASchedule();
+      totalMatches += wnbaMatches;
+    } catch (error) {
+      console.error('  ❌ WNBA API failed:', error.message);
+    }
 
-      if (response.data && response.data.response) {
-        const games = response.data.response;
-        console.log(`  Found ${games.length} games for ${leagueName}`);
+    try {
+      console.log('\n3️⃣  Euroleague - Official XML API');
+      const euroleagueMatches = await euroleagueConnector.fetchEuroleagueSchedule();
+      totalMatches += euroleagueMatches;
+      
+      console.log('\n   📊 Euroleague Results - TheSportsDB via Gemini');
+      const geminiKey = process.env.GEMINI_API_KEY;
+      await euroleagueResultsConnector.fetchEuroleagueResults(geminiKey);
+    } catch (error) {
+      console.error('  ❌ Euroleague API failed:', error.message);
+    }
+    
+    try {
+      console.log('\n4️⃣  Betclic Elite - Gemini HTML Extraction (TheSportsDB)');
+      const geminiKey = process.env.GEMINI_API_KEY;
+      const betclicMatches = await betclicEliteConnector.fetchBetclicEliteSchedule(geminiKey);
+      totalMatches += betclicMatches;
+    } catch (error) {
+      console.error('  ❌ Betclic Elite extraction failed:', error.message);
+    }
 
-        for (const game of games) {
-          const homeTeam = await prisma.team.upsert({
-            where: { id: `${game.teams.home.id}` },
-            update: { name: game.teams.home.name },
-            create: {
-              id: `${game.teams.home.id}`,
-              name: game.teams.home.name,
-              shortName: game.teams.home.code || game.teams.home.name.substring(0, 3).toUpperCase(),
-              leagueId: league.id
-            }
-          });
+    if (totalMatches === 0) {
+      console.log('\n⚠️  No matches found from any source');
+    } else {
+      console.log(`\n✅ Match update completed: ${totalMatches} total matches`);
+      console.log('   📊 Coverage: NBA, WNBA, Euroleague, Betclic Elite');
+    }
 
-          const awayTeam = await prisma.team.upsert({
-            where: { id: `${game.teams.away.id}` },
-            update: { name: game.teams.away.name },
-            create: {
-              id: `${game.teams.away.id}`,
-              name: game.teams.away.name,
-              shortName: game.teams.away.code || game.teams.away.name.substring(0, 3).toUpperCase(),
-              leagueId: league.id
-            }
-          });
+    // Enrich matches with broadcasters based on official 2024-2025 agreements
+    try {
+      const geminiKey = process.env.GEMINI_API_KEY;
+      const enrichedCount = await geminiEnrichment.enrichMatchesWithBroadcasters(geminiKey);
+      console.log(`\n📺 Broadcasters: ${enrichedCount} matches enriched with official agreements`);
+    } catch (error) {
+      console.error('  ❌ Broadcaster enrichment failed:', error.message);
+    }
 
-          const match = await prisma.match.upsert({
-            where: { externalId: `${game.id}` },
-            update: {
-              dateTime: new Date(game.date),
-              status: game.status.short,
-              homeScore: game.scores.home.total,
-              awayScore: game.scores.away.total
-            },
-            create: {
-              externalId: `${game.id}`,
-              leagueId: league.id,
-              homeTeamId: homeTeam.id,
-              awayTeamId: awayTeam.id,
-              dateTime: new Date(game.date),
-              venue: game.venue || null,
-              status: game.status.short
-            }
-          });
-
-          const broadcasters = BROADCASTER_MAPPING[leagueName] || [];
-          for (const b of broadcasters) {
-            const broadcaster = await prisma.broadcaster.upsert({
-              where: { name: b.name },
-              update: {},
-              create: {
-                name: b.name,
-                type: 'TV',
-                isFree: b.isFree
-              }
-            });
-
-            await prisma.matchBroadcast.upsert({
-              where: {
-                matchId_broadcasterId: {
-                  matchId: match.id,
-                  broadcasterId: broadcaster.id
-                }
-              },
-              update: {},
-              create: {
-                matchId: match.id,
-                broadcasterId: broadcaster.id
-              }
-            });
-          }
-        }
+    // Enrich NBA matches with Prime Video calendar (2025-2026 season)
+    try {
+      const primeCount = await primeVideoParser.enrichWithPrimeVideo();
+      if (primeCount > 0) {
+        console.log(`\n📺 Prime Video: ${primeCount} NBA matches enriched`);
       }
     } catch (error) {
-      console.error(`  Error fetching ${leagueName}:`, error.message);
+      console.error('  ❌ Prime Video enrichment failed:', error.message);
     }
-  }
 
-  console.log('✅ API data synchronized');
+    // Enrich all matches with EPG TV data (beIN Sports, L'Équipe, etc.)
+    try {
+      const epgCount = await epgTvService.enrichWithEPGData();
+      if (epgCount > 0) {
+        console.log(`\n📺 EPG TV: ${epgCount} matches enriched from TV programs`);
+      }
+    } catch (error) {
+      console.error('  ❌ EPG TV enrichment failed:', error.message);
+    }
+
+  } catch (error) {
+    console.error('❌ Error in updateMatches:', error);
+  }
 }
 
-function getLeagueColor(leagueName) {
-  const colors = {
-    'NBA': '#1D428A',
-    'WNBA': '#C8102E',
-    'Euroleague': '#FF7900',
-    'EuroCup': '#009CDE',
-    'BCL': '#000000',
-    'Betclic Elite': '#002654'
-  };
-  return colors[leagueName] || '#333';
+/**
+ * Check if a source is enabled (defaults to true)
+ */
+async function isSourceEnabled(sourceName) {
+  const config = await prisma.config.findUnique({
+    where: { key: `SOURCE_${sourceName}_ENABLED` }
+  });
+  
+  // Default to enabled if not configured
+  if (!config) return true;
+  
+  return config.value === 'true';
 }
 
 async function cleanOldMatches() {
@@ -202,6 +129,36 @@ async function cleanOldMatches() {
 async function seedSampleData() {
   console.log('Seeding sample data...');
   
+  const BROADCASTER_MAPPING = {
+    NBA: [
+      { name: 'beIN Sports', isFree: false, description: '400+ matchs par saison' },
+      { name: 'Prime Video', isFree: false, description: '29 matchs du dimanche soir' },
+      { name: 'NBA League Pass', isFree: false, description: 'Tous les matchs' }
+    ],
+    WNBA: [
+      { name: 'NBA League Pass', isFree: false },
+      { name: 'beIN Sports', isFree: false }
+    ],
+    Euroleague: [
+      { name: 'SKWEEK', isFree: false, description: 'Tous les matchs' },
+      { name: "La Chaîne L'Équipe", isFree: true, description: 'Matchs sélectionnés (Paris Basketball, ASVEL)' },
+      { name: 'TV Monaco', isFree: true, description: 'Tous les matchs de l\'AS Monaco' },
+      { name: 'EuroLeague TV', isFree: false }
+    ],
+    'Betclic Elite': [
+      { name: 'beIN Sports', isFree: false },
+      { name: "La Chaîne L'Équipe", isFree: true },
+      { name: 'DAZN', isFree: false }
+    ],
+    EuroCup: [
+      { name: 'SKWEEK', isFree: false },
+      { name: 'EuroLeague TV', isFree: false }
+    ],
+    BCL: [
+      { name: 'Courtside 1891', isFree: false }
+    ]
+  };
+
   const leagues = [
     { name: 'NBA', shortName: 'NBA', country: 'USA', color: '#1D428A' },
     { name: 'WNBA', shortName: 'WNBA', country: 'USA', color: '#C8102E' },

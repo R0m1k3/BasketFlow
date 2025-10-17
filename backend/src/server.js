@@ -7,6 +7,7 @@ const leagueRoutes = require('./routes/leagues');
 const broadcasterRoutes = require('./routes/broadcasters');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const imageProxyRoutes = require('./routes/imageProxy');
 const updateService = require('./services/updateService');
 
 const app = express();
@@ -20,6 +21,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/leagues', leagueRoutes);
 app.use('/api/broadcasters', broadcasterRoutes);
+app.use('/api/image-proxy', imageProxyRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

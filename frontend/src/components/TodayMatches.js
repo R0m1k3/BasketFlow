@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './WeeklyMatches.css';
 
-function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
+function TodayMatches({ selectedLeague, selectedBroadcaster }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [failedImages, setFailedImages] = useState(new Set());
@@ -16,11 +16,19 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
     setFailedImages(prev => new Set(prev).add(imageUrl));
   };
 
+  const isToday = (dateString) => {
+    const matchDate = new Date(dateString);
+    const today = new Date();
+    return matchDate.getDate() === today.getDate() &&
+           matchDate.getMonth() === today.getMonth() &&
+           matchDate.getFullYear() === today.getFullYear();
+  };
+
   const fetchMatches = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/matches/week');
-      let filteredMatches = response.data;
+      let filteredMatches = response.data.filter(m => isToday(m.dateTime));
 
       if (selectedLeague !== 'all') {
         filteredMatches = filteredMatches.filter(m => m.leagueId === selectedLeague);
@@ -47,12 +55,19 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
       hour: '2-digit',
       minute: '2-digit'
     }).format(date);
+  };
+
+  const getTodayDate = () => {
+    const today = new Date();
+    return new Intl.DateTimeFormat('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(today);
   };
 
   const getLeagueColor = (leagueName) => {
@@ -72,12 +87,19 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
   }
 
   if (matches.length === 0) {
-    return <div className="no-matches">Aucun match trouvé pour cette sélection</div>;
+    return (
+      <div className="weekly-matches">
+        <h2>Matchs d'aujourd'hui</h2>
+        <div className="today-date">{getTodayDate()}</div>
+        <div className="no-matches">Aucun match aujourd'hui</div>
+      </div>
+    );
   }
 
   return (
     <div className="weekly-matches">
-      <h2>Matchs de la semaine</h2>
+      <h2>Matchs d'aujourd'hui</h2>
+      <div className="today-date">{getTodayDate()}</div>
       <div className="matches-list">
         {matches.map(match => (
           <div key={match.id} className={`match-card ${match.status || 'scheduled'}`}>
@@ -114,7 +136,7 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
                       {match.status === 'live' && <span className="live-indicator">LIVE</span>}
                     </div>
                   ) : (
-                    <span>vs</span>
+                    <span className="match-time">{formatDate(match.dateTime)}</span>
                   )}
                 </div>
                 <div className="team">
@@ -134,10 +156,11 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
                 </div>
               </div>
               
-              <div className="match-details">
-                <div className="date">{formatDate(match.dateTime)}</div>
-                {match.venue && <div className="venue">📍 {match.venue}</div>}
-              </div>
+              {match.venue && (
+                <div className="match-details">
+                  <div className="venue">📍 {match.venue}</div>
+                </div>
+              )}
             </div>
 
             <div className="broadcasters">
@@ -175,4 +198,4 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
   );
 }
 
-export default WeeklyMatches;
+export default TodayMatches;

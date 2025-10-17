@@ -18,14 +18,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/" element={<Home />} />
             <Route 
               path="/admin" 
               element={
@@ -37,7 +30,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
           <footer className="App-footer">
-            <p>Mise à jour quotidienne à 6h00 | Données fournies par API-Basketball</p>
+            <p>Mise à jour quotidienne à 6h00 | Données fournies par 3 sources gratuites</p>
           </footer>
         </div>
       </AuthProvider>

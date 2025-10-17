@@ -35,17 +35,27 @@ async function initAdmin() {
     console.log('   🔑 Mot de passe: admin');
     console.log('');
 
-    const apiConfig = await prisma.config.upsert({
-      where: { key: 'API_BASKETBALL_KEY' },
+    await prisma.config.upsert({
+      where: { key: 'BASKETBALL_DATA_KEY' },
       update: {},
       create: {
-        key: 'API_BASKETBALL_KEY',
-        value: process.env.API_BASKETBALL_KEY || '',
-        description: 'Clé API pour API-Basketball (RapidAPI)'
+        key: 'BASKETBALL_DATA_KEY',
+        value: process.env.BASKETBALL_DATA_KEY || '',
+        description: 'Clé API pour Basketball Data (BroadageSports sur RapidAPI)'
       }
     });
 
-    console.log('✅ Configuration API initialisée');
+    await prisma.config.upsert({
+      where: { key: 'GEMINI_API_KEY' },
+      update: {},
+      create: {
+        key: 'GEMINI_API_KEY',
+        value: process.env.GEMINI_API_KEY || '',
+        description: 'Clé API pour Gemini AI (enrichissement diffuseurs)'
+      }
+    });
+
+    console.log('✅ Configurations API initialisées (Basketball Data + Gemini)');
     console.log('');
     
     checkJWTSecret();

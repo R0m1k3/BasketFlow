@@ -1,13 +1,20 @@
-# 🏀 Application Matchs de Basket - France
+# 🏀 Basket Flow
 
 Application web affichant les matchs de basketball diffusés en France avec calendrier mensuel et vue hebdomadaire.
 
 ## 📋 Fonctionnalités
 
 - **Ligues supportées** : NBA, WNBA, Euroleague, EuroCup, BCL, Betclic Elite
-- **Chaînes de diffusion** : beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK, etc.
-- **Mise à jour journalière automatique** : Synchronisation quotidienne avec les APIs
+- **Chaînes de diffusion** : beIN Sports, Prime Video, La Chaîne L'Équipe, DAZN, SKWEEK, NBA League Pass, Euroleague TV, etc.
+- **🔄 Système multi-sources** : Agrège les données de 3 API différentes avec déduplication intelligente
+  - **RapidAPI** (API-Basketball) : NBA, WNBA, Euroleague, Betclic Elite
+  - **BallDontLie** : NBA et WNBA (gratuit, 60 requêtes/minute)
+  - **Euroleague API** : Euroleague et Eurocup (gratuit, officiel)
+- **Mapping intelligent des diffuseurs** : Associe automatiquement les matchs aux chaînes françaises (400+ matchs NBA sur beIN Sports, etc.)
+- **Mise à jour journalière automatique** : Synchronisation quotidienne à 6h du matin
+- **Déduplication** : Système intelligent avec externalId préfixé (rapidapi-, balldontlie-, euroleague-) qui évite les doublons
 - **Filtres** : Par ligue et par chaîne de diffusion
+- **Panel admin** : Configuration multi-API et gestion des utilisateurs
 
 ## 🚀 Installation avec Docker
 
@@ -126,8 +133,11 @@ docker-compose logs -f
 
 - `JWT_SECRET` : **Obligatoire** - Secret pour signer les tokens JWT
 - `SESSION_SECRET` : **Obligatoire** - Secret pour les sessions Express
-- `API_BASKETBALL_KEY` : Optionnel - Clé API RapidAPI (utilise données d'exemple si absent)
+- `API_BASKETBALL_KEY` : **Optionnel** - Clé API RapidAPI pour API-Basketball
+- `BALLDONTLIE_API_KEY` : **Optionnel** - Clé API BallDontLie (gratuit)
 - `DATABASE_URL` : URL de connexion PostgreSQL
+
+**Note** : Les 3 sources API sont optionnelles. L'application fonctionne avec données d'exemple si aucune clé n'est configurée.
 
 ### Bonnes pratiques
 
@@ -137,13 +147,38 @@ docker-compose logs -f
 4. ✅ Utiliser HTTPS en production
 5. ✅ Configurer un pare-feu
 
-## 📊 API Basketball
+## 🏀 Configuration des sources API
 
-L'application peut utiliser [API-Basketball](https://rapidapi.com/api-sports/api/api-basketball) pour récupérer les données en direct.
+L'application utilise **3 sources de données** qui peuvent être combinées ou utilisées indépendamment :
 
-Sans clé API, l'application fonctionne avec des données d'exemple.
+### 📊 Source 1 : RapidAPI (API-Basketball) - Optionnel
 
-Configuration via le panneau d'administration après connexion.
+- **Couverture** : NBA, WNBA, Euroleague, Betclic Elite
+- **Données officielles** : Temps réel avec scores et statuts
+- **Plan gratuit** : 100 requêtes/jour (suffisant pour tester)
+- **Configuration** : [RapidAPI → API-Basketball](https://rapidapi.com/api-sports/api/api-basketball)
+
+### 🆓 Source 2 : BallDontLie - Gratuit
+
+- **Couverture** : NBA et WNBA uniquement
+- **100% gratuit** : 60 requêtes/minute, aucun paiement
+- **Fiable** : API communautaire stable
+- **Configuration** : [Inscription BallDontLie](https://www.balldontlie.io)
+
+### ✅ Source 3 : Euroleague API - Gratuit
+
+- **Couverture** : Euroleague et Eurocup
+- **API officielle** : Données directement de l'Euroleague
+- **Aucune clé requise** : Fonctionne automatiquement
+
+### Configuration
+
+1. Connectez-vous en tant qu'admin (`admin` / `admin`)
+2. Allez dans le panneau d'administration
+3. Configurez les clés API que vous souhaitez utiliser
+4. Cliquez sur "Mettre à jour les matchs" pour synchroniser
+
+**Le système évite automatiquement les doublons** grâce à des identifiants uniques préfixés par source.
 
 ## 🐳 Déploiement Docker
 
