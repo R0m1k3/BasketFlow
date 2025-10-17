@@ -1,0 +1,128 @@
+═══════════════════════════════════════════════════════════════
+  🏀 BASKET FLOW - INSTALLATION SUR SERVEUR PRIVÉ
+═══════════════════════════════════════════════════════════════
+
+✅ CONFIGURATION TERMINÉE !
+
+Le fichier init.sql s'exécute AUTOMATIQUEMENT au démarrage.
+Plus besoin d'exécuter des scripts manuellement !
+
+───────────────────────────────────────────────────────────────
+📦 FICHIERS À TRANSFÉRER (12 fichiers)
+───────────────────────────────────────────────────────────────
+
+À LA RACINE :
+  ✓ docker-compose.yml    (init.sql automatique activé)
+  ✓ init.sql              (création tables + admin)
+
+FRONTEND :
+  ✓ frontend/src/components/FilterBar.js
+  ✓ frontend/src/pages/Home.js
+  ✓ frontend/src/components/WeeklyMatches.js
+  ✓ frontend/src/components/MonthlyCalendar.js
+  ✓ frontend/src/components/TodayMatches.js
+  ✓ frontend/src/components/DateMatches.js
+  ✓ frontend/src/App.js
+  ✓ frontend/src/components/Header.js
+
+BACKEND :
+  ✓ backend/Dockerfile
+  ✓ backend/package.json
+
+───────────────────────────────────────────────────────────────
+🚀 INSTALLATION EN 4 ÉTAPES
+───────────────────────────────────────────────────────────────
+
+1️⃣ TRANSFÉRER LES FICHIERS
+   cd /chemin/vers/basket-flow
+   (Copiez les 12 fichiers sur votre serveur)
+
+2️⃣ NETTOYER L'ANCIEN
+   docker-compose down -v
+   docker volume rm basket_postgres_data
+
+3️⃣ VÉRIFIER LE RÉSEAU
+   docker network create nginx_default
+
+4️⃣ DÉMARRER
+   docker-compose up -d
+   
+   ⏳ Attendez 30 secondes...
+
+───────────────────────────────────────────────────────────────
+🔐 TESTER LE LOGIN
+───────────────────────────────────────────────────────────────
+
+URL : http://localhost:4000/login
+
+Identifiant : admin
+Mot de passe : admin
+
+✅ Le login devrait fonctionner !
+
+───────────────────────────────────────────────────────────────
+🔍 VÉRIFICATION
+───────────────────────────────────────────────────────────────
+
+Statut des conteneurs :
+  docker-compose ps
+
+Tables créées :
+  docker exec basket_postgres psql -U basketuser -d basketdb -p 4532 -c "\dt"
+
+Admin créé :
+  docker exec basket_postgres psql -U basketuser -d basketdb -p 4532 -c "SELECT username, role FROM \"User\""
+
+───────────────────────────────────────────────────────────────
+⚡ COMMANDE RAPIDE (tout en une fois)
+───────────────────────────────────────────────────────────────
+
+cd /chemin/vers/basket-flow && \
+docker-compose down -v && \
+docker volume rm basket_postgres_data 2>/dev/null || true && \
+docker network create nginx_default 2>/dev/null || true && \
+docker-compose up -d && \
+sleep 30 && \
+echo "✅ Terminé ! → http://localhost:4000/login (admin/admin)"
+
+───────────────────────────────────────────────────────────────
+🆘 SI ÇA NE MARCHE PAS
+───────────────────────────────────────────────────────────────
+
+Recréer l'admin manuellement :
+  docker exec basket_postgres psql -U basketuser -d basketdb -p 4532 <<'EOF'
+  DELETE FROM "User" WHERE username = 'admin';
+  INSERT INTO "User" (id, username, email, password, name, role)
+  VALUES (
+    gen_random_uuid()::text,
+    'admin',
+    'admin@basket.fr',
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    'Administrateur',
+    'admin'
+  );
+  EOF
+
+Puis redémarrer :
+  docker-compose restart backend
+
+───────────────────────────────────────────────────────────────
+📚 DOCUMENTATION
+───────────────────────────────────────────────────────────────
+
+Guide complet : docs/MODE_EMPLOI_SERVEUR.md
+Scripts utiles : scripts/
+
+───────────────────────────────────────────────────────────────
+✅ RÉSUMÉ
+───────────────────────────────────────────────────────────────
+
+✓ init.sql s'exécute automatiquement au démarrage
+✓ Toutes les tables créées automatiquement
+✓ Admin créé automatiquement (admin/admin)
+✓ Plus besoin de scripts manuels
+✓ Installation en 4 étapes simples
+
+🎉 VOTRE APPLICATION EST PRÊTE !
+
+═══════════════════════════════════════════════════════════════
