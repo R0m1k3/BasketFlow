@@ -133,21 +133,24 @@ const TEAM_LOGOS = {
 };
 
 const BROADCASTER_LOGOS = {
-  'beIN Sports': 'https://upload.wikimedia.org/wikipedia/commons/e/e6/BeIN_Sports_logo_2017.svg',
-  'beIN SPORTS': 'https://upload.wikimedia.org/wikipedia/commons/e/e6/BeIN_Sports_logo_2017.svg',
-  'beIN SPORTS 1': 'https://upload.wikimedia.org/wikipedia/commons/e/e6/BeIN_Sports_logo_2017.svg',
+  'beIN Sports': 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg',
+  'beIN SPORTS': 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg',
+  'beIN SPORTS 1': 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg',
+  'beIN Sports 1': 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg',
+  'beIN Sports 2': 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg',
+  'beIN Sports 3': 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg',
   
   'Prime Video': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.png',
   'Amazon Prime Video': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.png',
   
-  'La Chaîne L\'Équipe': null,
-  'L\'Équipe': null,
+  'La Chaîne L\'Équipe': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/La_chaîne_l%27Equipe_-_logo_2016.png/640px-La_chaîne_l%27Equipe_-_logo_2016.png',
+  'L\'Équipe': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/La_chaîne_l%27Equipe_-_logo_2016.png/640px-La_chaîne_l%27Equipe_-_logo_2016.png',
   
-  'DAZN': 'https://upload.wikimedia.org/wikipedia/commons/d/d7/DAZN_Logo.svg',
+  'DAZN': 'https://upload.wikimedia.org/wikipedia/commons/8/84/DAZN_logo.svg',
   
-  'SKWEEK': null,
+  'SKWEEK': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Skweek_logo.svg/640px-Skweek_logo.svg.png',
   
-  'NBA League Pass': null,
+  'NBA League Pass': 'https://cdn.worldvectorlogo.com/logos/nba-league-pass.svg',
   'EuroLeague TV': null,
   'Courtside 1891': null,
   'TV Monaco': null
