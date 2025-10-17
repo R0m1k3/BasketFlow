@@ -3,12 +3,13 @@
 ## ✅ LA SOLUTION DÉFINITIVE EST PRÊTE !
 
 J'ai créé un système qui **crée automatiquement TOUT** au démarrage du backend :
-- Les tables
-- L'utilisateur admin
-- Les leagues (NBA, WNBA, etc.)
-- Les diffuseurs (BeIN, Canal+, etc.)
+- Les tables (compatibles avec le schéma Prisma existant)
+- L'utilisateur admin (admin/admin)
+- Les leagues (NBA, WNBA, Euroleague, EuroCup, Betclic Elite)
+- Les diffuseurs (BeIN, Canal+, DAZN, etc.)
 
-**PLUS DE PROBLÈME "Skipping initialization" !**
+**ADAPTATION AUTOMATIQUE AU SCHÉMA EXISTANT !**
+**PLUS D'ERREUR DE COLONNES MANQUANTES !**
 
 ---
 
