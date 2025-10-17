@@ -95,22 +95,23 @@ A web application that displays basketball games broadcast in France, featuring 
 - **Team Mapping**: Handles abbreviated names from TheSportsDB (e.g., "KK Crvena" → "CRVENA ZVEZDA MERIDIANBET BELGRADE")
 - **Coverage**: 12+ finished matches per week with authentic scores (Euroleague 50%, Betclic Elite 25%)
 
-### 📺 Official Broadcasters 2024-2025 ✅
-**Deterministic Broadcaster Enrichment** (100% coverage):
-- **NBA** (13 matchs):
-  - beIN Sports (all matches - 400+ games per season)
-  - Prime Video (Sunday night games only - 29 games per season)
-  - NBA League Pass (all games streaming)
-- **Euroleague** (20 matchs):
-  - SKWEEK (all matches - 800+ games streaming)
-  - EuroLeague TV (all matches streaming)
-  - La Chaîne L'Équipe (Paris Basketball & ASVEL matches - free)
-  - TV Monaco (AS Monaco home matches - free)
-- **Betclic Elite** (8 matchs):
-  - beIN Sports (cable)
-  - SKWEEK (streaming)
-- **Service**: `backend/src/services/geminiEnrichment.js` with weekly match targeting
-- **Logic**: Rule-based system using official broadcast agreements (no AI guessing)
+### 📺 Broadcaster Management 2025-2026 ✅
+**Prime Video Calendar Integration** (Automated):
+- **NBA Prime Video** (82 matchs saison 2025-2026):
+  - Calendrier officiel intégré: 25 octobre 2025 → 11 avril 2026
+  - Enrichissement automatique via `backend/src/services/primeVideoParser.js`
+  - Parsing du fichier calendrier avec normalisation des noms d'équipes
+  - Synchronisation quotidienne à 6h00 du matin
+  - Système d'années intelligent (Oct-Déc 2025, Jan-Avr 2026)
+
+**Service de Mise à Jour** (`backend/src/services/updateService.js`):
+- ✅ Récupération automatique des matchs (NBA, WNBA, Euroleague, Betclic Elite)
+- ✅ Enrichissement Prime Video automatique pour NBA
+- 🔄 Exécution quotidienne programmée (6h00 AM)
+
+**Autres Diffuseurs** (2025-2026):
+- ❌ Temporairement retirés - informations saison 2025-2026 non disponibles sans API payante
+- Options futures: Interface admin pour saisie manuelle ou calendriers officiels
 
 ### Authentication & Security System ✅
 - Implemented JWT-based authentication with user/admin roles

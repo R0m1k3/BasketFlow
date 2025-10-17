@@ -5,6 +5,7 @@ const euroleagueResultsConnector = require('./euroleagueResultsConnector');
 const betclicEliteConnector = require('./betclicEliteConnector');
 const geminiEnrichment = require('./geminiEnrichment');
 const broadcasterCalendars = require('./broadcasterCalendars');
+const primeVideoParser = require('./primeVideoParser');
 const prisma = new PrismaClient();
 
 async function updateMatches() {
@@ -68,6 +69,16 @@ async function updateMatches() {
       console.log(`\n📺 Broadcasters: ${enrichedCount} matches enriched with official agreements`);
     } catch (error) {
       console.error('  ❌ Broadcaster enrichment failed:', error.message);
+    }
+
+    // Enrich NBA matches with Prime Video calendar (2025-2026 season)
+    try {
+      const primeCount = await primeVideoParser.enrichWithPrimeVideo();
+      if (primeCount > 0) {
+        console.log(`\n📺 Prime Video: ${primeCount} NBA matches enriched`);
+      }
+    } catch (error) {
+      console.error('  ❌ Prime Video enrichment failed:', error.message);
     }
 
   } catch (error) {

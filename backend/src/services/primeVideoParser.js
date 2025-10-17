@@ -15,7 +15,7 @@ function parsePrimeVideoSchedule(filePath) {
   };
   
   let currentMonth = null;
-  let currentYear = 2024;
+  let currentYear = 2025;
   
   for (const line of lines) {
     const trimmed = line.trim();
@@ -23,7 +23,10 @@ function parsePrimeVideoSchedule(filePath) {
     if (Object.keys(monthMap).some(month => trimmed.toLowerCase().includes(month))) {
       const monthName = Object.keys(monthMap).find(m => trimmed.toLowerCase().includes(m));
       currentMonth = monthMap[monthName];
-      if (currentMonth <= 4) currentYear = 2025;
+      // Janvier-Avril = 2026 (fin de saison)
+      if (currentMonth <= 4) currentYear = 2026;
+      // Octobre-Décembre = 2025 (début de saison)
+      else currentYear = 2025;
     }
     
     const matchRegex = /^(Lundi|Mardi|Mercredi|Jeudi|Vendredi|Samedi|Dimanche)\s+(\d+)\s+\w+\s*:\s*(.+?)\s+vs\.?\s+(.+?)\s+-\s+(\d+)h(\d+)/i;
