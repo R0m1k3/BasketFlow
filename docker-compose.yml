@@ -8,15 +8,16 @@ services:
       POSTGRES_USER: basketuser
       POSTGRES_PASSWORD: basketpass
       POSTGRES_DB: basketdb
+      PGPORT: 4532
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - nginx_default
     ports:
-      - "4532:5432"
+      - "4532:4532"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U basketuser -d basketdb"]
+      test: ["CMD-SHELL", "pg_isready -U basketuser -d basketdb -p 4532"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,7 +28,7 @@ services:
       dockerfile: Dockerfile
     container_name: basket_backend
     environment:
-      DATABASE_URL: postgresql://basketuser:basketpass@postgres:5432/basketdb
+      DATABASE_URL: postgresql://basketuser:basketpass@postgres:4532/basketdb
       NODE_ENV: production
       PORT: 3000
       API_BASKETBALL_KEY: ${API_BASKETBALL_KEY}
