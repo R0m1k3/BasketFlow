@@ -55,6 +55,7 @@ function TodayMatches({ selectedLeague, selectedBroadcaster }) {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('fr-FR', {
+      timeZone: 'Europe/Paris',
       hour: '2-digit',
       minute: '2-digit'
     }).format(date);

@@ -112,18 +112,31 @@ router.get('/by-date', async (req, res) => {
       return res.status(400).json({ error: 'Date parameter required' });
     }
 
-    const selectedDate = new Date(date);
-    const startOfDay = new Date(selectedDate);
-    startOfDay.setHours(0, 0, 0, 0);
+    const getParisDateBounds = (dateStr) => {
+      const parisDateStart = new Date(dateStr + 'T00:00:00');
+      const parisDateEnd = new Date(dateStr + 'T23:59:59.999');
+      
+      const parisOffsetStart = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Europe/Paris',
+        timeZoneName: 'shortOffset'
+      }).formatToParts(parisDateStart).find(p => p.type === 'timeZoneName')?.value || '+01';
+      
+      const offsetHours = parseInt(parisOffsetStart.replace('GMT', '').split(':')[0]) || 1;
+      const offsetMs = offsetHours * 60 * 60 * 1000;
+      
+      const utcStart = new Date(parisDateStart.getTime() - offsetMs);
+      const utcEnd = new Date(parisDateEnd.getTime() - offsetMs);
+      
+      return { start: utcStart, end: utcEnd };
+    };
     
-    const endOfDay = new Date(selectedDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    const bounds = getParisDateBounds(date);
 
     const matches = await prisma.match.findMany({
       where: {
         dateTime: {
-          gte: startOfDay,
-          lte: endOfDay
+          gte: bounds.start,
+          lte: bounds.end
         }
       },
       include: {

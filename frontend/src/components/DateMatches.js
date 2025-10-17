@@ -6,7 +6,18 @@ function DateMatches({ selectedLeague, selectedBroadcaster }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [failedImages, setFailedImages] = useState(new Set());
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  const getParisDateString = () => {
+    const parisDate = new Date().toLocaleString('en-CA', { 
+      timeZone: 'Europe/Paris',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).split(',')[0];
+    return parisDate;
+  };
+  
+  const [selectedDate, setSelectedDate] = useState(getParisDateString());
 
   const getProxiedImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
@@ -57,6 +68,7 @@ function DateMatches({ selectedLeague, selectedBroadcaster }) {
   const formatSelectedDate = (dateStr) => {
     const date = new Date(dateStr + 'T00:00:00');
     return new Intl.DateTimeFormat('fr-FR', {
+      timeZone: 'Europe/Paris',
       weekday: 'long',
       day: 'numeric',
       month: 'long',

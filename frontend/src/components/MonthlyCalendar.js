@@ -151,6 +151,7 @@ function MonthlyCalendar({ selectedLeague, selectedBroadcaster }) {
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         locale="fr"
+        timeZone="Europe/Paris"
         events={events}
         datesSet={handleDateSet}
         eventContent={renderEventContent}
