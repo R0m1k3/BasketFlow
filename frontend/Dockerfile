@@ -5,20 +5,18 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies including serve
-RUN npm ci && npm install -g serve
+# Install dependencies
+RUN npm ci
 
-# Copy application files (excluding .env files)
+# Copy application files
 COPY public ./public
 COPY src ./src
+COPY server.js ./
 
-# Copy Docker-specific env file for build
-COPY .env.docker .env.production
-
-# Build the React app (uses .env.production)
+# Build the React app
 RUN npm run build
 
 EXPOSE 4000
 
-# Serve the build folder on port 4000 with proxying to backend
-CMD ["serve", "-s", "build", "-l", "4000", "--cors"]
+# Use custom Express server with proxy
+CMD ["node", "server.js"]

@@ -22,4 +22,5 @@ COPY . .
 
 EXPOSE 3888
 
-CMD ["npm", "start"]
+# Push schema to database then start server
+CMD sh -c "npx prisma db push --accept-data-loss --skip-generate && npm start"
