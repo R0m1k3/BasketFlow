@@ -131,36 +131,20 @@ async function autoInit() {
       console.log('✅ Admin user already exists');
     }
 
-    // Check if code column exists in League table
-    const checkCodeColumn = await client.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'League' AND column_name = 'code'
-    `);
-
-    // Add code column if it doesn't exist
-    if (checkCodeColumn.rows.length === 0) {
-      console.log('🔧 Adding "code" column to League table...');
-      await client.query(`
-        ALTER TABLE "League" ADD COLUMN IF NOT EXISTS "code" VARCHAR(50) UNIQUE;
-      `);
-      console.log('✅ Code column added');
-    }
-
-    // Insert default leagues
+    // Insert default leagues (using Prisma schema: id, name, shortName, country, logo, color)
     const checkLeagues = await client.query(`SELECT COUNT(*) FROM "League"`);
     
     if (checkLeagues.rows[0].count === '0') {
       console.log('🏀 Creating default leagues...');
       
       await client.query(`
-        INSERT INTO "League" (name, code, "isActive") VALUES
-        ('NBA', 'nba', true),
-        ('WNBA', 'wnba', true),
-        ('Euroleague', 'euroleague', true),
-        ('EuroCup', 'eurocup', true),
-        ('Betclic Elite', 'betclic', true)
-        ON CONFLICT (code) DO NOTHING
+        INSERT INTO "League" (id, name, "shortName", country, logo) VALUES
+        (gen_random_uuid(), 'NBA', 'NBA', 'USA', NULL),
+        (gen_random_uuid(), 'WNBA', 'WNBA', 'USA', NULL),
+        (gen_random_uuid(), 'Euroleague', 'EL', 'Europe', NULL),
+        (gen_random_uuid(), 'EuroCup', 'EC', 'Europe', NULL),
+        (gen_random_uuid(), 'Betclic Elite', 'LNB', 'France', NULL)
+        ON CONFLICT (name) DO NOTHING
       `);
 
       console.log('✅ Default leagues created');
