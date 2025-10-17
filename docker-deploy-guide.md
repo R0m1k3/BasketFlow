@@ -4,7 +4,7 @@
 
 ### 1. Configuration des Ports (Sans Conflits)
 - **Frontend** : Port 4000
-- **Backend API** : Port 3001  
+- **Backend API** : Port 3888  
 - **PostgreSQL** : Port 4532
 
 ### 2. Dockerfiles Optimisés
@@ -65,7 +65,7 @@ Vous verrez :
 ### 6. Accéder à l'application
 
 - **Frontend** : http://localhost:4000
-- **Backend API** : http://localhost:3001/api
+- **Backend API** : http://localhost:3888/api
 - **Login** : 
   - **Identifiant** : `admin`
   - **Mot de passe** : `admin`
@@ -150,10 +150,10 @@ docker network inspect nginx_default
 │       └── initAdmin.js    # ✅ Crée admin/admin
 ├── frontend/
 │   ├── Dockerfile          # ✅ Build + Serve (pas nginx)
-│   ├── .env.docker         # Config pour Docker (port 3001)
+│   ├── .env.docker         # Config pour Docker (port 3888)
 │   ├── serve.json          # ⚠️ Pas utilisé avec serve CLI
 │   └── src/
-├── docker-compose.yml      # ✅ Ports: 4000, 3001, 4532
+├── docker-compose.yml      # ✅ Ports: 4000, 3888, 4532
 ├── .env                    # ✅ Secrets générés auto
 └── docker-deploy-guide.md  # Ce guide
 
@@ -163,11 +163,11 @@ docker network inspect nginx_default
 
 | Service | Port Interne Docker | Port Externe | Accès |
 |---------|---------------------|--------------|-------|
-| Frontend | 80 | **4000** | http://localhost:4000 |
-| Backend | 3000 | **3001** | http://localhost:3001 |
+| Frontend | 4000 | **4000** | http://localhost:4000 |
+| Backend | 3888 | **3888** | http://localhost:3888 |
 | PostgreSQL | 4532 | **4532** | localhost:4532 |
 
-**Important** : Le frontend accède au backend via `http://localhost:3001` depuis le navigateur (car il est servi en statique)
+**Important** : Le frontend accède au backend via `http://localhost:3888` depuis le navigateur (car il est servi en statique)
 
 ## 🔒 Sécurité
 
@@ -244,7 +244,7 @@ docker-compose logs -f
 
 # Tester
 curl http://localhost:4000
-curl http://localhost:3001/api/leagues
+curl http://localhost:3888/api/leagues
 ```
 
 **Votre application Docker est prête ! 🎉**

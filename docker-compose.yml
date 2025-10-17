@@ -30,14 +30,14 @@ services:
     environment:
       DATABASE_URL: postgresql://basketuser:basketpass@postgres:4532/basketdb
       NODE_ENV: production
-      PORT: 3000
+      PORT: 3888
       API_BASKETBALL_KEY: ${API_BASKETBALL_KEY}
       JWT_SECRET: ${JWT_SECRET}
       SESSION_SECRET: ${SESSION_SECRET}
     networks:
       - nginx_default
     ports:
-      - "3001:3000"
+      - "3888:3888"
     depends_on:
       postgres:
         condition: service_healthy
@@ -52,7 +52,7 @@ services:
     networks:
       - nginx_default
     ports:
-      - "4000:80"
+      - "4000:4000"
     depends_on:
       - backend
     restart: unless-stopped
