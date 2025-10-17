@@ -113,19 +113,34 @@ router.get('/by-date', async (req, res) => {
     }
 
     const getParisDateBounds = (dateStr) => {
-      const parisDateStart = new Date(dateStr + 'T00:00:00');
-      const parisDateEnd = new Date(dateStr + 'T23:59:59.999');
+      const parts = dateStr.split('-').map(Number);
+      const year = parts[0];
+      const month = parts[1] - 1;
+      const day = parts[2];
       
-      const parisOffsetStart = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'Europe/Paris',
-        timeZoneName: 'shortOffset'
-      }).formatToParts(parisDateStart).find(p => p.type === 'timeZoneName')?.value || '+01';
+      const getLastSunday = (yr, mon) => {
+        const lastDay = new Date(Date.UTC(yr, mon + 1, 0));
+        const lastSunday = lastDay.getUTCDate() - lastDay.getUTCDay();
+        return lastSunday;
+      };
       
-      const offsetHours = parseInt(parisOffsetStart.replace('GMT', '').split(':')[0]) || 1;
-      const offsetMs = offsetHours * 60 * 60 * 1000;
+      const isDSTInParis = (yr, mon, d) => {
+        const marchTransition = getLastSunday(yr, 2);
+        const octoberTransition = getLastSunday(yr, 9);
+        
+        if (mon < 2 || mon > 9) return false;
+        if (mon > 2 && mon < 9) return true;
+        if (mon === 2 && d >= marchTransition) return true;
+        if (mon === 9 && d < octoberTransition) return true;
+        return false;
+      };
       
-      const utcStart = new Date(parisDateStart.getTime() - offsetMs);
-      const utcEnd = new Date(parisDateEnd.getTime() - offsetMs);
+      const isDST = isDSTInParis(year, month, day);
+      const parisOffsetHours = isDST ? 2 : 1;
+      const offsetMs = parisOffsetHours * 60 * 60 * 1000;
+      
+      const utcStart = new Date(Date.UTC(year, month, day, 0, 0, 0, 0) - offsetMs);
+      const utcEnd = new Date(Date.UTC(year, month, day, 23, 59, 59, 999) - offsetMs);
       
       return { start: utcStart, end: utcEnd };
     };
