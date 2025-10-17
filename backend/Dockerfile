@@ -1,5 +1,8 @@
 FROM node:20-alpine
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl openssl-dev
+
 WORKDIR /app
 
 # Copy package files
@@ -11,7 +14,7 @@ RUN npm install --production
 # Copy prisma schema
 COPY prisma ./prisma
 
-# Generate Prisma Client (pas de migration)
+# Generate Prisma Client
 RUN npx prisma generate
 
 # Copy application
