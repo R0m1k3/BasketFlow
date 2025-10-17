@@ -11,6 +11,7 @@ services:
       PGPORT: 4532
     volumes:
       - basket_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql
     networks:
       - nginx_default
     ports:
@@ -42,7 +43,7 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-    command: sh -c "sleep 10 && npx prisma db push --force-reset && node src/initAdmin.js && npm start"
+    command: sh -c "sleep 15 && npm start"
 
   frontend:
     build:
