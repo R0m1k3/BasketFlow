@@ -50,6 +50,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: basket_frontend
+    environment:
+      # L'URL doit être accessible depuis le navigateur du client
+      REACT_APP_API_URL: http://localhost:3888/api
     networks:
       - nginx_default
     ports:
