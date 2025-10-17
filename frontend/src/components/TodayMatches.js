@@ -28,7 +28,10 @@ function TodayMatches({ selectedLeague, selectedBroadcaster }) {
     try {
       setLoading(true);
       const response = await axios.get('/api/matches/week');
-      let filteredMatches = response.data.filter(m => isToday(m.dateTime));
+      
+      // Ensure response.data is an array
+      const allMatches = Array.isArray(response.data) ? response.data : [];
+      let filteredMatches = allMatches.filter(m => isToday(m.dateTime));
 
       if (selectedLeague !== 'all') {
         filteredMatches = filteredMatches.filter(m => m.leagueId === selectedLeague);
@@ -36,6 +39,7 @@ function TodayMatches({ selectedLeague, selectedBroadcaster }) {
 
       if (selectedBroadcaster !== 'all') {
         filteredMatches = filteredMatches.filter(m => 
+          m.broadcasts && Array.isArray(m.broadcasts) && 
           m.broadcasts.some(b => b.broadcasterId === selectedBroadcaster)
         );
       }
@@ -43,6 +47,7 @@ function TodayMatches({ selectedLeague, selectedBroadcaster }) {
       setMatches(filteredMatches);
     } catch (error) {
       console.error('Error fetching matches:', error);
+      setMatches([]);
     } finally {
       setLoading(false);
     }
