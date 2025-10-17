@@ -36,10 +36,7 @@ function Header() {
               </button>
             </>
           ) : (
-            <>
-              <Link to="/login" className="nav-link">Connexion</Link>
-              <Link to="/register" className="btn-register">Inscription</Link>
-            </>
+            <Link to="/login" className="nav-link">Connexion</Link>
           )}
         </nav>
       </div>
