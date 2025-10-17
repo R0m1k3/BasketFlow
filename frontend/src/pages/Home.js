@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import WeeklyMatches from '../components/WeeklyMatches';
 import MonthlyCalendar from '../components/MonthlyCalendar';
+import TodayMatches from '../components/TodayMatches';
 import FilterBar from '../components/FilterBar';
 import axios from 'axios';
 import './Home.css';
@@ -44,6 +45,12 @@ function Home() {
 
       <nav className="view-toggle">
         <button 
+          className={view === 'today' ? 'active' : ''} 
+          onClick={() => setView('today')}
+        >
+          Aujourd'hui
+        </button>
+        <button 
           className={view === 'week' ? 'active' : ''} 
           onClick={() => setView('week')}
         >
@@ -67,7 +74,12 @@ function Home() {
       />
 
       <main className="content">
-        {view === 'week' ? (
+        {view === 'today' ? (
+          <TodayMatches 
+            selectedLeague={selectedLeague}
+            selectedBroadcaster={selectedBroadcaster}
+          />
+        ) : view === 'week' ? (
           <WeeklyMatches 
             selectedLeague={selectedLeague}
             selectedBroadcaster={selectedBroadcaster}
