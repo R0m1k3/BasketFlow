@@ -82,14 +82,18 @@ TÂCHE : Extraire TOUS les matchs (résultats passés + matchs à venir) depuis 
 
 INSTRUCTIONS CRITIQUES - SECTION "Results" :
 - Cherche la section "Results" dans le HTML
-- Extrais les matchs TERMINÉS avec leurs SCORES RÉELS
-- Format: homeTeam, awayTeam, homeScore, awayScore, date, status: "finished"
+- Extrais **LA TOTALITÉ** des matchs TERMINÉS avec leurs SCORES RÉELS
+- Il peut y avoir 5, 10, 15, 20 matchs ou plus - EXTRAIS-LES TOUS
+- Format: homeTeam, awayTeam, homeScore, awayScore, date, time, status: "finished"
 - L'équipe à GAUCHE (premier score) est homeTeam, l'équipe à DROITE (second score) est awayTeam
+- PARCOURS TOUTE la section Results jusqu'au bout
 
 INSTRUCTIONS CRITIQUES - SECTION "Upcoming" :
 - Cherche la section "Upcoming" dans le HTML  
-- Extrais les matchs À VENIR SANS scores
+- Extrais **LA TOTALITÉ** des matchs À VENIR SANS scores
+- Il peut y avoir 5, 10, 15, 20 matchs ou plus - EXTRAIS-LES TOUS
 - homeScore: null, awayScore: null, status: "scheduled"
+- PARCOURS TOUTE la section Upcoming jusqu'au bout
 
 FORMAT DE RÉPONSE (JSON OBLIGATOIRE) :
 {
@@ -217,7 +221,9 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
           }
         });
 
-        const status = matchData.status || (matchData.homeScore !== null ? 'finished' : 'scheduled');
+        // Déterminer le statut : si scores présents = finished, sinon scheduled
+        const hasScores = matchData.homeScore !== null && matchData.awayScore !== null;
+        const status = hasScores ? 'finished' : 'scheduled';
 
         if (existingMatch) {
           await prisma.match.update({
