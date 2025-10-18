@@ -6,7 +6,9 @@ Basket Flow is a web application that displays basketball games broadcast in Fra
 
 ## Recent Changes
 
-**October 18, 2025 (Latest - Euroleague Scores COMPLETE FIX):**
+**October 18, 2025 (Latest - Euroleague Auto-Update System):**
+- **FINAL FIX**: Complete auto-update system for Euroleague via Gemini + TheSportsDB
+- System automatically fetches ALL Euroleague matches (past with scores + upcoming) daily at 6 AM
 - **CRITICAL FIX**: Euroleague scores fully working - 100% Gemini+TheSportsDB for ALL Euroleague data
 - **ALL Official Euroleague APIs are broken** (api-live.euroleague.net, live.euroleague.net return 404/empty)
 - Deleted broken `euroleagueOfficialConnector.js` and `euroleagueConnector.js` (XML API dead)
