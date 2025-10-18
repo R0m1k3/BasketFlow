@@ -61,14 +61,11 @@ async function updateMatches() {
     const geminiKey = await getGeminiApiKey();
     
     try {
-      console.log('\n3️⃣  Euroleague - Official XML API (api-live.euroleague.net)');
-      const euroleagueMatches = await euroleagueConnector.fetchEuroleagueSchedule();
+      console.log('\n3️⃣  Euroleague - TheSportsDB via Gemini (ALL matches)');
+      const euroleagueMatches = await euroleagueResultsConnector.fetchEuroleagueResults(geminiKey);
       totalMatches += euroleagueMatches;
-      
-      console.log('\n   📊 Euroleague Results - TheSportsDB via Gemini');
-      await euroleagueResultsConnector.fetchEuroleagueResults(geminiKey);
     } catch (error) {
-      console.error('  ❌ Euroleague API failed:', error.message);
+      console.error('  ❌ Euroleague extraction failed:', error.message);
     }
     
     try {

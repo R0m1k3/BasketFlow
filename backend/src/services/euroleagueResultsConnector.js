@@ -47,10 +47,10 @@ const TEAM_NAME_MAPPING = {
 };
 
 async function fetchEuroleagueResults(geminiApiKey) {
-  console.log('  🏀 Fetching Euroleague results from TheSportsDB via Gemini...');
+  console.log('  🏀 Fetching ALL Euroleague matches from TheSportsDB via Gemini...');
   
   if (!geminiApiKey) {
-    console.log('  ⚠️  No Gemini API key - skipping Euroleague results');
+    console.log('  ⚠️  No Gemini API key - skipping Euroleague');
     return 0;
   }
 
@@ -76,14 +76,20 @@ Voici le code HTML de la page TheSportsDB pour l'EuroLeague :
 
 ${html}
 
-TÂCHE : Extraire UNIQUEMENT les résultats récents depuis la section "Results" avec les SCORES.
+TÂCHE : Extraire TOUS les matchs (résultats passés + matchs à venir) depuis DEUX sections :
+1. Section "Results" → matchs TERMINÉS avec SCORES
+2. Section "Upcoming" → matchs À VENIR sans scores
 
-INSTRUCTIONS CRITIQUES :
+INSTRUCTIONS CRITIQUES - SECTION "Results" :
 - Cherche la section "Results" dans le HTML
 - Extrais les matchs TERMINÉS avec leurs SCORES RÉELS
-- Format: homeTeam, awayTeam, homeScore, awayScore, date
+- Format: homeTeam, awayTeam, homeScore, awayScore, date, status: "finished"
 - L'équipe à GAUCHE (premier score) est homeTeam, l'équipe à DROITE (second score) est awayTeam
-- N'INVENTE RIEN - extrais UNIQUEMENT ce qui est visible
+
+INSTRUCTIONS CRITIQUES - SECTION "Upcoming" :
+- Cherche la section "Upcoming" dans le HTML  
+- Extrais les matchs À VENIR SANS scores
+- homeScore: null, awayScore: null, status: "scheduled"
 
 FORMAT DE RÉPONSE (JSON OBLIGATOIRE) :
 {
@@ -94,15 +100,27 @@ FORMAT DE RÉPONSE (JSON OBLIGATOIRE) :
       "homeScore": 93,
       "awayScore": 86,
       "date": "2025-10-15",
+      "time": "20:00",
       "status": "finished"
+    }
+  ],
+  "upcoming": [
+    {
+      "homeTeam": "Barcelona",
+      "awayTeam": "Bayern Munich",
+      "homeScore": null,
+      "awayScore": null,
+      "date": "2025-10-20",
+      "time": "20:45",
+      "status": "scheduled"
     }
   ]
 }
 
 RÈGLES :
 - Année : utilise ${currentYear} si non affichée
-- SI TU NE TROUVES PAS la section Results → renvoie results: []
-- SCORES OBLIGATOIRES pour tous les résultats
+- SI TU NE TROUVES PAS une section → renvoie array vide []
+- SCORES OBLIGATOIRES pour results, null pour upcoming
 
 Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
 
@@ -119,11 +137,13 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
 
     const extractedData = JSON.parse(jsonText);
     const results = extractedData.results || [];
+    const upcoming = extractedData.upcoming || [];
+    const allMatches = [...results, ...upcoming];
     
-    console.log(`  ✨ Gemini extracted ${results.length} Euroleague results with scores`);
+    console.log(`  ✨ Gemini extracted ${results.length} results + ${upcoming.length} upcoming = ${allMatches.length} total matches`);
 
-    if (results.length === 0) {
-      console.log('  ℹ️  No results found');
+    if (allMatches.length === 0) {
+      console.log('  ℹ️  No matches found');
       return 0;
     }
 
@@ -137,10 +157,11 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
     }
 
     let updatedCount = 0;
+    let createdCount = 0;
 
-    for (const matchData of results) {
+    for (const matchData of allMatches) {
       try {
-        if (!matchData.homeTeam || !matchData.awayTeam || matchData.homeScore === undefined || matchData.awayScore === undefined) {
+        if (!matchData.homeTeam || !matchData.awayTeam) {
           continue;
         }
 
@@ -154,30 +175,49 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
           return team;
         };
         
-        const homeTeam = await findTeam(matchData.homeTeam);
-        const awayTeam = await findTeam(matchData.awayTeam);
+        let homeTeam = await findTeam(matchData.homeTeam);
+        let awayTeam = await findTeam(matchData.awayTeam);
 
-        if (!homeTeam || !awayTeam) {
-          console.log(`     ⚠️  Teams not found: ${matchData.homeTeam} vs ${matchData.awayTeam}`);
-          continue;
+        // Créer les équipes si elles n'existent pas
+        if (!homeTeam) {
+          const mappedName = TEAM_NAME_MAPPING[matchData.homeTeam] || matchData.homeTeam;
+          homeTeam = await prisma.team.create({
+            data: { name: mappedName, logo: null }
+          });
+        }
+        if (!awayTeam) {
+          const mappedName = TEAM_NAME_MAPPING[matchData.awayTeam] || matchData.awayTeam;
+          awayTeam = await prisma.team.create({
+            data: { name: mappedName, logo: null }
+          });
         }
 
-        const dateTime = new Date(`${matchData.date}T20:00:00`);
+        const timeStr = matchData.time || '20:00';
+        const dateTime = new Date(`${matchData.date}T${timeStr}:00`);
         if (isNaN(dateTime.getTime())) {
           continue;
         }
 
+        const externalId = `euroleague-${homeTeam.name}-${awayTeam.name}-${matchData.date}`.replace(/\s+/g, '-').toLowerCase();
+
         const existingMatch = await prisma.match.findFirst({
           where: {
-            homeTeamId: homeTeam.id,
-            awayTeamId: awayTeam.id,
-            leagueId: league.id,
-            dateTime: {
-              gte: new Date(dateTime.getTime() - 24 * 60 * 60 * 1000),
-              lte: new Date(dateTime.getTime() + 24 * 60 * 60 * 1000)
-            }
+            OR: [
+              { externalId: externalId },
+              {
+                homeTeamId: homeTeam.id,
+                awayTeamId: awayTeam.id,
+                leagueId: league.id,
+                dateTime: {
+                  gte: new Date(dateTime.getTime() - 24 * 60 * 60 * 1000),
+                  lte: new Date(dateTime.getTime() + 24 * 60 * 60 * 1000)
+                }
+              }
+            ]
           }
         });
+
+        const status = matchData.status || (matchData.homeScore !== null ? 'finished' : 'scheduled');
 
         if (existingMatch) {
           await prisma.match.update({
@@ -185,11 +225,28 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
             data: {
               homeScore: matchData.homeScore,
               awayScore: matchData.awayScore,
-              status: 'finished'
+              status: status,
+              dateTime: dateTime
             }
           });
           updatedCount++;
-          console.log(`     ✅ Updated: ${matchData.homeTeam} ${matchData.homeScore}-${matchData.awayScore} ${matchData.awayTeam}`);
+          if (matchData.homeScore !== null) {
+            console.log(`     ✅ Updated: ${matchData.homeTeam} ${matchData.homeScore}-${matchData.awayScore} ${matchData.awayTeam}`);
+          }
+        } else {
+          await prisma.match.create({
+            data: {
+              externalId,
+              homeTeamId: homeTeam.id,
+              awayTeamId: awayTeam.id,
+              leagueId: league.id,
+              dateTime: dateTime,
+              homeScore: matchData.homeScore,
+              awayScore: matchData.awayScore,
+              status: status
+            }
+          });
+          createdCount++;
         }
         
       } catch (err) {
@@ -197,8 +254,8 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
       }
     }
 
-    console.log(`  ✅ Euroleague: Updated ${updatedCount} matches with scores`);
-    return updatedCount;
+    console.log(`  ✅ Euroleague: Created ${createdCount} matches, Updated ${updatedCount} matches (total ${createdCount + updatedCount})`);
+    return createdCount + updatedCount;
 
   } catch (error) {
     console.error('  ❌ Euroleague results error:', error.message);
