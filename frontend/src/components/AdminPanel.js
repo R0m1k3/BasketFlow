@@ -15,9 +15,14 @@ function AdminPanel() {
   const fetchUsers = useCallback(async () => {
     try {
       const response = await axios.get('/api/admin/users');
+      console.log('Users fetched:', response.data);
       setUsers(response.data);
+      if (response.data.length === 0) {
+        setMessage('⚠️ Aucun utilisateur trouvé dans la base de données');
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
+      setMessage(`❌ Erreur: ${error.response?.data?.error || error.message}`);
     }
   }, []);
 
@@ -112,57 +117,64 @@ function AdminPanel() {
       {activeTab === 'users' && (
         <div className="admin-content">
           <h3>Gestion des utilisateurs</h3>
-          <div className="users-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Identifiant</th>
-                  <th>Nom</th>
-                  <th>Email</th>
-                  <th>Rôle</th>
-                  <th>Créé le</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map(u => (
-                  <tr key={u.id}>
-                    <td><strong>{u.username}</strong></td>
-                    <td>{u.name}</td>
-                    <td>{u.email || '-'}</td>
-                    <td>
-                      <select 
-                        value={u.role} 
-                        onChange={(e) => handleChangeRole(u.id, e.target.value)}
-                        disabled={u.id === user.id}
-                      >
-                        <option value="user">Utilisateur</option>
-                        <option value="admin">Administrateur</option>
-                      </select>
-                    </td>
-                    <td>{new Date(u.createdAt).toLocaleDateString('fr-FR')}</td>
-                    <td>
-                      <button 
-                        onClick={() => handleChangePassword(u.id, u.username)}
-                        className="btn-edit"
-                        style={{marginRight: '5px'}}
-                      >
-                        Changer mot de passe
-                      </button>
-                      {u.id !== user.id && (
-                        <button 
-                          onClick={() => handleDeleteUser(u.id)}
-                          className="btn-delete"
-                        >
-                          Supprimer
-                        </button>
-                      )}
-                    </td>
+          {users.length === 0 && !message && (
+            <p style={{textAlign: 'center', padding: '2rem', color: '#999'}}>
+              Chargement des utilisateurs...
+            </p>
+          )}
+          {users.length > 0 && (
+            <div className="users-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Identifiant</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Créé le</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {users.map(u => (
+                    <tr key={u.id}>
+                      <td><strong>{u.username}</strong></td>
+                      <td>{u.name}</td>
+                      <td>{u.email || '-'}</td>
+                      <td>
+                        <select 
+                          value={u.role} 
+                          onChange={(e) => handleChangeRole(u.id, e.target.value)}
+                          disabled={u.id === user.id}
+                        >
+                          <option value="user">Utilisateur</option>
+                          <option value="admin">Administrateur</option>
+                        </select>
+                      </td>
+                      <td>{new Date(u.createdAt).toLocaleDateString('fr-FR')}</td>
+                      <td>
+                        <button 
+                          onClick={() => handleChangePassword(u.id, u.username)}
+                          className="btn-edit"
+                          style={{marginRight: '5px'}}
+                        >
+                          Changer mot de passe
+                        </button>
+                        {u.id !== user.id && (
+                          <button 
+                            onClick={() => handleDeleteUser(u.id)}
+                            className="btn-delete"
+                          >
+                            Supprimer
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
