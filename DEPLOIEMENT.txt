@@ -1,0 +1,57 @@
+========================================
+  DÉPLOIEMENT BASKET FLOW - AUTOMATIQUE
+========================================
+
+Sur votre serveur privé, dans le dossier du projet :
+
+1. TÉLÉCHARGER LES MISES À JOUR
+   -------------------------------
+   git pull
+
+2. RECONSTRUIRE ET DÉMARRER
+   -------------------------------
+   docker-compose down
+   docker-compose build --no-cache
+   docker-compose up -d
+
+3. VÉRIFIER QUE TOUT FONCTIONNE
+   -------------------------------
+   docker logs basket_app --tail 50
+
+TERMINÉ ! Allez sur votre URL et connectez-vous avec :
+- Identifiant : admin
+- Mot de passe : admin
+
+========================================
+  CE QUI A ÉTÉ CORRIGÉ
+========================================
+
+✅ NETTOYAGE AUTOMATIQUE DES TOKENS
+   L'application détecte et supprime automatiquement
+   les tokens invalides au chargement de la page.
+   AUCUNE manipulation manuelle requise !
+
+✅ AFFICHAGE DES UTILISATEURS
+   - L'identifiant (username) s'affiche correctement
+   - Bouton "Changer mot de passe" pour chaque utilisateur
+   - Backend retourne maintenant le champ username
+
+✅ CONFIGURATION GEMINI
+   - Nouvel onglet pour configurer la clé API Gemini
+   - Permet d'activer l'extraction automatique
+
+========================================
+  APRÈS LE DÉPLOIEMENT
+========================================
+
+1. Ouvrez l'URL de votre serveur dans le navigateur
+2. Si vous aviez un ancien token :
+   → L'application le détecte automatiquement
+   → Le supprime automatiquement  
+   → Recharge la page automatiquement
+3. Connectez-vous : admin / admin
+4. Allez dans Administration → Utilisateurs
+5. Changez le mot de passe admin
+6. Configurez votre clé Gemini dans Configuration API
+
+C'EST TOUT ! Plus aucune manipulation manuelle.

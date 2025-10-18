@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api from '../api/config';
 import { useAuth } from '../context/AuthContext';
 import ApiBasketballConfig from './ApiBasketballConfig';
 import GeminiConfig from './GeminiConfig';
@@ -7,24 +7,42 @@ import LogoManager from './LogoManager';
 import './AdminPanel.css';
 
 function AdminPanel() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [activeTab, setActiveTab] = useState('config');
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState('');
 
+  // Vérifier que le token existe avant de permettre l'accès
+  useEffect(() => {
+    if (!token) {
+      setMessage('❌ Session expirée, veuillez vous reconnecter');
+    }
+  }, [token]);
+
   const fetchUsers = useCallback(async () => {
+    if (!token) {
+      setMessage('❌ Token manquant, veuillez vous reconnecter');
+      return;
+    }
+    
     try {
-      const response = await axios.get('/api/admin/users');
+      const response = await api.get('/admin/users');
       console.log('Users fetched:', response.data);
       setUsers(response.data);
+      setMessage(''); // Efface le message d'erreur si succès
       if (response.data.length === 0) {
         setMessage('⚠️ Aucun utilisateur trouvé dans la base de données');
       }
     } catch (error) {
       console.error('Error fetching users:', error);
-      setMessage(`❌ Erreur: ${error.response?.data?.error || error.message}`);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        setMessage('❌ Session expirée, rechargez la page et reconnectez-vous');
+        localStorage.removeItem('token');
+      } else {
+        setMessage(`❌ Erreur: ${error.response?.data?.error || error.message}`);
+      }
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (activeTab === 'users') {
@@ -34,7 +52,7 @@ function AdminPanel() {
 
   const handleChangeRole = async (userId, newRole) => {
     try {
-      await axios.put(`/api/admin/users/${userId}/role`, { role: newRole });
+      await api.put(`/admin/users/${userId}/role`, { role: newRole });
       fetchUsers();
       setMessage('✅ Rôle modifié avec succès');
       setTimeout(() => setMessage(''), 3000);
@@ -49,7 +67,7 @@ function AdminPanel() {
     }
 
     try {
-      await axios.delete(`/api/admin/users/${userId}`);
+      await api.delete(`/admin/users/${userId}`);
       fetchUsers();
       setMessage('✅ Utilisateur supprimé');
       setTimeout(() => setMessage(''), 3000);
@@ -65,7 +83,7 @@ function AdminPanel() {
     }
 
     try {
-      await axios.put(`/api/admin/users/${userId}/password`, { password: newPassword });
+      await api.put(`/admin/users/${userId}/password`, { password: newPassword });
       setMessage('✅ Mot de passe modifié avec succès');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
