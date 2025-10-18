@@ -1,6 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
 const nbaConnector = require('./nbaConnector');
-const euroleagueConnector = require('./euroleagueConnector');
 const euroleagueResultsConnector = require('./euroleagueResultsConnector');
 const betclicEliteConnector = require('./betclicEliteConnector');
 const geminiEnrichment = require('./geminiEnrichment');
@@ -61,22 +60,20 @@ async function updateMatches() {
     const geminiKey = await getGeminiApiKey();
     
     try {
-      console.log('\n3️⃣  Euroleague - Official XML API (api-live.euroleague.net)');
-      const euroleagueMatches = await euroleagueConnector.fetchEuroleagueSchedule();
+      console.log('\n3️⃣  Euroleague - TheSportsDB via Gemini (ALL matches)');
+      const euroleagueMatches = await euroleagueResultsConnector.fetchEuroleagueResults(geminiKey);
       totalMatches += euroleagueMatches;
-      
-      console.log('\n   📊 Euroleague Results - TheSportsDB via Gemini');
-      await euroleagueResultsConnector.fetchEuroleagueResults(geminiKey);
     } catch (error) {
-      console.error('  ❌ Euroleague API failed:', error.message);
+      console.error('  ❌ Euroleague extraction failed:', error.message);
     }
     
     try {
-      console.log('\n4️⃣  EuroCup - Official XML API (api-live.euroleague.net)');
-      const eurocupMatches = await euroleagueConnector.fetchEurocupSchedule();
-      totalMatches += eurocupMatches;
+      console.log('\n4️⃣  EuroCup - SKIPPED (XML API also broken, needs Gemini migration)');
+      // TODO: Migrate EuroCup to Gemini extraction like Euroleague
+      // const eurocupMatches = await eurocupResultsConnector.fetchEurocupResults(geminiKey);
+      // totalMatches += eurocupMatches;
     } catch (error) {
-      console.error('  ❌ EuroCup API failed:', error.message);
+      console.error('  ❌ EuroCup extraction failed:', error.message);
     }
     
     try {
