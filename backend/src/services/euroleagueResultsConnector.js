@@ -82,18 +82,20 @@ TÂCHE : Extraire TOUS les matchs (résultats passés + matchs à venir) depuis 
 
 INSTRUCTIONS CRITIQUES - SECTION "Results" :
 - Cherche la section "Results" dans le HTML
-- Extrais **LA TOTALITÉ** des matchs TERMINÉS avec leurs SCORES RÉELS
-- Il peut y avoir 5, 10, 15, 20 matchs ou plus - EXTRAIS-LES TOUS
+- Extrais **MINIMUM 15 MATCHS TERMINÉS** avec leurs SCORES RÉELS (ne t'arrête pas à 10 !)
+- PARCOURS TOUTE la section Results jusqu'au bout
+- Il peut y avoir 15, 20, 25+ matchs - EXTRAIS-LES TOUS
 - Format: homeTeam, awayTeam, homeScore, awayScore, date, time, status: "finished"
 - L'équipe à GAUCHE (premier score) est homeTeam, l'équipe à DROITE (second score) est awayTeam
-- PARCOURS TOUTE la section Results jusqu'au bout
+- IMPORTANT: Ne limite PAS à 10 résultats, continue jusqu'à la fin de la section
 
 INSTRUCTIONS CRITIQUES - SECTION "Upcoming" :
 - Cherche la section "Upcoming" dans le HTML  
-- Extrais **LA TOTALITÉ** des matchs À VENIR SANS scores
-- Il peut y avoir 5, 10, 15, 20 matchs ou plus - EXTRAIS-LES TOUS
-- homeScore: null, awayScore: null, status: "scheduled"
+- Extrais **MINIMUM 15 MATCHS À VENIR** SANS scores (ne t'arrête pas à 10 !)
 - PARCOURS TOUTE la section Upcoming jusqu'au bout
+- Il peut y avoir 15, 20, 25+ matchs - EXTRAIS-LES TOUS
+- homeScore: null, awayScore: null, status: "scheduled"
+- IMPORTANT: Ne limite PAS à 10 matchs, continue jusqu'à la fin de la section
 
 FORMAT DE RÉPONSE (JSON OBLIGATOIRE) :
 {
@@ -121,10 +123,12 @@ FORMAT DE RÉPONSE (JSON OBLIGATOIRE) :
   ]
 }
 
-RÈGLES :
-- Année : utilise ${currentYear} si non affichée
+RÈGLES STRICTES :
+- Année : TOUJOURS utilise ${currentYear} pour l'année
+- Format date OBLIGATOIRE : "YYYY-MM-DD" (exemple: "2025-10-23", JAMAIS "23 octobre")
 - SI TU NE TROUVES PAS une section → renvoie array vide []
 - SCORES OBLIGATOIRES pour results, null pour upcoming
+- DATES COMPLÈTES : Toujours année-mois-jour, jamais juste jour/mois
 
 Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
 
@@ -166,6 +170,7 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
     for (const matchData of allMatches) {
       try {
         if (!matchData.homeTeam || !matchData.awayTeam) {
+          console.log(`     ⚠️  Skipped match: missing team names`);
           continue;
         }
 
@@ -199,6 +204,7 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
         const timeStr = matchData.time || '20:00';
         const dateTime = new Date(`${matchData.date}T${timeStr}:00`);
         if (isNaN(dateTime.getTime())) {
+          console.log(`     ⚠️  Skipped match ${matchData.homeTeam} vs ${matchData.awayTeam}: invalid date ${matchData.date}`);
           continue;
         }
 
@@ -237,7 +243,7 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
           });
           updatedCount++;
           if (matchData.homeScore !== null) {
-            console.log(`     ✅ Updated: ${matchData.homeTeam} ${matchData.homeScore}-${matchData.awayScore} ${matchData.awayTeam}`);
+            console.log(`     ✅ Updated: ${matchData.homeTeam.substring(0,10)} ${matchData.homeScore}-${matchData.awayScore} ${matchData.awayTeam.substring(0,10)}`);
           }
         } else {
           await prisma.match.create({
@@ -253,10 +259,13 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
             }
           });
           createdCount++;
+          if (matchData.homeScore !== null) {
+            console.log(`     ✅ Created: ${matchData.homeTeam.substring(0,10)} ${matchData.homeScore}-${matchData.awayScore} ${matchData.awayTeam.substring(0,10)}`);
+          }
         }
         
       } catch (err) {
-        console.log(`     ⚠️  Error processing result:`, err.message);
+        console.log(`     ⚠️  Error processing match ${matchData.homeTeam} vs ${matchData.awayTeam}:`, err.message);
       }
     }
 
