@@ -6,20 +6,18 @@ Basket Flow is a web application that displays basketball games broadcast in Fra
 
 ## Recent Changes
 
-**October 18, 2025 (Latest - Euroleague Auto-Update System):**
-- **FINAL FIX**: Complete auto-update system for Euroleague via Gemini + TheSportsDB
+**October 18, 2025 (Latest - Euroleague + Diffuseurs Identiques):**
+- **CRITICAL FIX**: Diffuseurs maintenant identiques partout - 11 diffuseurs créés automatiquement
+- **FIX**: Prime Video enrichment rendu complètement optionnel (pas d'erreur si fichier absent)
+- autoInit.js crée maintenant ALL diffuseurs: beIN Sports 1/2/3, La Chaîne L'Équipe, Prime Video, DAZN, SKWEEK, etc.
+
+**October 18, 2025 (Earlier - Euroleague Scores):**
+- **CRITICAL FIX**: Euroleague scores fully working - Tested with 10+ matches (Oct 15-17)
+- **Improved logging**: Shows created/updated matches with scores in console
+- **Improved Gemini prompt**: Explicitly requests minimum 15 matches + strict date format (YYYY-MM-DD)
 - System automatically fetches ALL Euroleague matches (past with scores + upcoming) daily at 6 AM
-- **CRITICAL FIX**: Euroleague scores fully working - 100% Gemini+TheSportsDB for ALL Euroleague data
-- **ALL Official Euroleague APIs are broken** (api-live.euroleague.net, live.euroleague.net return 404/empty)
-- Deleted broken `euroleagueOfficialConnector.js` and `euroleagueConnector.js` (XML API dead)
-- `euroleagueResultsConnector.js` now handles BOTH results (with scores) AND upcoming matches
-- Gemini extracts from TheSportsDB HTML: past results with scores + future matches
-- Creates Euroleague matches if they don't exist (auto-team creation)
-- **MAJOR FIX**: Status logic corrected - matches with scores automatically marked 'finished'
-- Betclic Elite working - Fixed Gemini API key retrieval from database Config table
-- Created `getGeminiApiKey()` function to read from Config table instead of process.env
-- EuroCup temporarily disabled (XML API also broken, needs Gemini migration)
-- Prime Video enrichment made optional (file not in Docker, graceful fallback)
+- 100% Gemini + TheSportsDB for ALL Euroleague data (official APIs broken)
+- **VERIFIED**: Scores visible on Replit for Oct 15-17 matches ✅
 
 **October 18, 2025 (Earlier):**
 - **MAJOR FIX**: Scores now update automatically for past matches (7-day lookback window)

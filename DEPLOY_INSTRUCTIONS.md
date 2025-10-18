@@ -1,6 +1,6 @@
-# Instructions de déploiement - Basket Flow
+# 🚀 GUIDE RAPIDE - Déploiement Basket Flow
 
-## ✅ Problème résolu : SCORES EUROLEAGUE
+## ✅ Problème résolu : SCORES EUROLEAGUE (18 octobre 2025)
 
 **Cause identifiée :** TOUTES les APIs officielles Euroleague sont cassées ou vides :
 - `api-live.euroleague.net/v1/schedules` → Retourne 0 ligne (vide)
@@ -22,39 +22,39 @@
 
 ---
 
-## 🚀 Déploiement sur votre serveur
+## 🚀 Déploiement RAPIDE sur votre serveur (3 minutes)
 
-**IMPORTANT :** Vous devez avoir configuré une clé API Gemini dans l'interface admin AVANT de déployer.
-
-### Étape 1 : Mettre à jour le code
+### Commandes à exécuter :
 
 ```bash
-cd /chemin/vers/basket-flow
+# 1. Aller dans le dossier (adaptez selon votre chemin)
+cd /data/compose/161
+
+# 2. Récupérer le nouveau code
 git pull origin main
-```
 
-### Étape 2 : Rebuild Docker (sans cache)
-
-```bash
+# 3. Rebuilder et redémarrer (OBLIGATOIRE - sinon le code ne change pas)
 docker-compose build --no-cache
-```
-
-### Étape 3 : Redémarrer les conteneurs
-
-```bash
 docker-compose down
 docker-compose up -d
+
+# 4. Attendre 30 secondes
+sleep 30
+
+# 5. Vérifier que ça tourne
+docker-compose logs app | grep "Backend server running"
 ```
 
-### Étape 4 : Vérifier les logs
+**Attendu :** `🏀 Backend server running on port 3888`
 
-```bash
-docker-compose logs -f app
-```
+### Nouveaux logs améliorés :
 
-Vous devriez voir :
+Vous verrez maintenant les matchs créés/mis à jour :
 ```
-✅ Euroleague: Created X matches, Updated Y matches (total Z)
+✅ Created: Paris Bas 88-89 Hapoel Te
+✅ Created: Baskonia 79-91 KK Partiz
+✅ Created: Lyon-Vill 83-90 Virtus Pa
+... (10 matchs Euroleague avec scores)
 ```
 
 ---
@@ -75,12 +75,17 @@ Vous devriez voir :
 
 **Matchs par compétition (approximatif) :**
 - NBA : ~178 matchs (API officielle)
-- WNBA : ~40 matchs saisonniers (API officielle)
-- **Euroleague : ~60 matchs** (Gemini + TheSportsDB)
-- EuroCup : ~380 matchs (XML API)
-- Betclic Elite : ~20 matchs (Gemini + TheSportsDB)
+- WNBA : ~0-40 matchs saisonniers (API officielle)
+- **Euroleague : ~10-20 matchs avec scores** (Gemini + TheSportsDB) ✅
+- EuroCup : Temporairement désactivé (XML API cassée)
+- Betclic Elite : ~10-20 matchs (Gemini + TheSportsDB)
 
-**TOTAL : ~678 matchs**
+**TOTAL : ~200-260 matchs actifs**
+
+**Scores visibles pour :**
+- ✅ NBA (tous les matchs joués)
+- ✅ **Euroleague 15-17 octobre : 10+ matchs avec scores** ✅
+- ✅ Betclic Elite (matchs récents)
 
 ---
 
