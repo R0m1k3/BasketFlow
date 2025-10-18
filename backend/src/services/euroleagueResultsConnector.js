@@ -82,14 +82,16 @@ TÂCHE : Extraire TOUS les matchs (résultats passés + matchs à venir) depuis 
 
 INSTRUCTIONS CRITIQUES - SECTION "Results" :
 - Cherche la section "Results" dans le HTML
-- Extrais les matchs TERMINÉS avec leurs SCORES RÉELS
-- Format: homeTeam, awayTeam, homeScore, awayScore, date, status: "finished"
+- Extrais TOUS les matchs TERMINÉS avec leurs SCORES RÉELS (minimum 20 matchs si disponibles)
+- Format: homeTeam, awayTeam, homeScore, awayScore, date, time, status: "finished"
 - L'équipe à GAUCHE (premier score) est homeTeam, l'équipe à DROITE (second score) est awayTeam
+- N'OUBLIE AUCUN MATCH de la section Results
 
 INSTRUCTIONS CRITIQUES - SECTION "Upcoming" :
 - Cherche la section "Upcoming" dans le HTML  
-- Extrais les matchs À VENIR SANS scores
+- Extrais TOUS les matchs À VENIR SANS scores (minimum 20 matchs si disponibles)
 - homeScore: null, awayScore: null, status: "scheduled"
+- N'OUBLIE AUCUN MATCH de la section Upcoming
 
 FORMAT DE RÉPONSE (JSON OBLIGATOIRE) :
 {
