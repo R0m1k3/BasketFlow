@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const nbaConnector = require('./nbaConnector');
-const euroleagueConnector = require('./euroleagueConnector');
+const euroleagueConnector = require('./euroleagueOfficialConnector');
 const euroleagueResultsConnector = require('./euroleagueResultsConnector');
 const betclicEliteConnector = require('./betclicEliteConnector');
 const geminiEnrichment = require('./geminiEnrichment');
@@ -48,7 +48,15 @@ async function updateMatches() {
     }
     
     try {
-      console.log('\n4️⃣  Betclic Elite - Gemini HTML Extraction (TheSportsDB)');
+      console.log('\n4️⃣  EuroCup - Official XML API');
+      const eurocupMatches = await euroleagueConnector.fetchEurocupSchedule();
+      totalMatches += eurocupMatches;
+    } catch (error) {
+      console.error('  ❌ EuroCup API failed:', error.message);
+    }
+    
+    try {
+      console.log('\n5️⃣  Betclic Elite - Gemini HTML Extraction (TheSportsDB)');
       const geminiKey = process.env.GEMINI_API_KEY;
       const betclicMatches = await betclicEliteConnector.fetchBetclicEliteSchedule(geminiKey);
       totalMatches += betclicMatches;
@@ -60,7 +68,7 @@ async function updateMatches() {
       console.log('\n⚠️  No matches found from any source');
     } else {
       console.log(`\n✅ Match update completed: ${totalMatches} total matches`);
-      console.log('   📊 Coverage: NBA, WNBA, Euroleague, Betclic Elite');
+      console.log('   📊 Coverage: NBA, WNBA, Euroleague, EuroCup, Betclic Elite');
     }
 
     // Enrich matches with broadcasters based on official 2024-2025 agreements

@@ -6,6 +6,21 @@ Basket Flow is a web application that displays basketball games broadcast in Fra
 
 ## Recent Changes
 
+**October 18, 2025:**
+- **MAJOR FIX**: Scores now update automatically for past matches (7-day lookback window)
+- **MAJOR FIX**: EuroCup now included in daily updates (~380 matches added)
+- Modified NBA/WNBA connector to fetch last 7 days + next 21 days (was only fetching future matches)
+- Modified Euroleague/EuroCup connector to fetch last 7 days + next 21 days  
+- Added EuroCup to updateService.js (was completely missing from update cycle)
+- Switched to euroleagueOfficialConnector.js for better API coverage
+- Fixed critical authentication bugs in all admin components
+- Replaced all `axios` imports with configured `api` client for token injection
+- Added automatic token validation and cleanup on app startup
+- Fixed AdminPanel, GeminiConfig, ApiBasketballConfig, LogoManager to use authenticated API
+- Backend now returns `username` field in all admin responses
+- Added TokenCleaner component for automatic invalid token removal
+- Resolved all "Token manquant" / "Unauthorized" errors
+
 **October 17, 2025:**
 - Merged frontend and backend into unified Express.js application
 - Backend now serves React static files from `frontend/build` directory
