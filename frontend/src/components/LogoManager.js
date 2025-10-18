@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/config';
 import './LogoManager.css';
 
 function LogoManager() {
@@ -18,7 +18,7 @@ function LogoManager() {
 
   const fetchTeams = async () => {
     try {
-      const response = await axios.get('/api/admin/teams');
+      const response = await api.get('/admin/teams');
       setTeams(response.data);
     } catch (error) {
       console.error('Error fetching teams:', error);
@@ -27,7 +27,7 @@ function LogoManager() {
 
   const fetchBroadcasters = async () => {
     try {
-      const response = await axios.get('/api/admin/broadcasters-list');
+      const response = await api.get('/admin/broadcasters-list');
       setBroadcasters(response.data);
     } catch (error) {
       console.error('Error fetching broadcasters:', error);
@@ -36,7 +36,7 @@ function LogoManager() {
 
   const handleUpdateTeamLogo = async (teamId) => {
     try {
-      await axios.put(`/api/admin/teams/${teamId}/logo`, { logo: logoUrl });
+      await api.put(`/admin/teams/${teamId}/logo`, { logo: logoUrl });
       fetchTeams();
       setEditingTeam(null);
       setLogoUrl('');
@@ -50,7 +50,7 @@ function LogoManager() {
 
   const handleUpdateBroadcasterLogo = async (broadcasterId) => {
     try {
-      await axios.put(`/api/admin/broadcasters/${broadcasterId}/logo`, { logo: logoUrl });
+      await api.put(`/admin/broadcasters/${broadcasterId}/logo`, { logo: logoUrl });
       fetchBroadcasters();
       setEditingBroadcaster(null);
       setLogoUrl('');
