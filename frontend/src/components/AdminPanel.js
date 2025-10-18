@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import ApiBasketballConfig from './ApiBasketballConfig';
-import RapidApiBasketballConfig from './RapidApiBasketballConfig';
+import GeminiConfig from './GeminiConfig';
 import LogoManager from './LogoManager';
 import './AdminPanel.css';
 
@@ -53,6 +53,21 @@ function AdminPanel() {
     }
   };
 
+  const handleChangePassword = async (userId, username) => {
+    const newPassword = window.prompt(`Nouveau mot de passe pour ${username}:`);
+    if (!newPassword) {
+      return;
+    }
+
+    try {
+      await axios.put(`/api/admin/users/${userId}/password`, { password: newPassword });
+      setMessage('✅ Mot de passe modifié avec succès');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage(error.response?.data?.error || '❌ Erreur lors de la modification du mot de passe');
+    }
+  };
+
   return (
     <div className="admin-panel">
       <h2>⚙️ Panneau d'administration</h2>
@@ -82,7 +97,7 @@ function AdminPanel() {
 
       {activeTab === 'config' && (
         <div className="api-configs">
-          <RapidApiBasketballConfig />
+          <GeminiConfig />
           <div className="api-divider"></div>
           <ApiBasketballConfig />
         </div>
@@ -101,6 +116,7 @@ function AdminPanel() {
             <table>
               <thead>
                 <tr>
+                  <th>Identifiant</th>
                   <th>Nom</th>
                   <th>Email</th>
                   <th>Rôle</th>
@@ -111,8 +127,9 @@ function AdminPanel() {
               <tbody>
                 {users.map(u => (
                   <tr key={u.id}>
+                    <td><strong>{u.username}</strong></td>
                     <td>{u.name}</td>
-                    <td>{u.email}</td>
+                    <td>{u.email || '-'}</td>
                     <td>
                       <select 
                         value={u.role} 
@@ -125,6 +142,13 @@ function AdminPanel() {
                     </td>
                     <td>{new Date(u.createdAt).toLocaleDateString('fr-FR')}</td>
                     <td>
+                      <button 
+                        onClick={() => handleChangePassword(u.id, u.username)}
+                        className="btn-edit"
+                        style={{marginRight: '5px'}}
+                      >
+                        Changer mot de passe
+                      </button>
                       {u.id !== user.id && (
                         <button 
                           onClick={() => handleDeleteUser(u.id)}
