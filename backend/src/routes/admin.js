@@ -43,10 +43,14 @@ router.get('/users', async (req, res) => {
     const users = await prisma.user.findMany({
       select: {
         id: true,
+        username: true,
         email: true,
         name: true,
         role: true,
         createdAt: true
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
     res.json(users);
@@ -70,6 +74,7 @@ router.put('/users/:id/role', async (req, res) => {
       data: { role },
       select: {
         id: true,
+        username: true,
         email: true,
         name: true,
         role: true
@@ -80,6 +85,36 @@ router.put('/users/:id/role', async (req, res) => {
   } catch (error) {
     console.error('Error updating user role:', error);
     res.status(500).json({ error: 'Erreur lors de la mise à jour du rôle' });
+  }
+});
+
+router.put('/users/:id/password', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 4) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 4 caractères' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        name: true,
+        role: true
+      }
+    });
+
+    res.json({ success: true, message: 'Mot de passe mis à jour', user });
+  } catch (error) {
+    console.error('Error updating user password:', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du mot de passe' });
   }
 });
 
@@ -104,9 +139,9 @@ router.delete('/users/:id', async (req, res) => {
 
 router.post('/users', async (req, res) => {
   try {
-    const { email, password, name, role } = req.body;
+    const { username, email, password, name, role } = req.body;
 
-    if (!email || !password || !name) {
+    if (!username || !password || !name) {
       return res.status(400).json({ error: 'Tous les champs sont requis' });
     }
 
@@ -114,13 +149,15 @@ router.post('/users', async (req, res) => {
 
     const user = await prisma.user.create({
       data: {
-        email,
+        username,
+        email: email || null,
         password: hashedPassword,
         name,
         role: role || 'user'
       },
       select: {
         id: true,
+        username: true,
         email: true,
         name: true,
         role: true
