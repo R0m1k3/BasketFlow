@@ -7,7 +7,15 @@ const prisma = new PrismaClient();
 const EUROLEAGUE_API_BASE = 'https://api-live.euroleague.net/v1';
 
 async function fetchEuroleagueSchedule() {
-  console.log('  🏀 Fetching Euroleague schedule from official API...');
+  return await fetchScheduleForLeague('Euroleague', 'EL', 'Europe');
+}
+
+async function fetchEurocupSchedule() {
+  return await fetchScheduleForLeague('EuroCup', 'EC', 'Europe');
+}
+
+async function fetchScheduleForLeague(leagueName, shortName, country) {
+  console.log(`  🏀 Fetching ${leagueName} schedule from official XML API...`);
   
   try {
     const response = await axios.get(`${EUROLEAGUE_API_BASE}/schedules`, {
@@ -21,17 +29,29 @@ async function fetchEuroleagueSchedule() {
     const result = await parser.parseStringPromise(response.data);
     
     const items = result.schedule?.item || [];
-    console.log(`  📅 Found ${items.length} Euroleague games in XML`);
+    console.log(`  📅 Found ${items.length} ${leagueName} games in XML`);
     
     const league = await prisma.league.upsert({
-      where: { name: 'Euroleague' },
+      where: { name: leagueName },
       update: {},
       create: {
-        name: 'Euroleague',
-        shortName: 'EL',
-        country: 'Europe'
+        name: leagueName,
+        shortName: shortName,
+        country: country
       }
     });
+    
+    // Fenêtre de 7 jours passés + 21 jours futurs
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 7);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + 21);
+    endDate.setHours(23, 59, 59, 999);
     
     let matchCount = 0;
     for (const item of items) {
@@ -41,6 +61,8 @@ async function fetchEuroleagueSchedule() {
         const homeTeamName = item.hometeam?.[0];
         const awayTeamName = item.awayteam?.[0];
         const gameCode = item.gamecode?.[0];
+        const homeScoreRaw = item.homescore?.[0];
+        const awayScoreRaw = item.awayscore?.[0];
         
         if (!homeTeamName || !awayTeamName || !dateStr) {
           continue;
@@ -53,6 +75,17 @@ async function fetchEuroleagueSchedule() {
         if (isNaN(gameDate.getTime())) {
           continue;
         }
+        
+        // Filtrer par fenêtre de dates (7 jours passés + 21 jours futurs)
+        if (gameDate < startDate || gameDate > endDate) {
+          continue;
+        }
+        
+        // Déterminer le statut et les scores
+        const isPast = gameDate < today;
+        const homeScore = homeScoreRaw ? parseInt(homeScoreRaw) : null;
+        const awayScore = awayScoreRaw ? parseInt(awayScoreRaw) : null;
+        const status = isPast ? 'finished' : 'scheduled';
         
         let homeTeam = await prisma.team.findFirst({
           where: { name: homeTeamName }
@@ -72,7 +105,7 @@ async function fetchEuroleagueSchedule() {
           });
         }
 
-        const externalId = `euroleague-${gameCode || gameDate.getTime()}`;
+        const externalId = `${leagueName.toLowerCase()}-${gameCode || gameDate.getTime()}`;
         
         await prisma.match.upsert({
           where: { externalId },
@@ -81,7 +114,9 @@ async function fetchEuroleagueSchedule() {
             homeTeamId: homeTeam.id,
             awayTeamId: awayTeam.id,
             leagueId: league.id,
-            status: 'scheduled'
+            homeScore: homeScore,
+            awayScore: awayScore,
+            status: status
           },
           create: {
             externalId,
@@ -89,9 +124,9 @@ async function fetchEuroleagueSchedule() {
             homeTeamId: homeTeam.id,
             awayTeamId: awayTeam.id,
             leagueId: league.id,
-            homeScore: null,
-            awayScore: null,
-            status: 'scheduled'
+            homeScore: homeScore,
+            awayScore: awayScore,
+            status: status
           }
         });
 
@@ -103,15 +138,16 @@ async function fetchEuroleagueSchedule() {
       }
     }
     
-    console.log(`  ✅ Euroleague: Saved ${matchCount} matches`);
+    console.log(`  ✅ ${leagueName}: Saved ${matchCount} matches (last 7 days + next 21 days)`);
     return matchCount;
     
   } catch (error) {
-    console.error('  ❌ Euroleague API error:', error.message);
+    console.error(`  ❌ ${leagueName} API error:`, error.message);
     return 0;
   }
 }
 
 module.exports = {
-  fetchEuroleagueSchedule
+  fetchEuroleagueSchedule,
+  fetchEurocupSchedule
 };

@@ -1,0 +1,181 @@
+
+      
+  🏀 Fetching Eurocup schedule from official API...
+
+5️⃣  Betclic Elite - Gemini HTML Extraction (TheSportsDB)
+
+  ❌ Eurocup API error: Invalid Eurocup schedule response
+
+  🏀 Fetching Betclic Elite schedule via Gemini HTML extraction...
+
+  📄 Retrieved HTML page (39KB)
+
+  ✨ Gemini extracted 10 past results + 10 upcoming = 20 total matches
+
+  ✅ Betclic Elite: Saved 20 authentic matches from web extraction
+
+✅ Match update completed: 198 total matches
+
+   📊 Coverage: NBA, WNBA, Euroleague, EuroCup, Betclic Elite
+
+🤖 Enriching matches with official 2024-2025 broadcasters...
+
+  📋 Found 63 matches to process
+
+  📺 Fetching beIN Sports NBA calendar...
+
+    ✅ Found 0 NBA matches on beIN Sports calendar
+
+  ✅ Broadcaster enrichment: 63 matches updated with official broadcasters
+
+📺 Broadcasters: 63 matches enriched with official agreements
+
+❌ Fichier Prime Video introuvable
+
+📺 Enriching matches with EPG TV data...
+
+  📡 Fetching beIN Sports 1 (ID: 55773)...
+
+    Found 0 basketball programs
+
+  📡 Fetching beIN Sports 2 (ID: 55774)...
+
+    Found 0 basketball programs
+
+  📡 Fetching beIN Sports 3 (ID: 55775)...
+
+    Found 0 basketball programs
+
+  📡 Fetching La Chaîne L'Équipe (ID: 55938)...
+
+    Found 0 basketball programs
+
+✅ EPG enrichment completed: 0 matches enriched
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/0/04/Utah_Jazz_logo_%282022%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/0/04/Utah_Jazz_logo_%282022%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/0/04/Utah_Jazz_logo_%282022%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/0/04/Utah_Jazz_logo_%282022%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/0/04/Utah_Jazz_logo_%282022%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/0/04/Utah_Jazz_logo_%282022%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/0/04/Utah_Jazz_logo_%282022%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
