@@ -21,7 +21,8 @@ export const AuthProvider = ({ children }) => {
       const response = await api.get('/auth/me');
       setUser(response.data.user);
     } catch (error) {
-      console.error('Error fetching user:', error);
+      console.error('Token invalide ou expiré, déconnexion automatique');
+      // Le token est invalide, on le supprime
       localStorage.removeItem('token');
       setToken(null);
       setUser(null);
