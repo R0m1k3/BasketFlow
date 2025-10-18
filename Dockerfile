@@ -5,20 +5,21 @@ RUN apk add --no-cache openssl openssl-dev
 
 WORKDIR /app
 
-# Build frontend first
+# Build frontend
+COPY frontend/package*.json frontend/
 WORKDIR /app/frontend
-COPY ../frontend/package*.json ./
-RUN npm ci
-COPY ../frontend/ ./
+RUN npm ci --only=production
+COPY frontend/public ./public
+COPY frontend/src ./src
 RUN npm run build
 
 # Setup backend
 WORKDIR /app/backend
-COPY package*.json ./
+COPY backend/package*.json ./
 RUN npm install --production
-COPY prisma ./prisma
+COPY backend/prisma ./prisma
 RUN npx prisma generate
-COPY . .
+COPY backend/src ./src
 
 EXPOSE 3888
 

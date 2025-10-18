@@ -11,7 +11,6 @@ services:
       PGPORT: 4532
     volumes:
       - basket_postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql
     networks:
       - nginx_default
     ports:
@@ -23,11 +22,11 @@ services:
       timeout: 5s
       retries: 5
 
-  backend:
+  app:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
-    container_name: basket_backend
+    container_name: basket_app
     environment:
       DATABASE_URL: postgresql://basketuser:basketpass@basket_postgres:4532/basketdb
       NODE_ENV: production
@@ -35,6 +34,7 @@ services:
       JWT_SECRET: 9e4460d833531cb04286f0ba350e989d5afb8affb31513e8e779d44c35ad9548
       SESSION_SECRET: 6073693be610363a5862503445a4cf38fb391efbe502526fa9036902759a4819
       API_BASKETBALL_KEY: ${API_BASKETBALL_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     networks:
       - nginx_default
     ports:
@@ -42,23 +42,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: unless-stopped
-    command: sh -c "sleep 10 && npm start"
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: basket_frontend
-    environment:
-      PORT: 4000
-      BACKEND_URL: http://basket_backend:3888
-    networks:
-      - nginx_default
-    ports:
-      - "4000:4000"
-    depends_on:
-      - backend
     restart: unless-stopped
 
 networks:

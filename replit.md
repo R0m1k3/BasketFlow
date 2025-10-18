@@ -4,6 +4,17 @@
 
 Basket Flow is a web application that displays basketball games broadcast in France. It aggregates match data from multiple free APIs (NBA, WNBA, Euroleague, EuroCup, Betclic Elite) and provides weekly and monthly calendar views. The application enriches match data with French broadcaster information and uses AI-powered extraction for certain data sources.
 
+## Recent Changes
+
+**October 17, 2025:**
+- Merged frontend and backend into unified Express.js application
+- Backend now serves React static files from `frontend/build` directory
+- Eliminated Docker inter-container communication issues
+- Simplified architecture: 2 services instead of 3 (PostgreSQL + unified App)
+- Updated deployment to single container serving both API and frontend
+- Automatic database initialization via Prisma-based `autoInit.js`
+- Fixed all schema compatibility issues (UUID IDs, required fields)
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -118,14 +129,21 @@ The application uses a hybrid approach combining official APIs with AI-powered e
 
 **Rationale:** The schema normalizes data to avoid redundancy while maintaining referential integrity. The many-to-many relationship for broadcasts allows matches to appear on multiple channels.
 
-### Containerization Strategy
+### Deployment Architecture
+
+**Unified Application:**
+- Single Express.js server serves both API endpoints and React static files
+- Backend serves frontend build from `frontend/build` directory
+- All routes prefixed with `/api/*` are REST API endpoints
+- All other routes serve the React SPA (single-page application)
 
 **Docker Compose Architecture:**
-- Three services: PostgreSQL, Backend (Node.js), Frontend (React)
+- Two services: PostgreSQL database and unified App (Node.js serving React)
 - External network (`nginx_default`) for reverse proxy integration
-- Non-conflicting ports: PostgreSQL (4532), Backend (3888), Frontend (4000)
+- Non-conflicting ports: PostgreSQL (4532), App (3888)
 - Environment variables managed via docker-compose.yml
-- Automated Prisma migrations on backend startup
+- Automated Prisma schema push on app startup via `npx prisma db push`
+- Automatic database initialization via `autoInit.js` (creates admin user, leagues, broadcasters)
 
 **Build Optimizations:**
 - Multi-stage builds for smaller images
