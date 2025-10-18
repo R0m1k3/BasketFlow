@@ -28,19 +28,26 @@ async function fetchEuroleagueSchedule() {
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
+    // Récupérer les 7 derniers jours (pour mettre à jour les scores)
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 7);
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Et les 21 prochains jours
     const endDate = new Date();
     endDate.setDate(today.getDate() + 21);
     endDate.setHours(23, 59, 59, 999);
     
-    const upcomingGames = games.filter(game => {
+    const relevantGames = games.filter(game => {
       const gameDate = new Date(game.Date || game.date);
-      return gameDate >= today && gameDate <= endDate;
+      return gameDate >= startDate && gameDate <= endDate;
     });
     
-    console.log(`  📅 Found ${upcomingGames.length} Euroleague games in next 21 days`);
+    console.log(`  📅 Found ${relevantGames.length} Euroleague games (last 7 days + next 21 days)`);
     
     let matchCount = 0;
-    for (const game of upcomingGames) {
+    for (const game of relevantGames) {
       await saveEuroleagueMatch(game, 'Euroleague');
       matchCount++;
     }
@@ -78,19 +85,26 @@ async function fetchEurocupSchedule() {
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
+    // Récupérer les 7 derniers jours (pour mettre à jour les scores)
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 7);
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Et les 21 prochains jours
     const endDate = new Date();
     endDate.setDate(today.getDate() + 21);
     endDate.setHours(23, 59, 59, 999);
     
-    const upcomingGames = games.filter(game => {
+    const relevantGames = games.filter(game => {
       const gameDate = new Date(game.Date || game.date);
-      return gameDate >= today && gameDate <= endDate;
+      return gameDate >= startDate && gameDate <= endDate;
     });
     
-    console.log(`  📅 Found ${upcomingGames.length} Eurocup games in next 21 days`);
+    console.log(`  📅 Found ${relevantGames.length} Eurocup games (last 7 days + next 21 days)`);
     
     let matchCount = 0;
-    for (const game of upcomingGames) {
+    for (const game of relevantGames) {
       await saveEuroleagueMatch(game, 'EuroCup');
       matchCount++;
     }

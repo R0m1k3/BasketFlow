@@ -25,26 +25,34 @@ async function fetchNBASchedule() {
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
+    // Récupérer les 7 derniers jours (pour mettre à jour les scores)
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 7);
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Et les 21 prochains jours
     const endDate = new Date();
     endDate.setDate(today.getDate() + 21);
     endDate.setHours(23, 59, 59, 999);
     
-    const upcomingGames = [];
+    const relevantGames = [];
     
     for (const gameDate of schedule.leagueSchedule.gameDates) {
       for (const game of gameDate.games) {
         const gameDateTime = new Date(game.gameDateTimeEst || game.gameDateEst);
         
-        if (gameDateTime >= today && gameDateTime <= endDate) {
-          upcomingGames.push(game);
+        // Récupérer les matchs des 7 derniers jours + 21 prochains jours
+        if (gameDateTime >= startDate && gameDateTime <= endDate) {
+          relevantGames.push(game);
         }
       }
     }
     
-    console.log(`  📅 Found ${upcomingGames.length} NBA games in next 21 days`);
+    console.log(`  📅 Found ${relevantGames.length} NBA games (last 7 days + next 21 days)`);
     
     let matchCount = 0;
-    for (const game of upcomingGames) {
+    for (const game of relevantGames) {
       await saveNBAMatch(game, 'NBA');
       matchCount++;
     }
@@ -77,26 +85,34 @@ async function fetchWNBASchedule() {
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
+    // Récupérer les 7 derniers jours (pour mettre à jour les scores)
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 7);
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Et les 21 prochains jours
     const endDate = new Date();
     endDate.setDate(today.getDate() + 21);
     endDate.setHours(23, 59, 59, 999);
     
-    const upcomingGames = [];
+    const relevantGames = [];
     
     for (const gameDate of schedule.leagueSchedule.gameDates) {
       for (const game of gameDate.games) {
         const gameDateTime = new Date(game.gameDateTimeEst || game.gameDateEst);
         
-        if (gameDateTime >= today && gameDateTime <= endDate) {
-          upcomingGames.push(game);
+        // Récupérer les matchs des 7 derniers jours + 21 prochains jours
+        if (gameDateTime >= startDate && gameDateTime <= endDate) {
+          relevantGames.push(game);
         }
       }
     }
     
-    console.log(`  📅 Found ${upcomingGames.length} WNBA games in next 21 days`);
+    console.log(`  📅 Found ${relevantGames.length} WNBA games (last 7 days + next 21 days)`);
     
     let matchCount = 0;
-    for (const game of upcomingGames) {
+    for (const game of relevantGames) {
       await saveNBAMatch(game, 'WNBA');
       matchCount++;
     }
