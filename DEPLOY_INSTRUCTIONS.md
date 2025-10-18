@@ -10,10 +10,11 @@
 **Solution appliquée :** Migration vers 100% Gemini + TheSportsDB
 - `euroleagueResultsConnector.js` gère maintenant TOUS les matchs Euroleague (passés + futurs)
 - Gemini extrait les données HTML de TheSportsDB pour :
-  - Section "Results" → Matchs passés AVEC SCORES
-  - Section "Upcoming" → Matchs futurs sans scores
+  - Section "Results" → Matchs passés AVEC SCORES + status='finished'
+  - Section "Upcoming" → Matchs futurs sans scores + status='scheduled'
 - Création automatique des équipes manquantes
 - Système de déduplication basé sur externalId
+- **FIX CRITIQUE** : Status automatiquement mis à 'finished' si scores présents
 
 **Fichiers supprimés :**
 - `euroleagueOfficialConnector.js` (API 404)
@@ -107,6 +108,16 @@ Pour les matchs Euroleague :
    curl -X POST http://localhost:3888/api/admin/update \
      -H "Authorization: Bearer VOTRE_TOKEN_ADMIN"
    ```
+
+### Problème : Scores présents mais status='scheduled' au lieu de 'finished'
+
+**Cause :** Bug dans la logique de détermination du statut (corrigé)
+
+**Solution :** Mettez à jour manuellement les statuts dans la base :
+```bash
+docker-compose exec db psql -U basketuser -d basketdb -c \
+  "UPDATE \"Match\" SET status = 'finished' WHERE \"homeScore\" IS NOT NULL AND \"awayScore\" IS NOT NULL AND status != 'finished';"
+```
 
 ### Problème : Scores toujours à null
 

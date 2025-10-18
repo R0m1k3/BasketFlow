@@ -217,7 +217,9 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
           }
         });
 
-        const status = matchData.status || (matchData.homeScore !== null ? 'finished' : 'scheduled');
+        // Déterminer le statut : si scores présents = finished, sinon scheduled
+        const hasScores = matchData.homeScore !== null && matchData.awayScore !== null;
+        const status = hasScores ? 'finished' : 'scheduled';
 
         if (existingMatch) {
           await prisma.match.update({

@@ -6,16 +6,17 @@ Basket Flow is a web application that displays basketball games broadcast in Fra
 
 ## Recent Changes
 
-**October 18, 2025 (Latest - Euroleague Scores Fix):**
-- **CRITICAL FIX**: Euroleague scores now working - Switched to 100% Gemini+TheSportsDB for ALL Euroleague data
+**October 18, 2025 (Latest - Euroleague Scores COMPLETE FIX):**
+- **CRITICAL FIX**: Euroleague scores fully working - 100% Gemini+TheSportsDB for ALL Euroleague data
 - **ALL Official Euroleague APIs are broken** (api-live.euroleague.net, live.euroleague.net return 404/empty)
 - Deleted broken `euroleagueOfficialConnector.js` and `euroleagueConnector.js` (XML API dead)
 - `euroleagueResultsConnector.js` now handles BOTH results (with scores) AND upcoming matches
 - Gemini extracts from TheSportsDB HTML: past results with scores + future matches
 - Creates Euroleague matches if they don't exist (auto-team creation)
+- **MAJOR FIX**: Status logic corrected - matches with scores automatically marked 'finished'
 - Betclic Elite working - Fixed Gemini API key retrieval from database Config table
 - Created `getGeminiApiKey()` function to read from Config table instead of process.env
-- EuroCup still using XML connector (to be migrated to Gemini later)
+- EuroCup temporarily disabled (XML API also broken, needs Gemini migration)
 - Prime Video enrichment made optional (file not in Docker, graceful fallback)
 
 **October 18, 2025 (Earlier):**
