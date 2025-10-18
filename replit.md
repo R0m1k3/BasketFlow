@@ -6,6 +6,15 @@ Basket Flow is a web application that displays basketball games broadcast in Fra
 
 ## Recent Changes
 
+**October 18, 2025:**
+- Fixed critical authentication bugs in all admin components
+- Replaced all `axios` imports with configured `api` client for token injection
+- Added automatic token validation and cleanup on app startup
+- Fixed AdminPanel, GeminiConfig, ApiBasketballConfig, LogoManager to use authenticated API
+- Backend now returns `username` field in all admin responses
+- Added TokenCleaner component for automatic invalid token removal
+- Resolved all "Token manquant" / "Unauthorized" errors
+
 **October 17, 2025:**
 - Merged frontend and backend into unified Express.js application
 - Backend now serves React static files from `frontend/build` directory
