@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/config';
 import './AdminPanel.css';
 
 function GeminiConfig() {
@@ -14,7 +14,7 @@ function GeminiConfig() {
 
   const fetchConfig = async () => {
     try {
-      const response = await axios.get('/api/admin/config/GEMINI_API_KEY');
+      const response = await api.get('/admin/config/GEMINI_API_KEY');
       if (response.data && response.data.value) {
         setIsConfigured(true);
         setApiKey('••••••••••••••••••••••••••••••••');
@@ -34,7 +34,7 @@ function GeminiConfig() {
     setMessage('');
 
     try {
-      await axios.post('/api/admin/config', {
+      await api.post('/admin/config', {
         key: 'GEMINI_API_KEY',
         value: apiKey,
         description: 'Clé API Google Gemini pour extraction de données'

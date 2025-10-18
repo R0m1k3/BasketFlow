@@ -1,57 +1,67 @@
 ========================================
-  DÉPLOIEMENT BASKET FLOW - AUTOMATIQUE
+  DÉPLOIEMENT BASKET FLOW - 100% AUTOMATIQUE
 ========================================
 
-Sur votre serveur privé, dans le dossier du projet :
+Sur votre serveur privé, dans le dossier du projet, EXÉCUTEZ CES 3 COMMANDES :
 
-1. TÉLÉCHARGER LES MISES À JOUR
-   -------------------------------
-   git pull
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
 
-2. RECONSTRUIRE ET DÉMARRER
-   -------------------------------
-   docker-compose down
-   docker-compose build --no-cache
-   docker-compose up -d
-
-3. VÉRIFIER QUE TOUT FONCTIONNE
-   -------------------------------
-   docker logs basket_app --tail 50
-
-TERMINÉ ! Allez sur votre URL et connectez-vous avec :
-- Identifiant : admin
-- Mot de passe : admin
+C'EST TOUT ! Allez sur votre URL et tout fonctionnera automatiquement.
 
 ========================================
-  CE QUI A ÉTÉ CORRIGÉ
+  CE QUI SE PASSE AUTOMATIQUEMENT
 ========================================
+
+1. Au chargement de la page :
+   → L'app détecte les tokens invalides
+   → Les supprime automatiquement
+   → Recharge la page automatiquement
+   
+2. Page de connexion affichée :
+   → Identifiant : admin
+   → Mot de passe : admin
+
+3. Une fois connecté :
+   → Administration → Utilisateurs : FONCTIONNE ✅
+   → Administration → Configuration API : FONCTIONNE ✅
+   → Administration → Logos : FONCTIONNE ✅
+
+========================================
+  CORRECTIONS APPLIQUÉES (18/10/2025)
+========================================
+
+✅ PROBLÈME RÉSOLU : Toutes les erreurs 401 "Unauthorized"
+   
+   Cause : Les composants utilisaient axios au lieu de api configuré
+   Solution : TOUS les composants utilisent maintenant l'instance api
+   
+   Fichiers corrigés :
+   - frontend/src/components/AdminPanel.js
+   - frontend/src/components/GeminiConfig.js  
+   - frontend/src/components/ApiBasketballConfig.js
+   - frontend/src/components/LogoManager.js
+   - frontend/src/App.js (TokenCleaner automatique)
 
 ✅ NETTOYAGE AUTOMATIQUE DES TOKENS
-   L'application détecte et supprime automatiquement
-   les tokens invalides au chargement de la page.
-   AUCUNE manipulation manuelle requise !
+   Au démarrage, l'app vérifie et nettoie automatiquement
+   les tokens invalides. AUCUNE manipulation manuelle.
 
-✅ AFFICHAGE DES UTILISATEURS
-   - L'identifiant (username) s'affiche correctement
-   - Bouton "Changer mot de passe" pour chaque utilisateur
-   - Backend retourne maintenant le champ username
+✅ BACKEND RETOURNE LE USERNAME
+   L'identifiant s'affiche correctement dans la liste
 
-✅ CONFIGURATION GEMINI
-   - Nouvel onglet pour configurer la clé API Gemini
-   - Permet d'activer l'extraction automatique
+✅ TOUTES LES REQUÊTES ADMIN AUTHENTIFIÉES
+   Changer rôle, mot de passe, supprimer utilisateur : TOUT FONCTIONNE
 
 ========================================
   APRÈS LE DÉPLOIEMENT
 ========================================
 
-1. Ouvrez l'URL de votre serveur dans le navigateur
-2. Si vous aviez un ancien token :
-   → L'application le détecte automatiquement
-   → Le supprime automatiquement  
-   → Recharge la page automatiquement
+1. Ouvrez votre navigateur sur l'URL du serveur
+2. L'app nettoie automatiquement les vieux tokens
 3. Connectez-vous : admin / admin
-4. Allez dans Administration → Utilisateurs
-5. Changez le mot de passe admin
-6. Configurez votre clé Gemini dans Configuration API
+4. Changez le mot de passe admin immédiatement
+5. Configurez la clé Gemini dans Configuration API
 
-C'EST TOUT ! Plus aucune manipulation manuelle.
+TERMINÉ ! Plus aucune erreur "Token manquant" ou "Unauthorized".

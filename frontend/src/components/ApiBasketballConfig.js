@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api/config';
 import './AdminPanel.css';
 
 function ApiBasketballConfig() {
@@ -13,7 +13,7 @@ function ApiBasketballConfig() {
     setTestResult(null);
     
     try {
-      const response = await axios.post('/api/admin/update-matches');
+      const response = await api.post('/admin/update-matches');
       setTestResult(response.data);
       setMessage('✅ Mise à jour réussie !');
     } catch (error) {
