@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data.user);
     } catch (error) {
       console.error('Error fetching user:', error);
+      localStorage.removeItem('token');
       setToken(null);
       setUser(null);
     } finally {
