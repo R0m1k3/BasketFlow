@@ -1,0 +1,156 @@
+risma schema loaded from prisma/schema.prisma
+
+Datasource "db": PostgreSQL database "basketdb", schema "public" at "basket_postgres:4532"
+
+The database is already in sync with the Prisma schema.
+
+> basket-backend@1.0.0 start
+
+> node src/server.js
+
+📂 Serving frontend from: /app/frontend/build
+
+🔄 Checking database initialization...
+
+✅ Admin user already exists
+
+🎉 Database initialization complete!
+
+🏀 Backend server running on port 3888
+
+📅 Daily updates scheduled at 6:00 AM
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+🚀 Manual match update triggered...
+
+🏀 Starting match update with Free Basketball APIs...
+
+🗑️  Cleaned 30 old matches
+
+📡 Using 100% Free APIs for all leagues
+
+1️⃣  NBA - Official NBA API
+
+  🏀 Fetching NBA schedule from official API...
+
+  📅 Found 178 NBA games (last 7 days + next 21 days)
+
+  ✅ NBA: Saved 178 matches
+
+2️⃣  WNBA - Official WNBA API
+
+  🏀 Fetching WNBA schedule from official API...
+
+  📅 Found 0 WNBA games (last 7 days + next 21 days)
+
+  ✅ WNBA: Saved 0 matches
+
+3️⃣  Euroleague - Official XML API
+
+  🏀 Fetching Euroleague schedule from official API...
+
+   📊 Euroleague Results - TheSportsDB via Gemini
+
+  ❌ Euroleague API error: Invalid Euroleague schedule response
+
+  🏀 Fetching Euroleague results from TheSportsDB via Gemini...
+
+  ⚠️  No Gemini API key - skipping Euroleague results
+
+4️⃣  EuroCup - Official XML API
+
+  🏀 Fetching Eurocup schedule from official API...
+
+  ❌ Eurocup API error: Invalid Eurocup schedule response
+
+5️⃣  Betclic Elite - Gemini HTML Extraction (TheSportsDB)
+
+  🏀 Fetching Betclic Elite schedule via Gemini HTML extraction...
+
+  ⚠️  No Gemini API key - skipping Betclic Elite
+
+✅ Match update completed: 178 total matches
+
+   📊 Coverage: NBA, WNBA, Euroleague, EuroCup, Betclic Elite
+
+🤖 Enriching matches with official 2024-2025 broadcasters...
+
+  📋 Found 55 matches to process
+
+  ✅ Broadcaster enrichment: 55 matches updated with official broadcasters
+
+📺 Broadcasters: 55 matches enriched with official agreements
+
+❌ Fichier Prime Video introuvable
+
+📺 Enriching matches with EPG TV data...
+
+  📡 Fetching beIN Sports 1 (ID: 55773)...
+
+    Found 0 basketball programs
+
+  📡 Fetching beIN Sports 2 (ID: 55774)...
+
+    Found 0 basketball programs
+
+  📡 Fetching beIN Sports 3 (ID: 55775)...
+
+    Found 0 basketball programs
+
+  📡 Fetching La Chaîne L'Équipe (ID: 55938)...
+
+    Found 0 basketball programs
+
+✅ EPG enrichment completed: 0 matches enriched
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/0/04/Utah_Jazz_logo_%282022%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/0/04/Utah_Jazz_logo_%282022%29.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/7/7c/Olympiacos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/8/85/Fenerbahce_basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/3/3d/Logo_ASVEL_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/1/1d/Panathinaikos_BC_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/e/e7/AS_Monaco_Basket.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/fr/5/5e/Paris_Basketball_logo.svg HTTP 404
+
+Image proxy client error (404): https://upload.wikimedia.org/wikipedia/en/b/bb/Los_Angeles_Clippers_%282024%29.svg HTTP 404
+
+
+      
+      
+    

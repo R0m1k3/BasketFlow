@@ -9,6 +9,28 @@ const primeVideoParser = require('./primeVideoParser');
 const epgTvService = require('./epgTvService');
 const prisma = new PrismaClient();
 
+/**
+ * Récupère la clé API Gemini depuis la base de données Config
+ * Fallback vers process.env si non trouvée en BDD
+ */
+async function getGeminiApiKey() {
+  try {
+    const config = await prisma.config.findUnique({
+      where: { key: 'GEMINI_API_KEY' }
+    });
+    
+    if (config && config.value) {
+      return config.value;
+    }
+    
+    // Fallback vers variable d'environnement
+    return process.env.GEMINI_API_KEY || null;
+  } catch (error) {
+    console.error('Error fetching Gemini API key from database:', error.message);
+    return process.env.GEMINI_API_KEY || null;
+  }
+}
+
 async function updateMatches() {
   try {
     console.log('🏀 Starting match update with Free Basketball APIs...\n');
@@ -35,13 +57,15 @@ async function updateMatches() {
       console.error('  ❌ WNBA API failed:', error.message);
     }
 
+    // Récupérer la clé Gemini depuis la BDD (configurée via l'interface admin)
+    const geminiKey = await getGeminiApiKey();
+    
     try {
       console.log('\n3️⃣  Euroleague - Official XML API');
       const euroleagueMatches = await euroleagueConnector.fetchEuroleagueSchedule();
       totalMatches += euroleagueMatches;
       
       console.log('\n   📊 Euroleague Results - TheSportsDB via Gemini');
-      const geminiKey = process.env.GEMINI_API_KEY;
       await euroleagueResultsConnector.fetchEuroleagueResults(geminiKey);
     } catch (error) {
       console.error('  ❌ Euroleague API failed:', error.message);
@@ -57,7 +81,6 @@ async function updateMatches() {
     
     try {
       console.log('\n5️⃣  Betclic Elite - Gemini HTML Extraction (TheSportsDB)');
-      const geminiKey = process.env.GEMINI_API_KEY;
       const betclicMatches = await betclicEliteConnector.fetchBetclicEliteSchedule(geminiKey);
       totalMatches += betclicMatches;
     } catch (error) {
@@ -73,7 +96,6 @@ async function updateMatches() {
 
     // Enrich matches with broadcasters based on official 2024-2025 agreements
     try {
-      const geminiKey = process.env.GEMINI_API_KEY;
       const enrichedCount = await geminiEnrichment.enrichMatchesWithBroadcasters(geminiKey);
       console.log(`\n📺 Broadcasters: ${enrichedCount} matches enriched with official agreements`);
     } catch (error) {
