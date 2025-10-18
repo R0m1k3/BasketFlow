@@ -1,4 +1,4 @@
-# ✅ SOLUTION : Scores Euroleague manquants sur votre serveur
+# ✅ SOLUTION : Scores Euroleague + Diffuseurs identiques partout
 
 ## 🎯 Problème identifié
 
@@ -52,6 +52,8 @@ Vous devriez voir 10 matchs Euroleague avec scores.
 | ❌ Gemini ne récupère que 10 matchs | ✅ Prompt amélioré : demande minimum 15 matchs |
 | ❌ Impossible de voir quels matchs sont créés | ✅ Logs améliorés : affiche tous les matchs avec scores |
 | ❌ Dates invalides pour matchs futurs | ✅ Format strict YYYY-MM-DD demandé à Gemini |
+| ❌ Diffuseurs différents sur Replit vs serveur | ✅ 11 diffuseurs créés automatiquement au démarrage |
+| ❌ Erreur "Fichier Prime Video introuvable" | ✅ Rendu optionnel (skip si absent) |
 
 ---
 

@@ -96,7 +96,7 @@ async function enrichWithPrimeVideo() {
       'Pasted-Le-programme-des-matchs-sur-Prime-Vid-o-Octobre-Samedi-25-octobre-Boston-Celtics-vs-New-York--1760682479365_1760682479365.txt');
     
     if (!fs.existsSync(filePath)) {
-      console.log('❌ Fichier Prime Video introuvable');
+      console.log('  ℹ️  Prime Video schedule file not found (optional - skipping)');
       return 0;
     }
     

@@ -47,25 +47,36 @@ async function autoInit() {
     }
 
     // Insert default broadcasters using Prisma
-    const broadcasterCount = await prisma.broadcaster.count();
-    if (broadcasterCount === 0) {
-      console.log('📺 Creating default broadcasters...');
-      await prisma.broadcaster.createMany({
-        data: [
-          { name: 'BeIN Sports', type: 'TV', isFree: false },
-          { name: 'Canal+', type: 'TV', isFree: false },
-          { name: 'DAZN', type: 'Streaming', isFree: false },
-          { name: 'Eurosport', type: 'TV', isFree: false },
-          { name: 'France TV', type: 'TV', isFree: true },
-          { name: 'RMC Sport', type: 'TV', isFree: false },
-          { name: 'SKWEEK', type: 'Streaming', isFree: false },
-          { name: 'NBA League Pass', type: 'Streaming', isFree: false },
-          { name: 'LNB TV', type: 'Streaming', isFree: false }
-        ],
-        skipDuplicates: true
+    // Note: Uses upsert to ensure all broadcasters exist, even if DB was partially initialized
+    console.log('📺 Initializing broadcasters...');
+    
+    const broadcasters = [
+      { name: 'beIN Sports', type: 'tv', isFree: false, logo: 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg' },
+      { name: 'beIN Sports 1', type: 'tv', isFree: false, logo: 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg' },
+      { name: 'beIN Sports 2', type: 'tv', isFree: false, logo: 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg' },
+      { name: 'beIN Sports 3', type: 'tv', isFree: false, logo: 'https://upload.wikimedia.org/wikipedia/commons/3/39/Bein_Sports_Logo.svg' },
+      { name: 'La Chaîne L\'Équipe', type: 'tv', isFree: true, logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/La_chaîne_l%27Equipe_-_logo_2016.png/640px-La_chaîne_l%27Equipe_-_logo_2016.png' },
+      { name: 'Prime Video', type: 'streaming', isFree: false, logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.png' },
+      { name: 'DAZN', type: 'streaming', isFree: false, logo: 'https://upload.wikimedia.org/wikipedia/commons/8/84/DAZN_logo.svg' },
+      { name: 'SKWEEK', type: 'streaming', isFree: false, logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Skweek_logo.svg/640px-Skweek_logo.svg.png' },
+      { name: 'NBA League Pass', type: 'streaming', isFree: false, logo: 'https://cdn.worldvectorlogo.com/logos/nba-league-pass.svg' },
+      { name: 'EuroLeague TV', type: 'streaming', isFree: false, logo: null },
+      { name: 'TV Monaco', type: 'tv', isFree: true, logo: null }
+    ];
+    
+    for (const broadcaster of broadcasters) {
+      await prisma.broadcaster.upsert({
+        where: { name: broadcaster.name },
+        update: { 
+          type: broadcaster.type, 
+          isFree: broadcaster.isFree,
+          logo: broadcaster.logo
+        },
+        create: broadcaster
       });
-      console.log('✅ Default broadcasters created');
     }
+    
+    console.log(`✅ ${broadcasters.length} broadcasters initialized`);
 
     console.log('🎉 Database initialization complete!');
     

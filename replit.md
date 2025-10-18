@@ -6,19 +6,17 @@ Basket Flow is a web application that displays basketball games broadcast in Fra
 
 ## Recent Changes
 
-**October 18, 2025 (Latest - Euroleague Scores Fixed + Auto-Update):**
+**October 18, 2025 (Latest - Euroleague + Diffuseurs Identiques):**
+- **CRITICAL FIX**: Diffuseurs maintenant identiques partout - 11 diffuseurs créés automatiquement
+- **FIX**: Prime Video enrichment rendu complètement optionnel (pas d'erreur si fichier absent)
+- autoInit.js crée maintenant ALL diffuseurs: beIN Sports 1/2/3, La Chaîne L'Équipe, Prime Video, DAZN, SKWEEK, etc.
+
+**October 18, 2025 (Earlier - Euroleague Scores):**
 - **CRITICAL FIX**: Euroleague scores fully working - Tested with 10+ matches (Oct 15-17)
 - **Improved logging**: Shows created/updated matches with scores in console
 - **Improved Gemini prompt**: Explicitly requests minimum 15 matches + strict date format (YYYY-MM-DD)
 - System automatically fetches ALL Euroleague matches (past with scores + upcoming) daily at 6 AM
 - 100% Gemini + TheSportsDB for ALL Euroleague data (official APIs broken)
-- Gemini extracts from TheSportsDB HTML: past results with scores + future matches
-- Status logic: matches with scores automatically marked 'finished'
-- Auto-team creation for new Euroleague teams
-- Logs show which matches are skipped and why (invalid dates, missing data)
-- Betclic Elite working - Gemini API key from database Config table
-- EuroCup temporarily disabled (XML API broken, needs Gemini migration)
-- Prime Video enrichment optional (graceful fallback if file missing)
 - **VERIFIED**: Scores visible on Replit for Oct 15-17 matches ✅
 
 **October 18, 2025 (Earlier):**
