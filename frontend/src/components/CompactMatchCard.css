@@ -1,0 +1,221 @@
+.compact-match-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-match-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
+}
+
+.compact-match-card.live {
+  border-color: var(--danger-color);
+  animation: pulse-border 2s infinite;
+}
+
+.compact-match-card.finished {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: var(--danger-color);
+  }
+  50% {
+    border-color: #ff5252;
+  }
+}
+
+.compact-league-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.4rem 0.8rem;
+  color: white;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-bottom-left-radius: var(--radius-sm);
+  letter-spacing: 0.5px;
+}
+
+.compact-match-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.compact-team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.compact-team {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.compact-team-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.compact-team-placeholder {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.compact-team-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compact-score {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 32px;
+  text-align: right;
+}
+
+.compact-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.compact-vs {
+  font-weight: 600;
+  color: var(--text-light);
+  font-size: 0.85rem;
+}
+
+.compact-time {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.compact-live {
+  background: var(--danger-color);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  font-weight: 700;
+  animation: pulse-live 2s infinite;
+  letter-spacing: 0.5px;
+}
+
+@keyframes pulse-live {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.compact-broadcasters {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.compact-broadcaster-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  opacity: 0.85;
+  transition: var(--transition-fast);
+}
+
+.compact-broadcaster-logo:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.compact-broadcaster-text {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.compact-broadcaster-text.free {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.compact-broadcaster-text.paid {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.compact-more {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  background: var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 480px) {
+  .compact-match-card {
+    padding: 0.75rem;
+    min-height: 140px;
+  }
+
+  .compact-team-name {
+    font-size: 0.8rem;
+  }
+
+  .compact-team-logo,
+  .compact-team-placeholder {
+    width: 24px;
+    height: 24px;
+  }
+
+  .compact-score {
+    font-size: 1rem;
+  }
+}
