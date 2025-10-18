@@ -1,39 +1,31 @@
 .compact-match-card {
-  background: var(--card-bg);
-  border-radius: var(--radius-md);
+  background: var(--bg-white);
   padding: 1rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
   border: 2px solid transparent;
-  min-height: 160px;
+  border-left: 4px solid var(--primary-color);
+  min-height: 150px;
   display: flex;
   flex-direction: column;
 }
 
 .compact-match-card:hover {
-  transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--primary-light);
+  border-left-color: var(--secondary-color);
+  transform: translateX(4px);
 }
 
 .compact-match-card.live {
-  border-color: var(--danger-color);
-  animation: pulse-border 2s infinite;
+  border-left-color: var(--accent-red);
+  background: linear-gradient(to right, rgba(211, 47, 47, 0.05) 0%, var(--bg-white) 100%);
 }
 
 .compact-match-card.finished {
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-}
-
-@keyframes pulse-border {
-  0%, 100% {
-    border-color: var(--danger-color);
-  }
-  50% {
-    border-color: #ff5252;
-  }
+  background: var(--bg-light);
+  opacity: 0.95;
 }
 
 .compact-league-badge {
@@ -43,9 +35,9 @@
   padding: 0.4rem 0.8rem;
   color: white;
   font-weight: 700;
-  font-size: 0.75rem;
-  border-bottom-left-radius: var(--radius-sm);
-  letter-spacing: 0.5px;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .compact-match-content {
@@ -54,7 +46,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .compact-team-row {
@@ -62,28 +54,28 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  padding: 0.25rem 0;
 }
 
 .compact-team {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   flex: 1;
   min-width: 0;
 }
 
 .compact-team-logo {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .compact-team-placeholder {
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  background: var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -95,18 +87,20 @@
 
 .compact-team-name {
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .compact-score {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 1.3rem;
+  font-weight: 900;
   color: var(--text-primary);
-  min-width: 32px;
+  min-width: 36px;
   text-align: right;
 }
 
@@ -115,30 +109,33 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.25rem 0;
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .compact-vs {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-light);
   font-size: 0.85rem;
+  text-transform: uppercase;
 }
 
 .compact-time {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .compact-live {
-  background: var(--danger-color);
+  background: var(--accent-red);
   color: white;
-  padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.65rem;
-  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 800;
   animation: pulse-live 2s infinite;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 @keyframes pulse-live {
@@ -156,16 +153,18 @@
   gap: 0.4rem;
   margin-top: auto;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 2px solid var(--border-color);
   flex-wrap: wrap;
 }
 
 .compact-broadcaster-logo {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
-  opacity: 0.85;
+  opacity: 0.9;
   transition: var(--transition-fast);
+  border: 1px solid var(--border-color);
+  padding: 2px;
 }
 
 .compact-broadcaster-logo:hover {
@@ -175,34 +174,34 @@
 
 .compact-broadcaster-text {
   font-size: 0.7rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .compact-broadcaster-text.free {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--accent-green);
+  color: white;
 }
 
 .compact-broadcaster-text.paid {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--accent-orange);
+  color: white;
 }
 
 .compact-more {
   font-size: 0.7rem;
-  color: var(--text-light);
-  font-weight: 600;
-  padding: 0.2rem 0.4rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
   background: var(--border-color);
-  border-radius: var(--radius-sm);
 }
 
 @media (max-width: 480px) {
   .compact-match-card {
     padding: 0.75rem;
-    min-height: 140px;
+    min-height: 130px;
   }
 
   .compact-team-name {
@@ -211,11 +210,11 @@
 
   .compact-team-logo,
   .compact-team-placeholder {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
   }
 
   .compact-score {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 }
