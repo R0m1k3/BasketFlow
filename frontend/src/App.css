@@ -2,12 +2,61 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--bg-light);
+}
+
+.App-header {
+  background: var(--bg-white);
+  padding: 1.25rem 2rem;
+  border-bottom: 3px solid var(--primary-color);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.App-header h1 {
+  color: var(--text-primary);
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.App-header h1::before {
+  content: '🏀 ';
+  font-size: 1.8rem;
+}
+
+.App-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .App-footer {
-  background: #333;
-  color: white;
+  background: var(--text-primary);
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
-  padding: 1rem;
-  margin-top: auto;
+  padding: 1.5rem;
+  margin-top: 3rem;
+  font-size: 0.9rem;
+  border-top: 3px solid var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .App-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .App-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .App-content {
+    padding: 1rem;
+  }
 }

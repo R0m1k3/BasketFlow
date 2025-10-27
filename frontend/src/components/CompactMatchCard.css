@@ -1,0 +1,220 @@
+.compact-match-card {
+  background: var(--bg-white);
+  padding: 1rem;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-left: 4px solid var(--primary-color);
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-match-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-left-color: var(--secondary-color);
+  transform: translateX(4px);
+}
+
+.compact-match-card.live {
+  border-left-color: var(--accent-red);
+  background: linear-gradient(to right, rgba(211, 47, 47, 0.05) 0%, var(--bg-white) 100%);
+}
+
+.compact-match-card.finished {
+  background: var(--bg-light);
+  opacity: 0.95;
+}
+
+.compact-league-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.4rem 0.8rem;
+  color: white;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.compact-match-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.compact-team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.compact-team {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.compact-team-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.compact-team-placeholder {
+  width: 30px;
+  height: 30px;
+  background: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.compact-team-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.compact-score {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  min-width: 36px;
+  text-align: right;
+}
+
+.compact-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.compact-vs {
+  font-weight: 700;
+  color: var(--text-light);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.compact-time {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.compact-live {
+  background: var(--accent-red);
+  color: white;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  animation: pulse-live 2s infinite;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+@keyframes pulse-live {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.compact-broadcasters {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 2px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.compact-broadcaster-logo {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  opacity: 0.9;
+  transition: var(--transition-fast);
+  border: 1px solid var(--border-color);
+  padding: 2px;
+}
+
+.compact-broadcaster-logo:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.compact-broadcaster-text {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.compact-broadcaster-text.free {
+  background: var(--accent-green);
+  color: white;
+}
+
+.compact-broadcaster-text.paid {
+  background: var(--accent-orange);
+  color: white;
+}
+
+.compact-more {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  background: var(--border-color);
+}
+
+@media (max-width: 480px) {
+  .compact-match-card {
+    padding: 0.75rem;
+    min-height: 130px;
+  }
+
+  .compact-team-name {
+    font-size: 0.8rem;
+  }
+
+  .compact-team-logo,
+  .compact-team-placeholder {
+    width: 26px;
+    height: 26px;
+  }
+
+  .compact-score {
+    font-size: 1.1rem;
+  }
+}

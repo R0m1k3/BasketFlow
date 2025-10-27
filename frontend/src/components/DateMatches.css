@@ -9,23 +9,92 @@
   box-shadow: var(--shadow-md);
   margin-bottom: 2rem;
   border-left: 5px solid var(--primary-color);
+  text-align: center;
 }
 
 .modern-header h2 {
   color: var(--text-primary);
   font-size: 2.2rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: -0.5px;
 }
 
-.modern-date {
-  color: var(--text-secondary);
+.date-selector-card {
+  background: var(--primary-color);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+  border-left: 5px solid var(--primary-dark);
+}
+
+.date-selector-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.date-label {
+  color: white;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
+  text-align: center;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.modern-date-input {
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  border: 3px solid white;
+  background: white;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+  min-width: 220px;
+  text-transform: uppercase;
+}
+
+.modern-date-input:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
+  border-color: var(--secondary-light);
+}
+
+.modern-date-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.4);
+}
+
+.selected-date-display {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.matches-summary {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--bg-white);
+  box-shadow: var(--shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-left: 4px solid var(--primary-color);
 }
 
 .modern-loader {
@@ -78,31 +147,8 @@
   text-transform: uppercase;
 }
 
-.date-group {
-  margin-bottom: 3rem;
-}
-
-.date-group-header {
-  background: var(--secondary-color);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-md);
-  border-left: 5px solid var(--secondary-dark);
-}
-
-.date-group-header h3 {
-  color: white;
-  font-size: 1.6rem;
-  font-weight: 900;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .league-section {
-  margin-bottom: 2.5rem;
-  padding-left: 1.5rem;
-  border-left: 4px solid var(--border-color);
+  margin-bottom: 3rem;
 }
 
 .league-section-header {
@@ -111,14 +157,14 @@
   justify-content: space-between;
   padding: 1rem 1.5rem;
   background: var(--primary-color);
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
   box-shadow: var(--shadow-sm);
   border-left: 5px solid var(--primary-dark);
 }
 
-.league-section-header h4 {
+.league-section-header h3 {
   color: white;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 900;
   margin: 0;
   text-transform: uppercase;
@@ -128,8 +174,8 @@
 .match-count {
   background: rgba(255, 255, 255, 0.25);
   color: white;
-  padding: 0.35rem 0.7rem;
-  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -157,28 +203,29 @@
     font-size: 1.8rem;
   }
 
-  .modern-date {
+  .date-selector-card {
+    padding: 1.5rem;
+  }
+
+  .date-label {
     font-size: 1rem;
   }
 
-  .date-group-header {
-    padding: 1rem 1.25rem;
+  .modern-date-input {
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
   }
 
-  .date-group-header h3 {
-    font-size: 1.4rem;
-  }
-
-  .league-section {
-    padding-left: 1rem;
+  .selected-date-display {
+    font-size: 1.2rem;
   }
 
   .league-section-header {
     padding: 0.875rem 1.25rem;
   }
 
-  .league-section-header h4 {
-    font-size: 1.1rem;
+  .league-section-header h3 {
+    font-size: 1.2rem;
   }
 
   .matches-grid {
@@ -196,9 +243,8 @@
     font-size: 1.5rem;
   }
 
-  .league-section {
-    padding-left: 0;
-    border-left: none;
+  .date-selector-card {
+    padding: 1.25rem;
   }
 
   .matches-grid {

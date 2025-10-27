@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import CompactMatchCard from './CompactMatchCard';
 import './WeeklyMatches.css';
 
 function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
@@ -21,7 +22,6 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
       setLoading(true);
       const response = await axios.get('/api/matches/week');
       
-      // Ensure response.data is an array
       let filteredMatches = Array.isArray(response.data) ? response.data : [];
 
       if (selectedLeague !== 'all') {
@@ -38,7 +38,7 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
       setMatches(filteredMatches);
     } catch (error) {
       console.error('Error fetching matches:', error);
-      setMatches([]); // Set empty array on error
+      setMatches([]);
     } finally {
       setLoading(false);
     }
@@ -48,134 +48,107 @@ function WeeklyMatches({ selectedLeague, selectedBroadcaster }) {
     fetchMatches();
   }, [fetchMatches]);
 
-  const formatDate = (dateString) => {
+  const formatDateHeader = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('fr-FR', {
       timeZone: 'Europe/Paris',
       weekday: 'long',
       day: 'numeric',
-      month: 'long',
-      hour: '2-digit',
-      minute: '2-digit'
+      month: 'long'
     }).format(date);
   };
 
-  const getLeagueColor = (leagueName) => {
-    const colors = {
-      'NBA': '#1D428A',
-      'WNBA': '#C8102E',
-      'Euroleague': '#FF7900',
-      'EuroCup': '#009CDE',
-      'BCL': '#000000',
-      'Betclic Elite': '#002654'
-    };
-    return colors[leagueName] || '#333';
+  const groupByDateAndLeague = (matches) => {
+    const dateGroups = {};
+    
+    matches.forEach(match => {
+      const matchDate = new Date(match.dateTime);
+      const dateKey = matchDate.toISOString().split('T')[0];
+      
+      if (!dateGroups[dateKey]) {
+        dateGroups[dateKey] = {
+          dateKey,
+          dateDisplay: formatDateHeader(match.dateTime),
+          leagues: {}
+        };
+      }
+      
+      const leagueName = match.league.name;
+      if (!dateGroups[dateKey].leagues[leagueName]) {
+        dateGroups[dateKey].leagues[leagueName] = {
+          league: match.league,
+          matches: []
+        };
+      }
+      
+      dateGroups[dateKey].leagues[leagueName].matches.push(match);
+    });
+    
+    return Object.values(dateGroups).sort((a, b) => a.dateKey.localeCompare(b.dateKey));
   };
 
   if (loading) {
-    return <div className="loading">Chargement des matchs...</div>;
+    return (
+      <div className="modern-container">
+        <div className="modern-loader">
+          <div className="spinner"></div>
+          <p>Chargement des matchs...</p>
+        </div>
+      </div>
+    );
   }
 
   if (matches.length === 0) {
-    return <div className="no-matches">Aucun match trouvé pour cette sélection</div>;
+    return (
+      <div className="modern-container">
+        <div className="modern-header">
+          <h2>📅 Matchs de la semaine</h2>
+        </div>
+        <div className="modern-empty">
+          <div className="empty-icon">📭</div>
+          <p>Aucun match trouvé pour cette sélection</p>
+        </div>
+      </div>
+    );
   }
 
+  const dateGroups = groupByDateAndLeague(matches);
+
   return (
-    <div className="weekly-matches">
-      <h2>Matchs de la semaine</h2>
-      <div className="matches-list">
-        {matches.map(match => (
-          <div key={match.id} className={`match-card ${match.status || 'scheduled'}`}>
-            <div 
-              className="league-badge" 
-              style={{ backgroundColor: getLeagueColor(match.league.name) }}
-            >
-              {match.league.shortName}
-            </div>
-            
-            <div className="match-info">
-              <div className="match-teams">
-                <div className="team">
-                  {match.homeTeam.logo && !failedImages.has(match.homeTeam.logo) ? (
-                    <img 
-                      src={getProxiedImageUrl(match.homeTeam.logo)} 
-                      alt={match.homeTeam.name} 
-                      className="team-logo"
-                      onError={() => handleImageError(match.homeTeam.logo)}
-                    />
-                  ) : (
-                    <div className="team-logo-placeholder">
-                      {match.homeTeam.name.substring(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  <span>{match.homeTeam.name}</span>
-                </div>
-                <div className={`score-separator ${match.status}`}>
-                  {match.status === 'finished' || match.status === 'live' ? (
-                    <div className="score">
-                      <span className="home-score">{match.homeScore}</span>
-                      <span className="separator">-</span>
-                      <span className="away-score">{match.awayScore}</span>
-                      {match.status === 'live' && <span className="live-indicator">LIVE</span>}
-                    </div>
-                  ) : (
-                    <span>vs</span>
-                  )}
-                </div>
-                <div className="team">
-                  {match.awayTeam.logo && !failedImages.has(match.awayTeam.logo) ? (
-                    <img 
-                      src={getProxiedImageUrl(match.awayTeam.logo)} 
-                      alt={match.awayTeam.name} 
-                      className="team-logo"
-                      onError={() => handleImageError(match.awayTeam.logo)}
-                    />
-                  ) : (
-                    <div className="team-logo-placeholder">
-                      {match.awayTeam.name.substring(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  <span>{match.awayTeam.name}</span>
-                </div>
+    <div className="modern-container">
+      <div className="modern-header">
+        <h2>📅 Matchs de la semaine</h2>
+        <p className="modern-date">{matches.length} match{matches.length > 1 ? 's' : ''} au programme</p>
+      </div>
+
+      {dateGroups.map(dateGroup => (
+        <div key={dateGroup.dateKey} className="date-group">
+          <div className="date-group-header">
+            <h3>{dateGroup.dateDisplay}</h3>
+          </div>
+
+          {Object.values(dateGroup.leagues).map(leagueGroup => (
+            <div key={leagueGroup.league.id} className="league-section">
+              <div className="league-section-header">
+                <h4>{leagueGroup.league.name}</h4>
+                <span className="match-count">{leagueGroup.matches.length} match{leagueGroup.matches.length > 1 ? 's' : ''}</span>
               </div>
               
-              <div className="match-details">
-                <div className="date">{formatDate(match.dateTime)}</div>
-                {match.venue && <div className="venue">📍 {match.venue}</div>}
-              </div>
-            </div>
-
-            <div className="broadcasters">
-              <div className="broadcasters-label">Diffusion :</div>
-              <div className="broadcaster-list">
-                {match.broadcasts.map(broadcast => (
-                  <span 
-                    key={broadcast.id} 
-                    className={`broadcaster-tag ${broadcast.broadcaster.isFree ? 'free' : 'paid'}`}
-                  >
-                    {broadcast.broadcaster.logo && !failedImages.has(broadcast.broadcaster.logo) ? (
-                      <>
-                        <img 
-                          src={getProxiedImageUrl(broadcast.broadcaster.logo)} 
-                          alt={broadcast.broadcaster.name} 
-                          className="broadcaster-logo"
-                          onError={() => handleImageError(broadcast.broadcaster.logo)}
-                        />
-                        <span className="broadcaster-name">{broadcast.broadcaster.name}</span>
-                      </>
-                    ) : (
-                      <>
-                        {broadcast.broadcaster.name}
-                        {broadcast.broadcaster.isFree ? ' 📺' : ' 💰'}
-                      </>
-                    )}
-                  </span>
+              <div className="matches-grid">
+                {leagueGroup.matches.map(match => (
+                  <CompactMatchCard
+                    key={match.id}
+                    match={match}
+                    getProxiedImageUrl={getProxiedImageUrl}
+                    handleImageError={handleImageError}
+                    failedImages={failedImages}
+                  />
                 ))}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
