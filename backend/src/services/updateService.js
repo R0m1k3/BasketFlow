@@ -91,10 +91,10 @@ async function updateMatches() {
       console.log('   📊 Coverage: NBA, WNBA, Euroleague, EuroCup, Betclic Elite');
     }
 
-    // Enrich matches with broadcasters based on official 2024-2025 agreements
+    // Enrich ALL matches with multiple broadcasters based on league
     try {
-      const enrichedCount = await geminiEnrichment.enrichMatchesWithBroadcasters(geminiKey);
-      console.log(`\n📺 Broadcasters: ${enrichedCount} matches enriched with official agreements`);
+      const broadcastCount = await broadcasterCalendars.enrichWithRealBroadcasters(geminiKey);
+      console.log(`\n📺 Broadcasters: ${broadcastCount} matches enriched with multiple channels`);
     } catch (error) {
       console.error('  ❌ Broadcaster enrichment failed:', error.message);
     }

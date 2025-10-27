@@ -209,13 +209,12 @@ Réponds UNIQUEMENT avec le JSON ci-dessus, sans texte avant ou après.`;
           where: { matchId: match.id }
         });
 
-        // Add broadcasters (beIN Sports primary)
-        const mainBroadcaster = broadcasters.find(b => b.name === 'beIN Sports');
-        if (mainBroadcaster) {
+        // Add ALL broadcasters for Betclic Elite (beIN Sports, DAZN, La Chaîne L'Équipe)
+        for (const broadcaster of broadcasters) {
           await prisma.matchBroadcast.create({
             data: {
               matchId: match.id,
-              broadcasterId: mainBroadcaster.id
+              broadcasterId: broadcaster.id
             }
           });
         }
