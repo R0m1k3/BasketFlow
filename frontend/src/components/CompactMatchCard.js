@@ -90,7 +90,7 @@ function CompactMatchCard({ match, getProxiedImageUrl, handleImageError, failedI
 
       {match.broadcasts && match.broadcasts.length > 0 && (
         <div className="compact-broadcasters">
-          {match.broadcasts.slice(0, 3).map((broadcast, idx) => (
+          {match.broadcasts.map((broadcast, idx) => (
             broadcast.broadcaster.logo && !failedImages.has(broadcast.broadcaster.logo) ? (
               <img 
                 key={idx}
@@ -110,9 +110,6 @@ function CompactMatchCard({ match, getProxiedImageUrl, handleImageError, failedI
               </span>
             )
           ))}
-          {match.broadcasts.length > 3 && (
-            <span className="compact-more">+{match.broadcasts.length - 3}</span>
-          )}
         </div>
       )}
     </div>
