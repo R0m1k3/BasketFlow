@@ -144,20 +144,20 @@ async function enrichWithRealBroadcasters(geminiApiKey) {
     const primeVideoMatches = await fetchPrimeVideoNBACalendar(geminiApiKey);
     const lequipeCalendar = await fetchLEquipeCalendar(geminiApiKey);
 
-    // Récupérer tous les matchs de la semaine
+    // Récupérer TOUS les matchs (last 7 days + next 30 days)
     const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
     
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 7);
+    const thirtyDaysLater = new Date(now);
+    thirtyDaysLater.setDate(now.getDate() + 30);
 
     const matches = await prisma.match.findMany({
       where: {
         dateTime: {
-          gte: startOfWeek,
-          lt: endOfWeek
+          gte: sevenDaysAgo,
+          lt: thirtyDaysLater
         }
       },
       include: {

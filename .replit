@@ -13,39 +13,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Backend"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "App"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "BasketFlow"
-
-[[workflows.workflow]]
-name = "Backend"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd backend && npm run dev"
-waitForPort = 3000
-
-[workflows.workflow.metadata]
-outputType = "console"
-
-[[workflows.workflow]]
-name = "App"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd backend && npm run dev"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow]]
 name = "BasketFlow"
@@ -70,6 +38,10 @@ externalPort = 80
 [[ports]]
 localPort = 33383
 externalPort = 3001
+
+[[ports]]
+localPort = 43603
+externalPort = 3002
 
 [nix]
 channel = "stable-25_05"

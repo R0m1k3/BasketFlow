@@ -18,6 +18,9 @@ router.get('/week', async (req, res) => {
         dateTime: {
           gte: startOfWeek,
           lt: endOfWeek
+        },
+        league: {
+          isActive: true
         }
       },
       include: {
@@ -53,6 +56,9 @@ router.get('/month/:year/:month', async (req, res) => {
         dateTime: {
           gte: startDate,
           lt: endDate
+        },
+        league: {
+          isActive: true
         }
       },
       include: {
@@ -81,7 +87,12 @@ router.get('/league/:leagueId', async (req, res) => {
   try {
     const { leagueId } = req.params;
     const matches = await prisma.match.findMany({
-      where: { leagueId },
+      where: {
+        leagueId,
+        league: {
+          isActive: true
+        }
+      },
       include: {
         league: true,
         homeTeam: true,
@@ -152,6 +163,9 @@ router.get('/by-date', async (req, res) => {
         dateTime: {
           gte: bounds.start,
           lte: bounds.end
+        },
+        league: {
+          isActive: true
         }
       },
       include: {

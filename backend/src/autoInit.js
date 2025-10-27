@@ -35,15 +35,15 @@ async function autoInit() {
       console.log('🏀 Creating default leagues...');
       await prisma.league.createMany({
         data: [
-          { name: 'NBA', shortName: 'NBA', country: 'USA' },
-          { name: 'WNBA', shortName: 'WNBA', country: 'USA' },
-          { name: 'Euroleague', shortName: 'EL', country: 'Europe' },
-          { name: 'EuroCup', shortName: 'EC', country: 'Europe' },
-          { name: 'Betclic Elite', shortName: 'LNB', country: 'France' }
+          { name: 'NBA', shortName: 'NBA', country: 'USA', isActive: true },
+          { name: 'WNBA', shortName: 'WNBA', country: 'USA', isActive: true },
+          { name: 'Euroleague', shortName: 'EL', country: 'Europe', isActive: true },
+          { name: 'EuroCup', shortName: 'EC', country: 'Europe', isActive: false },
+          { name: 'Betclic Elite', shortName: 'LNB', country: 'France', isActive: true }
         ],
         skipDuplicates: true
       });
-      console.log('✅ Default leagues created');
+      console.log('✅ Default leagues created (EuroCup désactivée par défaut)');
     }
 
     // Insert default broadcasters using Prisma

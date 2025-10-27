@@ -6,6 +6,9 @@ const prisma = new PrismaClient();
 router.get('/', async (req, res) => {
   try {
     const leagues = await prisma.league.findMany({
+      where: {
+        isActive: true
+      },
       orderBy: {
         name: 'asc'
       }
