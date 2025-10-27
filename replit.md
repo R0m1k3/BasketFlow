@@ -6,7 +6,16 @@ Basket Flow is a web application that displays basketball games broadcast in Fra
 
 ## Recent Changes
 
-**October 18, 2025 (Latest - Euroleague + Diffuseurs Identiques):**
+**October 27, 2025 (Latest - League Visibility Control):**
+- **NEW FEATURE**: Added `isActive` field to League model for visibility control
+- **CRITICAL**: EuroCup now hidden by default (isActive=false) while NBA, WNBA, Euroleague, Betclic Elite remain visible
+- **FIX**: All API routes now filter inactive leagues (/matches/week, /month, /by-date, /league/:id, /leagues)
+- **IMPROVEMENT**: Removed broadcaster display limit in CompactMatchCard - all broadcasters now shown (was limited to 3)
+- **CLEANUP**: Removed duplicate workflows (App, Backend) - only BasketFlow workflow remains
+- Schema updated with backward-compatible default (isActive=true for new leagues)
+- Database automatically seeds leagues with correct isActive values on initialization
+
+**October 18, 2025 (Euroleague + Diffuseurs Identiques):**
 - **CRITICAL FIX**: Diffuseurs maintenant identiques partout - 11 diffuseurs créés automatiquement
 - **FIX**: Prime Video enrichment rendu complètement optionnel (pas d'erreur si fichier absent)
 - autoInit.js crée maintenant ALL diffuseurs: beIN Sports 1/2/3, La Chaîne L'Équipe, Prime Video, DAZN, SKWEEK, etc.

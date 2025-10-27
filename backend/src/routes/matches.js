@@ -87,7 +87,12 @@ router.get('/league/:leagueId', async (req, res) => {
   try {
     const { leagueId } = req.params;
     const matches = await prisma.match.findMany({
-      where: { leagueId },
+      where: {
+        leagueId,
+        league: {
+          isActive: true
+        }
+      },
       include: {
         league: true,
         homeTeam: true,
